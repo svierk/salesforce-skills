@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/svierk/salesforce-skills/main/schemas/salesforce-devops.schema.json
+# B5 - admin-heavy team, two org-bound branches, DevOps Center promotes.
+version: 1
+blueprint: B5
+environments: [uat, main]
+base: uat
+items:
+  tracker: devops-center
+commits:
+  style: plain
+  item: none
+development:
+  org: shared-sandbox
+  retrieve: devops-center
+promotion:
+  tool: devops-center

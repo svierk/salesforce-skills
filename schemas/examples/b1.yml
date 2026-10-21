@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/svierk/salesforce-skills/main/schemas/salesforce-devops.schema.json
+# B1 - one team, one production org, GitHub Flow.
+version: 1
+blueprint: B1
+environments: [main]
+base: main
+branches:
+  feature: feature/{item}-{slug}
+items:
+  tracker: github
+  pattern: '\d+'
+commits:
+  style: conventional
+  item: footer
+development:
+  org: own-sandbox
+  retrieve: cli
+promotion:
+  tool: none
