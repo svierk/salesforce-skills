@@ -19,6 +19,6 @@ Guided day-to-day work on a Salesforce project in Git and GitHub, aimed at team 
 
 Hooks, not only instructions: the plugin will block force pushes, direct commits to protected branches and destructive resets, so a mistake is stopped before it happens rather than explained afterwards.
 
-## Planned project configuration
+## Project configuration
 
-The operator reads a small configuration file in the project repository - blueprint, base branches, branch naming, source directory, org aliases - so it never has to guess how a team works. The [DevOps Builder](../devops-builder) writes that file when it sets the pipeline up.
+The operator reads [`.github/salesforce-devops.yml`](../../README.md#-project-configuration) in the project repository - blueprint, environment branches, where new work starts, branch naming, work items and commit style - so it never has to guess how a team works. The [DevOps Builder](../devops-builder) writes that file when it sets the pipeline up.

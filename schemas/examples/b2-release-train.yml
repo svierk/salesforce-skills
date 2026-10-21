@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/svierk/salesforce-skills/main/schemas/salesforce-devops.schema.json
+# B2 release train - the whole branch moves up the chain on release dates.
+version: 1
+blueprint: B2
+variant: release-train
+environments: [integration, uat, preprod, main]
+base: integration
+branches:
+  feature: feature/{item}-{slug}
+  hotfix: hotfix/{item}-{slug}
+items:
+  tracker: azure-boards
+  pattern: '\d+'
+commits:
+  style: plain
+  item: subject
+development:
+  org: own-sandbox
+  retrieve: cli
+promotion:
+  tool: pull-request

@@ -66,7 +66,8 @@ Work in this order - each step is useful on its own, so the team gets value even
 5. **Blueprint extras.** `promote.yml` with a GitHub App for B2, `scratch-org-ci.yml` for B3, the matrix rollout and path filters for B4, `create-scratch-org.yml` where self-service orgs help.
 6. **Branch protection.** Rulesets per long-lived branch, the default branch, CODEOWNERS where the blueprint asks for them. Add required status checks **after** the first validation run, using the check names that run actually produced.
 7. **Dependabot** for `github-actions`, so the pins do not age silently.
-8. **Prove it.** Open a small test pull request, watch the run with `gh pr checks --watch`, and walk the user through the result.
+8. **Project configuration.** Write `.github/salesforce-devops.yml` with the blueprint, the environment branches and the team's conventions, so other skills and new joiners do not have to guess - [references/project-config.md](references/project-config.md).
+9. **Prove it.** Open a small test pull request, watch the run with `gh pr checks --watch`, and walk the user through the result.
 
 When writing workflow files, follow [references/pipeline-hygiene.md](references/pipeline-hygiene.md): least-privilege `permissions:`, `persist-credentials: false`, secrets via `secrets:` or environment variables, `pull_request` and never `pull_request_target`.
 
@@ -78,7 +79,7 @@ Goal: a short, ranked list of findings with a concrete fix each - and, if the us
 
 1. **Inventory.** List the workflows, every `uses:` reference with its pin, the environments, rulesets and default branch (commands in [references/github-setup.md](references/github-setup.md)).
 2. **Hygiene.** Run the checklist in [references/pipeline-hygiene.md](references/pipeline-hygiene.md). Mutable refs, `pull_request_target` with secrets, interpolated `${{ }}` in `run:` scripts and missing reviewers on production come first.
-3. **Blueprint fit.** Infer the blueprint from branches and callers, compare against the kit mapping, and name the gaps (e.g. B2 story promotion without the weekly full validation, B5 with a third org-bound branch).
+3. **Blueprint fit.** Read `.github/salesforce-devops.yml` if it exists, otherwise infer the blueprint from branches and callers. Compare against the kit mapping and name the gaps (e.g. B2 story promotion without the weekly full validation, B5 with a third org-bound branch) - including drift between the file and the repository, see [references/project-config.md](references/project-config.md).
 4. **Versions.** Compare each pin with the latest release of that repository. For an upgrade, read the release notes between the two versions (`gh release view` per tag) and call out breaking changes and new inputs worth adopting.
 5. **Migration signals.** Each blueprint names the signals that mean it is outgrown or over-built - check them against what the user tells you and suggest a move only when they fit.
 6. **Recurring care** worth suggesting: JWT certificate expiry dates in a calendar, a scheduled drift check between org and branch, sandbox refresh dates, a named pipeline owner and deputy - see [references/team-enablement.md](references/team-enablement.md).
@@ -103,4 +104,5 @@ For an **audit**: findings ranked by severity, each with file and line, what is 
 - [references/authentication.md](references/authentication.md) - integration user, JWT bearer flow, certificate rotation
 - [references/github-setup.md](references/github-setup.md) - environments, secrets, rulesets, default branch, GitHub App, via `gh`
 - [references/pipeline-hygiene.md](references/pipeline-hygiene.md) - rules for every workflow and the audit checklist
+- [references/project-config.md](references/project-config.md) - the `.github/salesforce-devops.yml` file: fields, values per blueprint, writing and auditing it
 - [references/team-enablement.md](references/team-enablement.md) - roles, onboarding and the care a pipeline needs after go-live

@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/svierk/salesforce-skills/main/schemas/salesforce-devops.schema.json",
+  "title": "Salesforce DevOps project configuration",
+  "description": "How a Salesforce team works in this repository: blueprint, long-lived branches, branch naming, work items, commits, development org and promotion. Lives at .github/salesforce-devops.yml. Holds only what cannot be read from elsewhere - package directories come from sfdx-project.json, workflow inputs from the workflow files.",
+  "type": "object",
+  "required": ["version", "blueprint", "environments", "base"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "description": "Version of this file format.",
+      "const": 1
+    },
+    "blueprint": {
+      "description": "Blueprint of the Salesforce DevOps Starter Kit the repository follows.",
+      "enum": ["B1", "B2", "B3", "B4", "B5"]
+    },
+    "variant": {
+      "description": "B2: how changes travel between the environment branches. B4: the repository shape.",
+      "enum": ["release-train", "story-promotion", "release-bundle", "shared-core", "per-org-chains"]
+    },
+    "environments": {
+      "description": "Long-lived branches, each bound to an org, in promotion order from the lowest stage to production. The last entry fronts production.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/branch" },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "base": {
+      "description": "Branch new work starts from.",
+      "$ref": "#/$defs/branch"
+    },
+    "branches": {
+      "description": "Naming patterns for short-lived branches. Placeholders: {item} work item key, {slug} short kebab-case description, {stage} target environment branch, {name} release name.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "feature": { "$ref": "#/$defs/pattern", "default": "feature/{item}-{slug}" },
+        "hotfix": { "$ref": "#/$defs/pattern" },
+        "promotion": { "$ref": "#/$defs/pattern" },
+        "release": { "$ref": "#/$defs/pattern" }
+      }
+    },
+    "items": {
+      "description": "Where work items live and what their keys look like.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tracker": {
+          "enum": ["github", "jira", "azure-boards", "devops-center", "other", "none"],
+          "default": "github"
+        },
+        "pattern": {
+          "description": "Regular expression a work item key matches, e.g. \"[A-Z][A-Z0-9]+-\\d+\" for Jira or \"\\d+\" for GitHub issues.",
+          "type": "string",
+          "minLength": 1
+        },
+        "url": {
+          "description": "Link to one work item, with {item} as placeholder.",
+          "type": "string",
+          "pattern": "^https://.*\\{item\\}"
+        }
+      }
+    },
+    "commits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "style": {
+          "description": "conventional: Conventional Commits (type(scope): subject). plain: a short imperative sentence.",
+          "enum": ["conventional", "plain"],
+          "default": "conventional"
+        },
+        "item": {
+          "description": "Where the work item key goes: in the subject, as a footer (Refs: <item>), or not at all.",
+          "enum": ["subject", "footer", "none"],
+          "default": "footer"
+        }
+      }
+    },
+    "development": {
+      "description": "Where changes are built and how they get into Git.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "org": {
+          "description": "The org people build in.",
+          "enum": ["shared-sandbox", "own-sandbox", "scratch-org"]
+        },
+        "retrieve": {
+          "description": "How changes get from that org into a branch: the Salesforce CLI (also behind the VS Code extensions), DevOps Center or sfdx-hardis.",
+          "enum": ["cli", "devops-center", "sfdx-hardis"],
+          "default": "cli"
+        }
+      }
+    },
+    "promotion": {
+      "description": "How a change moves from one environment branch to the next.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tool": {
+          "description": "promote-workflow: the kit's promote.yml through a caller in this repository. pull-request: a pull request from one environment branch into the next. devops-center: DevOps Center promotes. none: merging into the base branch is the release.",
+          "enum": ["promote-workflow", "pull-request", "devops-center", "none"]
+        },
+        "workflow": {
+          "description": "File name of the promote.yml caller in .github/workflows, when tool is promote-workflow.",
+          "type": "string",
+          "pattern": "^[\\w.-]+\\.ya?ml$"
+        }
+      },
+      "if": { "properties": { "tool": { "const": "promote-workflow" } }, "required": ["tool"] },
+      "then": { "required": ["workflow"] }
+    }
+  },
+  "$defs": {
+    "branch": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._/-]+$"
+    },
+    "pattern": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._/{}-]+$"
+    }
+  }
+}

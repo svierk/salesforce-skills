@@ -43,6 +43,30 @@ Other agents that read `SKILL.md` can use the skill folders under `plugins/*/ski
 
 Each plugin is versioned and [released](https://github.com/svierk/salesforce-skills/releases) on its own, tagged `<plugin>--v<version>`. `/plugin marketplace update salesforce-skills` picks up new releases.
 
+## 📄 Project configuration
+
+The DevOps skills share one small file in your Salesforce repository, `.github/salesforce-devops.yml`. It records how the team works - blueprint, environment branches, where new work starts, branch naming, work items, commit style, how changes are promoted - so no skill has to guess, and a new joiner has the short answer to "how do we work here?". The DevOps Builder writes it during setup; you can also write it by hand:
+
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/svierk/salesforce-skills/main/schemas/salesforce-devops.schema.json
+version: 1
+blueprint: B1
+environments: [main]
+base: main
+branches:
+  feature: feature/{item}-{slug}
+items:
+  tracker: github
+  pattern: '\d+'
+commits:
+  style: conventional
+  item: footer
+promotion:
+  tool: none
+```
+
+The [JSON Schema](schemas/salesforce-devops.schema.json) gives editors validation and autocompletion through the first line; [schemas/examples](schemas/examples) has a file for every blueprint.
+
 ## 🧱 Principles
 
 - **Facts come from the source.** Skills read versions, inputs and configuration from the tools and repositories they work with at run time, instead of carrying copies that go stale.
