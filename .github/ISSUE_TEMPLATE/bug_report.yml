@@ -12,6 +12,7 @@ body:
       label: Plugin
       options:
         - devops-builder
+        - devops-operator
     validations:
       required: true
   - type: input
