@@ -1,9 +1,17 @@
-# Dependabot keeps this repository's dependencies current:
+# Dependabot keeps this repository's dependencies current on its own:
 #
-#   * npm            - Prettier and the CLI that validates the plugin manifests
+#   * npm            - Prettier, the schema validator and the CLI that
+#                      validates the plugin manifests
 #   * github-actions - every action pinned in .github/workflows, each to an
 #                      exact release tag, so an update is always an explicit,
 #                      reviewable change of that pin
+#
+# All updates - patch, minor and major alike - are grouped into a single pull
+# request per ecosystem and merged autonomously by
+# .github/workflows/dependabot-auto-merge.yml once the required checks pass.
+# The quality gate is therefore the CI of this repository, not a human: keep the
+# required status checks on `main` in sync with what the repository needs to be
+# safe.
 #
 # Options reference:
 # https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference
