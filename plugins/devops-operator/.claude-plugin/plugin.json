@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "devops-operator",
+  "version": "0.0.0",
+  "description": "Guided day-to-day work on a Salesforce project in Git and GitHub - branches, retrieves, commits, pull requests and promotions - for every team member.",
+  "author": {
+    "name": "Sebastiano Schwarz",
+    "url": "https://github.com/svierk"
+  },
+  "homepage": "https://github.com/svierk/salesforce-skills/tree/main/plugins/devops-operator",
+  "repository": "https://github.com/svierk/salesforce-skills",
+  "license": "MIT",
+  "keywords": ["salesforce", "git", "github", "sf-cli", "pull-requests"]
+}
