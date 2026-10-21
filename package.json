@@ -1,0 +1,24 @@
+{
+  "name": "salesforce-skills",
+  "private": true,
+  "description": "Agent skills for Salesforce teams, published as a plugin marketplace.",
+  "author": {
+    "name": "Sebastiano Schwarz",
+    "url": "https://github.com/svierk"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": "24.x.x",
+    "npm": "11.x.x"
+  },
+  "scripts": {
+    "validate": "claude plugin validate --strict . && for p in plugins/*/; do claude plugin validate --strict \"$p\" || exit 1; done",
+    "prettier": "prettier --write \"**/*.{js,mjs,json,md,yml,yaml}\"",
+    "prettier:verify": "prettier --list-different \"**/*.{js,mjs,json,md,yml,yaml}\"",
+    "verify": "npm run prettier:verify && npm run validate"
+  },
+  "devDependencies": {
+    "@anthropic-ai/claude-code": "2.1.218",
+    "prettier": "^3.9.9"
+  }
+}

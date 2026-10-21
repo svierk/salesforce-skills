@@ -1,0 +1,10 @@
+# Node
+node_modules/
+
+# Salesforce CLI credential artifacts from trying skills locally (never commit these)
+authFile.json
+server.key
+server.crt
+*.private-key.pem
+.sf/
+.sfdx/

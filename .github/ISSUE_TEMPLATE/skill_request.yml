@@ -1,0 +1,39 @@
+name: 💡 Skill request
+description: Suggest a new skill, or new ground for an existing one.
+title: '[Skill]: '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for the suggestion! Describe the work a Salesforce team does today that a skill should help with - the more concrete, the better.
+  - type: input
+    id: area
+    attributes:
+      label: Existing plugin or new area
+      placeholder: e.g. devops-builder, or "new - Apex testing"
+    validations:
+      required: true
+  - type: textarea
+    id: work
+    attributes:
+      label: The work
+      description: Who does it, how they do it today, and where it goes wrong.
+    validations:
+      required: true
+  - type: textarea
+    id: requests
+    attributes:
+      label: Example requests
+      description: Two or three things someone would actually ask the agent.
+      placeholder: |
+        - "..."
+        - "..."
+    validations:
+      required: true
+  - type: textarea
+    id: tools
+    attributes:
+      label: Tools and sources
+      description: CLIs, APIs or documentation the skill should rely on.
+    validations:
+      required: false

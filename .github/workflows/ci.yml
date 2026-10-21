@@ -1,0 +1,44 @@
+name: Validation
+
+# Validates changes to this repository: checks formatting with Prettier and
+# validates the marketplace manifest and every plugin manifest, so a broken or
+# inconsistent plugin definition fails here before merge.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Least-privilege token: this workflow only reads the repository.
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false # the GITHUB_TOKEN is not needed after the checkout - don't leave it in .git/config
+
+      # NODE_VERSION_OVERRIDE is a repository variable; unset it to fall back
+      # to engines.node from package.json, populate it to pin a version
+      # without touching this workflow file.
+      - name: Select Node Version
+        uses: svierk/get-node-version@v1.5.2
+        with:
+          node-version: ${{ vars.NODE_VERSION_OVERRIDE }}
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Check Formatting
+        run: npm run prettier:verify
+
+      # The CLI comes from the dev dependencies; npm puts its bin on the PATH.
+      - name: Validate Manifests
+        run: npm run validate
