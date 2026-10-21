@@ -1,0 +1,20 @@
+{
+  "name": "salesforce-skills",
+  "owner": {
+    "name": "Sebastiano Schwarz",
+    "url": "https://github.com/svierk"
+  },
+  "metadata": {
+    "description": "Agent skills for Salesforce teams - designing, running and using a GitHub-native DevOps setup."
+  },
+  "plugins": [
+    {
+      "name": "devops-builder",
+      "source": "./plugins/devops-builder",
+      "description": "Design, set up and maintain a Salesforce CI/CD pipeline on GitHub Actions with the Salesforce DevOps Starter Kit.",
+      "version": "0.1.0",
+      "category": "devops",
+      "keywords": ["salesforce", "devops", "github-actions", "ci-cd", "sf-cli"]
+    }
+  ]
+}

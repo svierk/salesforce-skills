@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "devops-builder",
+  "version": "0.1.0",
+  "description": "Design, set up and maintain a Salesforce CI/CD pipeline on GitHub Actions with the Salesforce DevOps Starter Kit.",
+  "author": {
+    "name": "Sebastiano Schwarz",
+    "url": "https://github.com/svierk"
+  },
+  "homepage": "https://github.com/svierk/salesforce-skills/tree/main/plugins/devops-builder",
+  "repository": "https://github.com/svierk/salesforce-skills",
+  "license": "MIT",
+  "keywords": ["salesforce", "devops", "github-actions", "ci-cd", "sf-cli"]
+}
