@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🧱 Salesforce DevOps Starter Kit
+    url: https://github.com/svierk/salesforce-devops-starter-kit
+    about: A bug in a reusable workflow, a building block or the strategy guide belongs in the kit's repositories.

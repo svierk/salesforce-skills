@@ -1,0 +1,62 @@
+name: 🐞 Bug report
+description: A skill did the wrong thing, missed a step or did not trigger when it should have.
+title: '[Bug]: '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for taking the time to file a bug report! The more of the conversation you can share, the easier it is to fix the skill.
+  - type: dropdown
+    id: plugin
+    attributes:
+      label: Plugin
+      options:
+        - devops-builder
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Plugin version
+      description: Shown by `/plugin` in Claude Code.
+      placeholder: e.g. 0.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: prompt
+    attributes:
+      label: What you asked
+      description: The request you gave the agent, as close to verbatim as you can.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+      description: What the skill did - or that it did not trigger at all. Redact org names, usernames and secrets.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: |
+        - Agent: Claude Code 2.x / other
+        - Model:
+        - gh / sf CLI versions:
+        - Project: org-based / packages, blueprint if known
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues and this is not a duplicate.
+          required: true

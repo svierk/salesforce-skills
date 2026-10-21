@@ -1,0 +1,49 @@
+# Dependabot keeps this repository's dependencies current:
+#
+#   * npm            - Prettier and the CLI that validates the plugin manifests
+#   * github-actions - every action pinned in .github/workflows, each to an
+#                      exact release tag, so an update is always an explicit,
+#                      reviewable change of that pin
+#
+# Options reference:
+# https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference
+
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'monthly'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+    cooldown:
+      # Let a release settle before adopting it - a compromised or broken
+      # version is usually pulled within a few days. Security updates are not
+      # affected by this.
+      default-days: 7
+      semver-major-days: 14
+    groups:
+      dependencies:
+        applies-to: version-updates
+        patterns:
+          - '*'
+
+  - package-ecosystem: 'github-actions'
+    directory: '/' # for this ecosystem "/" means .github/workflows
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '05:00'
+      timezone: 'Europe/Berlin'
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: 'chore(deps)'
+    cooldown:
+      default-days: 3
+    groups:
+      actions:
+        applies-to: version-updates
+        patterns:
+          - '*'
