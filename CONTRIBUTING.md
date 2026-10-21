@@ -15,9 +15,21 @@ plugins/
       references/                     # detail loaded only when a step needs it
       scripts/                        # deterministic checks and helpers (optional)
     hooks/hooks.json                  # guardrails that must not depend on instructions (optional)
+schemas/                              # formats of files that skills write into user repositories
+  examples/                           # one valid example per case, checked in CI
+scripts/                              # checks for this repository
 ```
 
 One plugin per skill, so teams can install exactly what they need. Plugins of the same area share a name prefix (`devops-*`).
+
+A plugin is installed on its own, so a skill can only read files inside its plugin folder. Knowledge that several plugins need - such as the project configuration format - lives in a reference file in each of them; the schema under `schemas/` is the canonical definition they follow.
+
+## Changing a file format
+
+Files that skills write into user repositories, such as `.github/salesforce-devops.yml`, are a contract with every repository that already has one.
+
+- **Adding an optional field** is a minor change. Update the schema, an example, and the reference file of every plugin that reads or writes the format.
+- **Renaming, removing or redefining a field** needs a new `version` of the format, and a major release of every plugin that writes it. Skills must keep reading the previous version, or say clearly that the file needs a migration.
 
 ## Writing a skill
 

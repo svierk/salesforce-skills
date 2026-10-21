@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/svierk/salesforce-skills/main/schemas/salesforce-devops.schema.json
+# B3 - several teams on one trunk, scratch orgs for development.
+version: 1
+blueprint: B3
+environments: [main]
+base: main
+branches:
+  feature: feature/{item}-{slug}
+  release: release/{name}
+items:
+  tracker: jira
+  pattern: '[A-Z][A-Z0-9]+-\d+'
+  url: https://acme.atlassian.net/browse/{item}
+commits:
+  style: conventional
+  item: footer
+development:
+  org: scratch-org
+  retrieve: cli
+promotion:
+  tool: none

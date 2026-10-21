@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/svierk/salesforce-skills/main/schemas/salesforce-devops.schema.json
+# B4 shared core - one trunk, a short release branch per org rollout.
+version: 1
+blueprint: B4
+variant: shared-core
+environments: [main]
+base: main
+branches:
+  feature: feature/{item}-{slug}
+  release: release/{name}
+items:
+  tracker: jira
+  pattern: '[A-Z][A-Z0-9]+-\d+'
+  url: https://acme.atlassian.net/browse/{item}
+commits:
+  style: conventional
+  item: footer
+development:
+  org: scratch-org
+  retrieve: cli
+promotion:
+  tool: none

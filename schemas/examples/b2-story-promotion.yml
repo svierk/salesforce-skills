@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/svierk/salesforce-skills/main/schemas/salesforce-devops.schema.json
+# B2 story promotion - four environment branches, each story promoted on its own.
+version: 1
+blueprint: B2
+variant: story-promotion
+environments: [integration, uat, preprod, main]
+base: main
+branches:
+  feature: feature/{item}-{slug}
+  promotion: promotion/{item}-{stage}
+items:
+  tracker: jira
+  pattern: '[A-Z][A-Z0-9]+-\d+'
+  url: https://acme.atlassian.net/browse/{item}
+commits:
+  style: conventional
+  item: subject
+development:
+  org: own-sandbox
+  retrieve: cli
+promotion:
+  tool: promote-workflow
+  workflow: promote.yml
