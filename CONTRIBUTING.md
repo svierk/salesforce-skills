@@ -18,6 +18,7 @@ plugins/
 schemas/                              # formats of files that skills write into user repositories
   examples/                           # one valid example per case, checked in CI
 scripts/                              # checks for this repository
+tests/<plugin>/                       # tests for hooks and scripts, run with npm test
 ```
 
 One plugin per skill, so teams can install exactly what they need. Plugins of the same area share a name prefix (`devops-*`).
@@ -37,7 +38,7 @@ Files that skills write into user repositories, such as `.github/salesforce-devo
 - **Keep `SKILL.md` short** - well under 500 lines. It holds the procedure; detail goes into `references/`, linked from the step that needs it.
 - **Do not copy facts that change.** Versions, inputs, option lists and examples belong to the tool or repository they describe. Tell the agent where to read them at run time.
 - **Prefer scripts for checks that have one right answer.** A script is faster, cheaper and more reliable than prose that asks for the same check.
-- **Use hooks for guardrails.** An instruction can be overlooked; a hook that blocks a force push cannot.
+- **Use hooks for guardrails.** An instruction can be overlooked; a hook that blocks a force push cannot. Hooks run on every user's machine - write them in portable bash (3.2, BSD tools, no `jq`), keep them silent outside their scope, and test them under `tests/` against real repositories. Run the tests with macOS's bash too: `BASH_BIN=/bin/bash npm test`.
 - **Write for the audience of the skill,** and in English - the agent answers in the user's language either way.
 
 ## Proposing changes

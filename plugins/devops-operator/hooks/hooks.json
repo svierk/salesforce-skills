@@ -1,0 +1,17 @@
+{
+  "description": "Guardrails for git and gh in Salesforce projects: no force pushes, no direct changes to environment branches, and a confirmation before work is thrown away or a pull request is merged.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/git-guard.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

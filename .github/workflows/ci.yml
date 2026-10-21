@@ -1,9 +1,10 @@
 name: Validation
 
 # Validates changes to this repository: checks formatting with Prettier,
-# validates the marketplace manifest and every plugin manifest, and checks the
-# project configuration examples against their schema - so a broken plugin
-# definition or file format fails here before merge.
+# validates the marketplace manifest and every plugin manifest, checks the
+# project configuration examples against their schema, and tests the hooks -
+# so a broken plugin definition, file format or guardrail fails here before
+# merge.
 
 on:
   push:
@@ -43,3 +44,8 @@ jobs:
       # The CLI comes from the dev dependencies; npm puts its bin on the PATH.
       - name: Validate Manifests and Schemas
         run: npm run validate
+
+      # The hooks must run on the bash 3.2 that ships with macOS as well; the
+      # tests cover the Ubuntu runner's bash, and BASH_BIN=/bin/bash locally.
+      - name: Run Tests
+        run: npm test

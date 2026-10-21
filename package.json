@@ -13,9 +13,10 @@
   },
   "scripts": {
     "validate": "claude plugin validate --strict . && for p in plugins/*/; do claude plugin validate --strict \"$p\" || exit 1; done && node scripts/validate-config-examples.mjs",
+    "test": "node --test \"tests/**/*.test.mjs\"",
     "prettier": "prettier --write \"**/*.{js,mjs,json,md,yml,yaml}\"",
     "prettier:verify": "prettier --list-different \"**/*.{js,mjs,json,md,yml,yaml}\"",
-    "verify": "npm run prettier:verify && npm run validate"
+    "verify": "npm run prettier:verify && npm run validate && npm test"
   },
   "devDependencies": {
     "@anthropic-ai/claude-code": "2.1.300",
