@@ -1,0 +1,6 @@
+{
+  "description": { "author": "Test", "text": ["Selector: one-record-home.", "Desktop template of a record home page"] },
+  "root": true,
+  "implements": "utam-global/pageObjects/recordHome",
+  "selector": { "css": "one-record-home" }
+}

@@ -3,3 +3,6 @@ contact_links:
   - name: 🧱 Salesforce DevOps Starter Kit
     url: https://github.com/svierk/salesforce-devops-starter-kit
     about: A bug in a reusable workflow, a building block or the strategy guide belongs in the kit's repositories.
+  - name: 🧪 Salesforce UTAM E2E Testing
+    url: https://github.com/svierk/salesforce-utam-e2e-testing
+    about: A bug in the UTAM template's configuration, login script or example tests belongs in the template's repository.

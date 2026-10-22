@@ -1,0 +1,7 @@
+{
+  "description": {
+    "author": "Test",
+    "text": ["Selector: acme-card.", "Represents the acme-card component.", "Read the card title."]
+  },
+  "methods": [{ "name": "getTitle", "compose": [{ "element": "title", "apply": "getText" }] }]
+}
