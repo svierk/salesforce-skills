@@ -6,8 +6,8 @@ How a UTAM spec in the template's setup is built: WebdriverIO runs it with Jasmi
 
 ```js
 import RecordActionWrapper from 'salesforce-pageobjects/global/pageObjects/recordActionWrapper';
-import { logInSalesforce } from './utam-helper.js';
-import { deleteRecord, getField, openPath, query } from './salesforce-helper.js';
+import RecordModal from '../../../pageObjects/recordModal.js';
+import { deleteRecord, getField, logInSalesforce, openPath, query, selectPicklistValue } from './utam-helper.js';
 
 describe('ABC-123 account onboarding', () => {
   const name = `E2E Account ${Date.now()}`;
@@ -30,12 +30,9 @@ describe('ABC-123 account onboarding', () => {
     const nameField = await getField(layout, 'Account', 'Name');
     await (await nameField.getTextInput()).setText(name);
 
-    const industryField = await getField(layout, 'Account', 'Industry');
-    const industry = await (await industryField.getPicklist()).getBaseCombobox();
-    await industry.expand();
-    await industry.selectItemByValue('Energy');
+    await selectPicklistValue(await getField(layout, 'Account', 'Industry'), 'Energy');
 
-    await form.clickFooterButton('Save');
+    await (await utam.load(RecordModal)).clickAction('SaveEdit');
     await modal.waitForAbsence();
 
     const [account] = query(`SELECT Id, Industry FROM Account WHERE Name = '${name}'`);
@@ -48,15 +45,16 @@ describe('ABC-123 account onboarding', () => {
 - **Title with the ticket key**, one behaviour per `it`, named as the behaviour.
 - **Log in per test** with the template's helper - it checks the session age and waits for Lightning.
 - **Navigate by URL** to where the behaviour starts. Click through navigation only when navigation is the behaviour under test.
+- **API names, not labels.** Fields, picklist values and actions by their API names; where a test must compare a label, read it from the org (below). Labels change with the user's language and every relabel - a spec that passes only in English is not done.
 - **One `const` per page object** the test uses again; `await` every step.
 - **Assertions** are Jasmine (`toBe`, `toEqual`, `toContain`, `toBeTrue`, `toBeNull`) - no Jest-only matchers.
 - **Data** created in the test is deleted in `afterAll`, also when the test fails before the end.
 
-Every method in this example exists in the page objects at the time of writing - check them with `show` in the project, as with any chain.
+The example passes in English and German orgs alike. `RecordModal` is a test-only page object from the template (`force-app/test/utam/__utam__/recordModal.utam.json`) that runs a footer action by its API name - `SaveEdit`, `SaveAndNew`, `CancelEdit`. The Salesforce page objects only offer the footer by label (`clickFooterButton('Save')`) or with selectors an org on a newer release may no longer have; if the project lacks it, take it from the template. Check every other method with `show` in the project, as with any chain.
 
 ## Helpers
 
-Put shared steps into a helper module next to the specs - `force-app/test/utam/salesforce-helper.js` or the project's equivalent - instead of repeating them. The ones most specs need:
+Put shared steps into a helper module next to the specs - the template's `force-app/test/utam/utam-helper.js` has most of the ones below; take them from there, or write them in the project's style. The ones most specs need:
 
 ### Navigation by URL
 
@@ -89,7 +87,31 @@ export async function getField(recordLayout, objectApiName, fieldApiName) {
 }
 ```
 
-`utam.waitFor` polls until the function returns something truthy, retries when it throws, and fails with the message after the explicit timeout. `getTargetField()` returns the field reference of the layout item, which ends with `<Object>.<Field>` - log it once if a field is not found. A field that is not on the layout for this persona is a finding, not something to work around.
+`utam.waitFor` polls until the function returns something truthy, retries when it throws, and fails with the message after the explicit timeout. `getTargetField()` returns the field reference of the layout item, `sfdc:RecordField.<Object>.<Field>`. A field that is not on the layout for this persona is a finding, not something to work around.
+
+### Picklists by API value
+
+```js
+/** Picks a picklist value by its API value, once the picklist has rendered. */
+export async function selectPicklistValue(field, value) {
+  const combobox = await utam.waitFor(async () => (await field.getPicklist()).getBaseCombobox(), {
+    message: `Picklist ${await field.getTargetField()} did not render`
+  });
+  await combobox.expand();
+  await combobox.selectItemByValue(value);
+}
+```
+
+Record forms render picklists after the other fields, so the wait is not optional. Some standard fields wrap their input in a component of their own - Case `Status`, for example, sits in `support-lwc-input-case-status` - and `getPicklist()` then never finds it. Leave such a field at its default if the test does not depend on it; otherwise write a small page object for the wrapper and reach it through the item's container getter `getInputField(Wrapper)`.
+
+### Labels from the org
+
+When a test has to compare or click something by its label - an app name in the navigation bar, a tab - read the label in the user's language from the org instead of writing it into the spec:
+
+```js
+const [app] = query("SELECT Label FROM AppDefinition WHERE DeveloperName = 'LightningSales'");
+const [tab] = query("SELECT Label FROM TabDefinition WHERE Name = 'standard-Account'");
+```
 
 ### Data through the CLI
 

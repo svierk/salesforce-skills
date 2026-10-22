@@ -80,7 +80,7 @@ Then read every spec and custom page object for:
 6. **Data** - no cleanup, fixed names that collide, tests that rely on records someone else created.
 7. **Independence** - `it`s that only pass in order; focused or skipped tests left in.
 8. **Custom page objects** - specs using public elements where a method should exist, missing waits, `root: true` on components that are not roots, selectors on SLDS utility classes, missing descriptions, open linter warnings.
-9. **Setup** - the alias, `.forceignore` and `.gitignore` items from [setup.md](setup.md); page objects older than the org's release; a `wdio-utam-service` outside the range of `salesforce-pageobjects`; `.env` tracked in Git.
+9. **Setup** - the alias, the login per browser session, `.forceignore` and `.gitignore` items from [setup.md](setup.md); page objects older than the org's release; a `wdio-utam-service` outside the range of `salesforce-pageobjects`; `.env` tracked in Git.
 
 Report findings ranked, each with file, line, why it breaks and the fix. End with what is already good, so the user knows what not to touch.
 
