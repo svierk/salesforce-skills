@@ -28,7 +28,7 @@ Infer the mode from the repository too: no `utam.config.js` and no `wdio-utam-se
 3. **Wait for conditions, never for time.** No `browser.pause`, no sleeps, no blind retries. Waits belong in page objects (`waitFor` with a predicate, `wait: true` on elements) or poll one concrete condition with a timeout message.
 4. **Never weaken an assertion to get green.** A red test is information. If the application behaves differently from the acceptance criteria, report it as a possible defect. Change an expected value only when the user confirms the behaviour changed on purpose.
 5. **Never test against production.** Tests create and change records. Check the org before the first run (orientation below) and stop if it is a production org.
-6. **Keep the session out of sight.** `.env` holds a frontdoor URL that logs anyone in as the test user. Never print it, never commit it, never run `sf org display --verbose` or `sf org open --url-only` where the output lands in the conversation. The template's login script also logs the URL - run it with its output discarded (`npm run test:ui:generate:login >/dev/null`) and check the result with `test -s .env`.
+6. **Keep the session out of sight.** A frontdoor login URL logs anyone in as the test user - in `.env`, or in the run log at `logLevel: 'debug'`. Never print it, never commit it, never quote whole run logs, never run `sf org display --verbose` or `sf org open --url-only` where the output lands in the conversation. Older copies of the template's login script print the URL - run them with standard output discarded.
 7. **Show before changing shared things.** Dependencies, `wdio.conf.js`, `utam.config.js`, CI workflows and GitHub secrets affect the whole team. Say what changes and why, and make the change on a work branch - named the team's way (`branches` in `.github/salesforce-devops.yml`, if the file exists), never on `main` or another branch that deploys to an org.
 8. **Leave the user's defaults alone.** Run tests against another org with `SF_TARGET_ORG=<alias>` on the command, not by changing the project's default org - other work, such as retrieving changes, relies on it.
 
@@ -65,7 +65,7 @@ Goal: the project compiles page objects and runs one UI test against the user's 
 
 1. **Read the template at its current state** and compare with the project: dependencies, scripts, `utam.config.js`, `wdio.conf.js`, the login script and helper, ESLint, ignore files. [references/setup.md](references/setup.md) has the checklist, including the fixes a project needs once it has page objects of its own.
 2. **Install and wire it in** on a branch. Take versions from npm, not from this skill.
-3. **Prove it** with the template's example test or a one-line smoke test against the user's org: compile, generate the login, run.
+3. **Prove it** with the template's example test or a one-line smoke test against the user's org: compile, run.
 4. **CI, if wanted.** A workflow that logs in with the JWT bearer flow and runs the suite - nightly, on demand, or after a deployment. Agree with the user when it runs - [references/setup.md](references/setup.md#the-ci-job) has the options. If the project already has a pipeline with the DevOps Starter Kit, reuse its building blocks and the org's GitHub Environment.
 
 ## Write a test
@@ -76,14 +76,14 @@ Goal: one green, stable spec that checks what the story promises - and nothing t
 2. **Map every step to a page object.** Standard Lightning UI: find it with the script and follow the chain with `show`. Custom Lightning web components: use their `__utam__` page object, or write one. A step with no page object is a page object to write, never a selector in the spec.
 3. **Write or extend custom page objects** for the components the test touches - only the elements and methods the test needs, with waits inside. [references/custom-page-objects.md](references/custom-page-objects.md).
 4. **Write the spec** - login, navigation by URL, one behaviour per `it`, data set up and cleaned up through the CLI, outcome verified in the UI and, where it matters, in the database. [references/writing-specs.md](references/writing-specs.md).
-5. **Compile, run, iterate.** Compile, read compiler and lint errors, generate a fresh login, run only this spec. On failure, find the cause with [references/run-and-debug.md](references/run-and-debug.md) and fix it in the page object or the spec - rule 4 applies at every iteration.
+5. **Compile, run, iterate.** Compile, read compiler and lint errors, run only this spec. On failure, find the cause with [references/run-and-debug.md](references/run-and-debug.md) and fix it in the page object or the spec - rule 4 applies at every iteration.
 6. **Prove it is stable.** Two green runs in a row, headless. Then hand over: what is covered, what is not, how to run it, and any behaviour that looked like a defect.
 
 ## Fix a test
 
 Goal: the cause of the failure, named and fixed - or reported, if the application is wrong.
 
-1. **Reproduce** with a fresh login and only the failing spec. For a CI failure, read the job log first (`gh run view <run-id> --log-failed`).
+1. **Reproduce** with only the failing spec, against the same org. For a CI failure, read the job log first (`gh run view <run-id> --log-failed`).
 2. **Classify** the failure with the table in [references/maintenance.md](references/maintenance.md): setup or session, page object chain, timing, changed component, Salesforce release, data or configuration drift, or a defect in the application. Say which one it is before changing anything.
 3. **Fix the cause in the right place.** A timing problem gets a wait in the page object, not a retry loop in the spec; a changed component gets an updated page object, not a workaround. A defect gets reported, with the steps and the evidence - and the test stays red.
 4. **Check the neighbours.** A page object fix can change other specs that use it - run them too.

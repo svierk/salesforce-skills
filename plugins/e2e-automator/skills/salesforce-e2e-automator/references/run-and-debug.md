@@ -6,10 +6,11 @@ Compile, run, watch and read a UTAM test in the template's setup. The npm script
 
 ```bash
 npm run test:ui:compile                                     # after every change to a .utam.json
-npm run test:ui:generate:login >/dev/null && test -s .env  # before a run, if the last login is older than about 2 hours
 npm run test:ui -- --spec force-app/test/utam/<name>.spec.js
 npm run test:ui -- --spec <spec> --jasmineOpts.grep "<part of an it title>"
 ```
+
+The login needs no step of its own if `wdio.conf.js` fetches it in a `beforeSession` hook, as the template does: the CLI's frontdoor URL logs in only once, and every spec file runs in a new browser session. Projects from an older copy of the template generate it into `.env` before the run instead - see [the org](#the-org).
 
 Run one spec, not the suite, while you work on a test. Run the suite before you hand over, and the spec twice in a row - a test that passes once and fails once is not done.
 
@@ -24,16 +25,22 @@ Run one spec, not the suite, while you work on a test. Run the suite before you 
 
 ## The org
 
-The login script asks the CLI for a frontdoor URL to its **default org** and writes it into `.env`; every spec opens it through the login helper. To test another org, set it for the commands only - the project's default stays as it is for everything else the user does:
+The tests log in to the CLI's **default org**. To test another org, set it for the command only - the project's default stays as it is for everything else the user does:
 
 ```bash
-SF_TARGET_ORG=<alias> npm run test:ui:generate:login >/dev/null && test -s .env
-SF_TARGET_ORG=<alias> npm run test:ui -- --spec <spec>   # helpers that call sf inherit it
+SF_TARGET_ORG=<alias> npm run test:ui -- --spec <spec>   # the login and helpers that call sf inherit it
+```
+
+Without the `beforeSession` hook, the login comes from `.env`, written by `npm run test:ui:generate:login` - with the same `SF_TARGET_ORG` prefix, before every run. Only the first spec file of a run gets in with it; offer the hook from the template's `wdio.conf.js`. Older copies of the login script also give up on any CLI warning - an available update is enough - yet exit successfully and leave the old `.env` behind. Check that the login really is new:
+
+```bash
+npm run test:ui:generate:login >/dev/null
+node -e "require('dotenv').config({quiet:true}); console.log(Date.now() - Number(process.env.SALESFORCE_LOGIN_TIME) < 60000 ? 'login is new' : 'login NOT refreshed')"
 ```
 
 Never change the default with `sf config set target-org` for a test run. The org check in the orientation applies to every org you test against.
 
-Never print `.env` or the URL - it logs in without a password. The template's script prints the URL it writes, so discard its output as in the loop above; errors still reach the terminal. If a project's copy of the script no longer logs the URL, the redirect does no harm. With `logLevel: 'debug'` in `wdio.conf.js`, the run log shows the navigation to that URL as well - quote errors from a run log, never the whole log.
+Never print `.env` or the URL - it logs in without a password. Older copies of the login script print the URL they write, so discard the script's standard output as above; errors still reach the terminal. With `logLevel: 'debug'` in `wdio.conf.js`, the run log shows the navigation to that URL as well - quote errors from a run log, never the whole log.
 
 ## Watch the browser
 
@@ -52,16 +59,16 @@ You cannot see the user's screen. When a headed run is needed, ask the user to r
 
 ## Reading errors
 
-| The output says                                                                | What it means                                                                                      | Next step                                                                                                                                                         |
-| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Missing SALESFORCE_LOGIN_URL` / `session timed out`                           | No login, or an old one                                                                            | Generate the login again, output discarded                                                                                                                        |
-| `Did not reach a Lightning page` (or the helper's wait for the home URL fails) | The login did not end in Lightning                                                                 | Headed run or screenshot: API-only user, a screen the user must complete first (password, phone, passkey), wrong default org                                      |
-| Only the first spec file logs in; later ones fail at login                     | Each spec file opens a new browser session; the org may not accept the frontdoor URL a second time | Generate the login per session - call the login script from wdio's `beforeSession` hook - and tell the user why                                                   |
-| `utam is not defined`                                                          | The UTAM service is not loaded                                                                     | `services` in `wdio.conf.js`                                                                                                                                      |
-| `Cannot find module` for `pageObjects/...`                                     | Not compiled, wrong import path, or the alias in `utam.config.js`                                  | Compile; check the relative path from the spec; alias as in [setup.md](setup.md)                                                                                  |
-| An element or selector that cannot be found                                    | The chain is wrong for this page, or the element has not rendered yet                              | Use the waiting method, or check the chain against the page - [salesforce-page-objects.md](salesforce-page-objects.md#when-the-page-object-and-the-page-disagree) |
-| `Timeout while waiting for condition after ...ms`                              | A wait never became true; the message ends with the last error the condition threw                 | Read that last error - it usually names the real problem                                                                                                          |
-| `stale element reference`                                                      | The page or component re-rendered after you got the reference                                      | Load the root page object again and walk the chain anew                                                                                                           |
-| `Async function did not complete within ...ms`                                 | The whole test exceeded Jasmine's timeout - often a step waiting without a timeout                 | Find the hanging step; do not just raise the timeout                                                                                                              |
-| `This version of ChromeDriver only supports Chrome version ...`                | Browser and driver out of step                                                                     | Update Chrome or the `@wdio/*` packages                                                                                                                           |
-| `Expected ... to be ...`                                                       | The application did something else than the test expects                                           | Compare with the test plan. A defect, a data problem or a wrong read - never "fix" it by changing the expected value without the user                             |
+| The output says                                                                          | What it means                                                                                           | Next step                                                                                                                                                                      |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Missing SALESFORCE_LOGIN_URL` / `session timed out`                                     | No login, or an old one - also right after generating one, if the login script gave up on a CLI warning | The `beforeSession` hook, or generate the login and check its age - [the org](#the-org)                                                                                        |
+| `Login stopped at /ChangePassword` or `/_ui/identity/`, `Did not reach a Lightning page` | The login did not end in Lightning                                                                      | The user completes the screen once in a browser - a password change, identity verification, phone registration. Otherwise: headed run or screenshot - API-only user, wrong org |
+| Only the first spec file logs in; later ones fail at login                               | The frontdoor URL works once; each spec file opens a new browser session                                | Fetch the URL per session in `beforeSession`, as the template's `wdio.conf.js` does                                                                                            |
+| `utam is not defined`                                                                    | The UTAM service is not loaded                                                                          | `services` in `wdio.conf.js`                                                                                                                                                   |
+| `Cannot find module` for `pageObjects/...`                                               | Not compiled, wrong import path, or the alias in `utam.config.js`                                       | Compile; check the relative path from the spec; alias as in [setup.md](setup.md)                                                                                               |
+| An element or selector that cannot be found                                              | The chain is wrong for this page, or the element has not rendered yet                                   | Use the waiting method, or check the chain against the page - [salesforce-page-objects.md](salesforce-page-objects.md#when-the-page-object-and-the-page-disagree)              |
+| `Timeout while waiting for condition after ...ms`                                        | A wait never became true; the message ends with the last error the condition threw                      | Read that last error - it usually names the real problem                                                                                                                       |
+| `stale element reference`                                                                | The page or component re-rendered after you got the reference                                           | Load the root page object again and walk the chain anew                                                                                                                        |
+| `Async function did not complete within ...ms`                                           | The whole test exceeded Jasmine's timeout - often a step waiting without a timeout                      | Find the hanging step; do not just raise the timeout                                                                                                                           |
+| `This version of ChromeDriver only supports Chrome version ...`                          | Browser and driver out of step                                                                          | Update Chrome or the `@wdio/*` packages                                                                                                                                        |
+| `Expected ... to be ...`                                                                 | The application did something else than the test expects                                                | Compare with the test plan. A defect, a data problem or a wrong read - never "fix" it by changing the expected value without the user                                          |

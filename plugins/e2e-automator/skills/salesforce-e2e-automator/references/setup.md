@@ -20,10 +20,10 @@ Compare each item with the project before writing, and show the user the list of
    alias: { 'utam-sfdx/': '../' }
    ```
 
-   The compiler writes page objects to `pageObjects/` and turns a type `utam-sfdx/pageObjects/x` into an import of `<alias>pageObjects/x`. An alias to the package name, as in the template, only resolves if the package can import itself - with npm and no `exports` in `package.json`, a page object that contains another custom page object then fails at run time with `Cannot find module`. `'../'` resolves from `pageObjects/` to its sibling files and always works.
+   The compiler writes page objects to `pageObjects/` and turns a type `utam-sfdx/pageObjects/x` into an import of `<alias>pageObjects/x`. An alias to the package name, as in older copies of the template, only resolves if the package can import itself - with npm and no `exports` in `package.json`, a page object that contains another custom page object then fails at run time with `Cannot find module`. `'../'` resolves from `pageObjects/` to its sibling files and always works.
 
 5. **`wdio.conf.js`.** Take it with its comments. Adjust `specs` if the project keeps tests elsewhere than `force-app/test/**/*.spec.js`. Offer a switch for a visible browser instead of commenting lines in and out - for example `HEADED=true` leaving out `--headless=new` - see [run-and-debug.md](run-and-debug.md#watch-the-browser).
-6. **Login.** `scripts/generate-login-url.js` and `force-app/test/utam/utam-helper.js` from the template. The script asks the CLI's default org for a frontdoor URL and writes it into `.env`; the helper opens it and waits for Lightning.
+6. **Login.** `scripts/generate-login-url.js`, `force-app/test/utam/utam-helper.js` and the `beforeSession` hook in `wdio.conf.js` from the template. The hook asks the CLI's default org for a fresh frontdoor URL for every browser session - such a URL works only once, and every spec file is a session of its own; the helper opens it and waits for Lightning. A project with an older copy that writes the URL into `.env` once per run fails at login from its second spec file on - bring the hook in.
 7. **`.gitignore`.** `.env` (a live session), `pageObjects/` (compiler output - generated, never edited), `utam-lint.sarif`.
 8. **`.forceignore`.** `**/__utam__/**` and `force-app/test/**`. Page objects live next to the components in `lwc/<component>/__utam__/`, and specs inside the package directory; neither belongs in the org. Without these lines, deploying a component picks up its page object as part of the bundle - Salesforce's own UTAM samples ignore both for that reason.
 9. **ESLint.** The template's block for `force-app/test/utam/**/*.js` declares the `utam`, `browser` and Jasmine globals, and the browser globals for callbacks that run in the page. Without it, every spec is full of `no-undef` errors.
@@ -34,11 +34,10 @@ Compare each item with the project before writing, and show the user the list of
 ```bash
 npm install
 npm run test:ui:compile           # compiles every __utam__/*.utam.json - none yet is fine
-npm run test:ui:generate:login >/dev/null && test -s .env   # .env for the default org - its URL must not reach the output
 npm run test:ui -- --spec <spec>  # one spec
 ```
 
-Start with one of the template's example specs, or a smoke test that logs in and checks the app name in the navigation bar. A green run proves Node, Chrome, WebdriverIO, the UTAM service, the login and the org together; everything after that is test code.
+Prefix the run with `SF_TARGET_ORG=<alias>` if the tests should not use the default org. Start with one of the template's example specs - they run in an org of any language - or a smoke test that logs in and checks the app name in the navigation bar. A green run proves Node, Chrome, WebdriverIO, the UTAM service, the login and the org together; everything after that is test code.
 
 ## The CI job
 
