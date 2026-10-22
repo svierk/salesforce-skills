@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "e2e-automator",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Write, run and maintain end-to-end UI tests for Salesforce Lightning with UTAM - from a user story to a green, stable test, and through every Salesforce release.",
   "author": {
     "name": "Sebastiano Schwarz",
