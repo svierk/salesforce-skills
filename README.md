@@ -13,7 +13,7 @@ Built around the [Salesforce DevOps Starter Kit](https://github.com/svierk/sales
 | Plugin                                        | For                         | Does                                                                                        | Status  |
 | --------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------- | ------- |
 | [🏗️ devops-builder](plugins/devops-builder)   | Pipeline owners, tech leads | Choose a blueprint, set up the pipeline and GitHub around it, audit and upgrade it          | Preview |
-| [🧭 devops-operator](plugins/devops-operator) | Everyone who ships changes  | Guided branches, retrieves, commits, pull requests, checks and promotions in plain language | Planned |
+| [🧭 devops-operator](plugins/devops-operator) | Everyone who ships changes  | Guided branches, retrieves, commits, pull requests, checks and promotions in plain language | Preview |
 
 ## 🚀 Install
 
@@ -22,7 +22,10 @@ In Claude Code:
 ```text
 /plugin marketplace add svierk/salesforce-skills
 /plugin install devops-builder@salesforce-skills
+/plugin install devops-operator@salesforce-skills
 ```
+
+In editors without the `/plugin` command, the CLI does the same: `claude plugin marketplace add svierk/salesforce-skills`, then `claude plugin install <plugin>@salesforce-skills`.
 
 To give a whole team the skills, add the marketplace and the plugins to the **project's** settings file in your Salesforce repository - everyone who opens the repository is offered them:
 
@@ -34,7 +37,8 @@ To give a whole team the skills, add the marketplace and the plugins to the **pr
     }
   },
   "enabledPlugins": {
-    "devops-builder@salesforce-skills": true
+    "devops-builder@salesforce-skills": true,
+    "devops-operator@salesforce-skills": true
   }
 }
 ```
