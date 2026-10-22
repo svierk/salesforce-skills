@@ -8,11 +8,14 @@ The canonical format is the JSON Schema at `https://raw.githubusercontent.com/sv
 
 | Field                  | Use it for                                                                                                    |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `version`              | The format of the file - see above                                                                            |
 | `blueprint`, `variant` | What happens after a merge, and how promotion works - see the tables in SKILL.md and [promote.md](promote.md) |
 | `environments`         | Branches nobody commits to directly. The last one fronts production                                           |
 | `base`                 | Where new work starts: `git switch -c <branch> origin/<base>`                                                 |
 | `branches.feature`     | The name of a new work branch                                                                                 |
+| `branches.hotfix`      | The name of an urgent fix branch (B2 release train - it enters at `preprod`)                                  |
 | `branches.promotion`   | The name of a promotion branch (B2 story promotion, release bundle)                                           |
+| `branches.release`     | The name of a release branch - cut by the release manager, not by this skill                                  |
 | `items.tracker`        | Where to look up the story - `gh issue view` for `github`, otherwise ask the user                             |
 | `items.pattern`        | Check a key the user gives you; find the key in a branch name                                                 |
 | `items.url`            | Link the story in the pull request description                                                                |
@@ -21,6 +24,7 @@ The canonical format is the JSON Schema at `https://raw.githubusercontent.com/sv
 | `development.org`      | Shared sandbox (claim it, retrieve only your own changes), own sandbox, or scratch org                        |
 | `development.retrieve` | `cli` - this skill retrieves · `devops-center` or `sfdx-hardis` - guide the user through that tool instead    |
 | `promotion.tool`       | How promotion works - see [promote.md](promote.md)                                                            |
+| `promotion.workflow`   | The promotion workflow to start with `gh workflow run`                                                        |
 
 Branch patterns use `{item}` (story key), `{slug}` (a short kebab-case description, at most about 40 characters, ASCII only), `{stage}` (target environment branch) and `{name}` (release name).
 

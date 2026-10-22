@@ -55,6 +55,10 @@ Tell the user in one or two sentences: which branch they are on, whether there a
 
 Read the reference for the flow before starting it. Flows chain naturally - after a commit, offer the pull request; after a green pull request, explain what happens next in this blueprint.
 
+## When it is pipeline work
+
+Some problems are not the user's change but the pipeline: a validation waiting for an approval, a required check that never starts, the pipeline failing to log in to an org, a rule that blocks for reasons nobody can act on - or a request to change workflows, environments or branch protection. Say so plainly, so the user does not keep retrying. If the DevOps Builder is installed, offer to switch to it - it diagnoses and fixes the setup; otherwise name the pipeline owner as the person to ask.
+
 ## What happens next, per blueprint
 
 Users often ask "and now?". The answer depends on the blueprint in the config file:

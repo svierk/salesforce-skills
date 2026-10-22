@@ -11,12 +11,15 @@
 # Environment branches come from .github/salesforce-devops.yml (environments
 # and base); without that file, main, master and the remote's default branch.
 # Outside a Salesforce project - no sfdx-project.json and no config file - the
-# hook does nothing.
+# hook does nothing. DEVOPS_OPERATOR_GUARD=off turns it off for one person -
+# set in their own settings, never in a project's shared ones.
 #
 # Reads the hook event as JSON on stdin and answers with a permission decision
 # on stdout. Written for bash 3.2 and BSD tools as well, without jq.
 
 set -u
+
+[ "${DEVOPS_OPERATOR_GUARD:-on}" = off ] && exit 0
 
 input=$(cat)
 
