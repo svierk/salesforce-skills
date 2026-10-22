@@ -17,6 +17,19 @@ Before merging, commit or stash local changes - a merge into a dirty working cop
 
 **B2 story promotion:** do not merge `uat`, `integration` or `preprod` into a feature branch - it would carry other stories along. Feature branches only ever take in `main`. Conflicts with a stage are solved on the promotion branch - see [promote.md](promote.md).
 
+## Push rejected
+
+GitHub rejects a push when the branch on GitHub has commits the local branch does not - usually a teammate pushed to it, or the branch was updated through the web. Never force-push it away: those commits are someone's work, and the hook blocks it anyway. Look first, then merge:
+
+```bash
+git fetch origin
+git log --oneline HEAD..origin/<branch>        # what is on GitHub but not here - and who wrote it
+git merge origin/<branch>
+git push
+```
+
+Merge here too, not `git pull --rebase` - the same reasoning as above. If the commits on GitHub look wrong or unexpected, ask whoever made them before going on.
+
 ## Conflicts
 
 A conflict means the same part of a file changed on both sides. Git stops the merge and marks the files:
