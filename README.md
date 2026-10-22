@@ -1,4 +1,4 @@
-# ☁️ Salesforce Skills
+# 🧠 Salesforce Skills
 
 Agent skills for Salesforce teams. Each skill packages the know-how for one kind of work - the questions to ask, the steps to take, the tools to use and the mistakes to avoid - so an AI coding agent can do that work the way an experienced practitioner would.
 
