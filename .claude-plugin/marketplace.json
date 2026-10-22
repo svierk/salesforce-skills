@@ -12,7 +12,7 @@
       "name": "devops-builder",
       "source": "./plugins/devops-builder",
       "description": "Design, set up and maintain a Salesforce CI/CD pipeline on GitHub Actions with the Salesforce DevOps Starter Kit.",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "category": "devops",
       "keywords": ["salesforce", "devops", "github-actions", "ci-cd", "sf-cli"]
     },
@@ -20,7 +20,7 @@
       "name": "devops-operator",
       "source": "./plugins/devops-operator",
       "description": "Guided day-to-day work on a Salesforce project in Git and GitHub - branches, retrieves, commits, pull requests and promotions - for every team member.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "category": "devops",
       "keywords": ["salesforce", "git", "github", "sf-cli", "pull-requests"]
     }
