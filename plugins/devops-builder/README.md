@@ -2,7 +2,7 @@
 
 Design, set up and maintain a Salesforce CI/CD pipeline on GitHub Actions with the [Salesforce DevOps Starter Kit](https://github.com/svierk/salesforce-devops-starter-kit).
 
-For whoever owns the pipeline - platform owner, tech lead, release manager. Day-to-day work on a single change is the job of the [DevOps Operator](../devops-operator).
+For whoever owns the pipeline - platform owner, tech lead, release manager. Day-to-day work on a single change is the job of the [DevOps Operator](../devops-operator); end-to-end UI tests and their test job are the job of the [E2E Automator](../e2e-automator).
 
 ## What it does
 
