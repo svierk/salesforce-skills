@@ -1,6 +1,6 @@
 ---
 name: salesforce-devops-operator
-description: 'Guides day-to-day work on a Salesforce project in Git and GitHub, in plain language, for admins, low-code builders and developers alike. TRIGGER when: someone starts work on a story or ticket; creates or switches a branch; brings changes from a sandbox or scratch org into the project (retrieve); asks what they changed; commits; opens or updates a pull request; asks why a check, validation, test or code review failed; updates a branch or hits a merge conflict; promotes a story to a stage such as UAT; or wants to undo a Git mistake. DO NOT TRIGGER when: designing or changing the pipeline itself - workflows, environments, secrets, branch protection, authentication, choosing a blueprint; that is pipeline work for the DevOps Builder.'
+description: 'Guides day-to-day work on a Salesforce project in Git and GitHub, in plain language, for admins, low-code builders and developers alike. TRIGGER when: someone starts work on a story or ticket; creates or switches a branch; brings changes from a sandbox or scratch org into the project (retrieve); asks what they changed; commits; pushes, or a push is rejected, or asks for a force push; opens or updates a pull request; asks why a check, validation, test or code review failed; updates a branch or hits a merge conflict; promotes a story to a stage such as UAT; or wants to undo a Git mistake. DO NOT TRIGGER when: designing or changing the pipeline itself - workflows, environments, secrets, branch protection, authentication, choosing a blueprint; that is pipeline work for the DevOps Builder.'
 license: MIT
 ---
 
@@ -23,7 +23,7 @@ The pipeline itself (workflows, environments, rules) is the [DevOps Builder](htt
 1. **Orient before acting.** At the start of every task, run the orientation below. Most mistakes come from working on the wrong branch or with leftover changes.
 2. **Follow the project's conventions.** Read `.github/salesforce-devops.yml` - blueprint, environment branches, where new work starts, branch names, commit style. Without it, use the fallbacks in [references/project-config.md](references/project-config.md), say that you did, and suggest asking the pipeline owner to add the file.
 3. **Confirm before anything leaves the machine or throws work away.** Pushing, opening or merging a pull request, starting a workflow, discarding changes - describe it in one sentence and wait for a yes.
-4. **Environment branches change only through reviewed pull requests.** Never commit, merge or push to them directly, never force-push, never rewrite history others already have. The plugin's hooks block these and ask before destructive commands. When a hook blocks something, explain the reason to the user and take the safe route it names - do not look for a way around it.
+4. **Environment branches change only through reviewed pull requests.** Never commit, merge or push to them directly, never force-push, never rewrite history others already have. Bring a branch up to date with a merge, not a rebase - also when a push was rejected. The plugin's hooks block these and ask before destructive commands. When a hook blocks something, explain the reason to the user and take the safe route it names - do not look for a way around it.
 5. **Deploy only to the user's own development org.** Deployments to shared stages and production belong to the pipeline. If someone asks to "just deploy it to UAT", explain the promotion path instead.
 6. **Keep secrets out of the conversation.** Do not run `sf org display --verbose` or print auth URLs, tokens or keys.
 
@@ -48,6 +48,7 @@ Tell the user in one or two sentences: which branch they are on, whether there a
 | "Open a pull request" · "send it for review"                        | [Pull request](references/commit-and-pull-request.md#pull-request)    |
 | "Why is it red?" · "the validation failed"                          | [Read the checks](references/checks.md)                               |
 | "Update my branch" · "it says conflict"                             | [Update and resolve](references/update-and-conflicts.md)              |
+| "My push was rejected" · "just force-push it"                       | [Push rejected](references/update-and-conflicts.md#push-rejected)     |
 | "Move it to UAT" · "promote" · "it's signed off"                    | [Promote](references/promote.md)                                      |
 | "I made a mistake" · "undo" · "I committed on main"                 | [Undo](references/undo.md)                                            |
 | "Where am I?" · "what's the status?"                                | Orientation above, plus `gh pr status`                                |
