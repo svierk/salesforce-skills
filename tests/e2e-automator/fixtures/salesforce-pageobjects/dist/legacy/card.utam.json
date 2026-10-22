@@ -1,0 +1,5 @@
+{
+  "description": { "author": "Test", "text": ["Selector: .legacyCard.", "Represents the legacy card Aura component."] },
+  "root": true,
+  "selector": { "css": ".legacyCard" }
+}

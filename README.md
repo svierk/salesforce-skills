@@ -15,6 +15,14 @@ Built around the [Salesforce DevOps Starter Kit](https://github.com/svierk/sales
 | [🏗️ devops-builder](plugins/devops-builder)   | Pipeline owners, tech leads | Choose a blueprint, set up the pipeline and GitHub around it, audit and upgrade it          | Preview |
 | [🧭 devops-operator](plugins/devops-operator) | Everyone who ships changes  | Guided branches, retrieves, commits, pull requests, checks and promotions in plain language | Preview |
 
+### Testing
+
+Built around the [Salesforce UTAM E2E Testing](https://github.com/svierk/salesforce-utam-e2e-testing) template - end-to-end UI tests for Lightning Experience with [UTAM](https://developer.salesforce.com/docs/platform/utam) page objects, WebdriverIO and the page objects Salesforce publishes for every release.
+
+| Plugin                                    | For                                  | Does                                                                                                 | Status  |
+| ----------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------- | ------- |
+| [🧪 e2e-automator](plugins/e2e-automator) | Developers, testers, test automation | Turn stories into UTAM UI tests, write page objects for custom components, fix and upgrade the suite | Planned |
+
 ## 🚀 Install
 
 In Claude Code:

@@ -1,0 +1,8 @@
+{
+  "description": {
+    "author": "Test",
+    "text": ["Selector: acme-card-list.", "A list of acme-card components with a title."]
+  },
+  "root": true,
+  "selector": { "css": "acme-card-list" }
+}
