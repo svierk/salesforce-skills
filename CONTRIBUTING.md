@@ -19,6 +19,7 @@ schemas/                              # formats of files that skills write into 
   examples/                           # one valid example per case, checked in CI
 scripts/                              # checks for this repository
 tests/<plugin>/                       # tests for hooks and scripts, run with npm test
+tests/schemas/                        # checks that every plugin's reference covers its schema
 ```
 
 One plugin per skill, so teams can install exactly what they need. Plugins of the same area share a name prefix (`devops-*`).
@@ -29,7 +30,7 @@ A plugin is installed on its own, so a skill can only read files inside its plug
 
 Files that skills write into user repositories, such as `.github/salesforce-devops.yml`, are a contract with every repository that already has one.
 
-- **Adding an optional field** is a minor change. Update the schema, an example, and the reference file of every plugin that reads or writes the format.
+- **Adding an optional field** is a minor change. Update the schema, an example, and the reference file of every plugin that reads or writes the format - `npm test` fails until each reference names the new field.
 - **Renaming, removing or redefining a field** needs a new `version` of the format, and a major release of every plugin that writes it. Skills must keep reading the previous version, or say clearly that the file needs a migration.
 
 ## Writing a skill
