@@ -104,7 +104,7 @@ export const createRecord = (sobject, values) => sf('data', 'create', 'record', 
 export const deleteRecord = (sobject, id) => sf('data', 'delete', 'record', '--sobject', sobject, '--record-id', id);
 ```
 
-The CLI talks to its default org - the one `npm run test:ui:generate:login` wrote the login for. Values for `createRecord` use the CLI's syntax: `"Name='E2E Account' Industry=Energy"`. For larger setups, an anonymous Apex script (`sf apex run --file`) or a data plan (`sf data import tree`) is faster than one call per record.
+The CLI talks to its default org, or to `SF_TARGET_ORG` if the run sets it - the same org the login was generated for, as long as both commands use the same setting. Values for `createRecord` use the CLI's syntax: `"Name='E2E Account' Industry=Energy"`. For larger setups, an anonymous Apex script (`sf apex run --file`) or a data plan (`sf data import tree`) is faster than one call per record.
 
 ## Waiting
 

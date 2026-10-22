@@ -29,20 +29,22 @@ Infer the mode from the repository too: no `utam.config.js` and no `wdio-utam-se
 4. **Never weaken an assertion to get green.** A red test is information. If the application behaves differently from the acceptance criteria, report it as a possible defect. Change an expected value only when the user confirms the behaviour changed on purpose.
 5. **Never test against production.** Tests create and change records. Check the org before the first run (orientation below) and stop if it is a production org.
 6. **Keep the session out of sight.** `.env` holds a frontdoor URL that logs anyone in as the test user. Never print it, never commit it, never run `sf org display --verbose` or `sf org open --url-only` where the output lands in the conversation. The template's login script also logs the URL - run it with its output discarded (`npm run test:ui:generate:login >/dev/null`) and check the result with `test -s .env`.
-7. **Show before changing shared things.** Dependencies, `wdio.conf.js`, `utam.config.js`, CI workflows and GitHub secrets affect the whole team. Say what changes and why, and make the change on a branch.
+7. **Show before changing shared things.** Dependencies, `wdio.conf.js`, `utam.config.js`, CI workflows and GitHub secrets affect the whole team. Say what changes and why, and make the change on a work branch - named the team's way (`branches` in `.github/salesforce-devops.yml`, if the file exists), never on `main` or another branch that deploys to an org.
+8. **Leave the user's defaults alone.** Run tests against another org with `SF_TARGET_ORG=<alias>` on the command, not by changing the project's default org - other work, such as retrieving changes, relies on it.
 
 ## Orientation
 
 Once per session, from the project root:
 
 ```bash
+git status --short --branch
 grep -E '"(utam|wdio-utam-service|salesforce-pageobjects|@wdio/[a-z-]+)"' package.json
 ls utam.config.js wdio.conf.js force-app/test 2>/dev/null
 sf config get target-org --json
 sf data query -q "SELECT Name, IsSandbox, OrganizationType, TrialExpirationDate FROM Organization" --json
 ```
 
-The org is safe to test against if `IsSandbox` is true, or `TrialExpirationDate` is set (scratch orgs, trials), or `OrganizationType` is `Developer Edition`. Anything else is a production org: stop, say so, and ask for a sandbox. If `sf` has no default org, help the user authorise one (`sf org login web --alias <alias> --set-default`) before anything runs.
+The query runs against the org the tests will use - prefix it with `SF_TARGET_ORG=<alias>` when that is not the default. The org is safe to test against if `IsSandbox` is true, or `TrialExpirationDate` is set (scratch orgs, trials), or `OrganizationType` is `Developer Edition`. Anything else is a production org: stop, say so, and ask for a sandbox. If `sf` has no default org, help the user authorise one (`sf org login web --alias <alias> --set-default`) before anything runs.
 
 ## Find page objects
 
@@ -64,7 +66,7 @@ Goal: the project compiles page objects and runs one UI test against the user's 
 1. **Read the template at its current state** and compare with the project: dependencies, scripts, `utam.config.js`, `wdio.conf.js`, the login script and helper, ESLint, ignore files. [references/setup.md](references/setup.md) has the checklist, including the fixes a project needs once it has page objects of its own.
 2. **Install and wire it in** on a branch. Take versions from npm, not from this skill.
 3. **Prove it** with the template's example test or a one-line smoke test against the user's org: compile, generate the login, run.
-4. **CI, if wanted.** A workflow that logs in with the JWT bearer flow and runs the suite - nightly, on demand, or after a deployment. If the project uses the DevOps Starter Kit, reuse its building blocks and the org's GitHub Environment; where the job sits in the pipeline is a question for the DevOps Builder.
+4. **CI, if wanted.** A workflow that logs in with the JWT bearer flow and runs the suite - nightly, on demand, or after a deployment. Agree with the user when it runs - [references/setup.md](references/setup.md#the-ci-job) has the options. If the project already has a pipeline with the DevOps Starter Kit, reuse its building blocks and the org's GitHub Environment.
 
 ## Write a test
 
@@ -94,9 +96,13 @@ Goal: a suite that runs on the current Salesforce release, and a short, ranked l
 - **Review.** Walk the checklist in [references/maintenance.md](references/maintenance.md#review-checklist) - DOM access around page objects, sleeps and retry loops, index-based field access, hard-coded record ids, shared data, weak assertions, missing cleanup. Rank findings by how likely they break a run, each with file, line and fix.
 - **Coverage.** List the business processes the suite covers against the ones the user names as critical. Suggest the next tests by risk, not by count.
 
-## Working with the DevOps skills
+## Alongside the DevOps skills
 
-The UI test job is test infrastructure, so this skill writes and fixes it. The pipeline around it - environments, secrets, branch protection, when deployments happen - belongs to the DevOps Builder; if it is installed, hand over for those. If `.github/salesforce-devops.yml` exists, read `blueprint` and `environments` to place the job after the right deployment. The DevOps Operator hands over when a pull request's UI test job fails - it has already named the job, the test and the step, so start at Fix a test with that. Committing tests and opening the pull request is day-to-day work the Operator guides, if installed.
+This skill does its whole job on its own - set up, CI job, tests, fixes. When the DevOps skills from the same marketplace are installed too, the work splits like this:
+
+- **DevOps Builder** - owns the pipeline around the UI test job: environments, secrets, branch protection, when deployments happen. Changes there are its job; the UI test job itself, and its place in the schedule, stay with this skill. Without the builder, do both, with the same care for secrets.
+- **DevOps Operator** - hands over when a pull request's UI test job fails, having already named the job, the test and the step: start at Fix a test with that. Committing tests and opening the pull request is day-to-day work it guides. Its guard blocks commits on environment branches - one more reason to work on a branch.
+- **`.github/salesforce-devops.yml`** - read it if it exists: `blueprint` and `environments` place the CI job after the right deployment, `branches` names the work branch. Without it, ask.
 
 ## Reference map
 

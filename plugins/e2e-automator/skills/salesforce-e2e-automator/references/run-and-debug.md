@@ -24,7 +24,14 @@ Run one spec, not the suite, while you work on a test. Run the suite before you 
 
 ## The org
 
-The login script asks the CLI for a frontdoor URL to its **default org** and writes it into `.env`; every spec opens it through the login helper. To test another org, the user switches the project's default (`sf config set target-org <alias>`) and generates the login again - say that this also changes the org their other CLI commands use. The org check in the orientation applies to every org you switch to.
+The login script asks the CLI for a frontdoor URL to its **default org** and writes it into `.env`; every spec opens it through the login helper. To test another org, set it for the commands only - the project's default stays as it is for everything else the user does:
+
+```bash
+SF_TARGET_ORG=<alias> npm run test:ui:generate:login >/dev/null && test -s .env
+SF_TARGET_ORG=<alias> npm run test:ui -- --spec <spec>   # helpers that call sf inherit it
+```
+
+Never change the default with `sf config set target-org` for a test run. The org check in the orientation applies to every org you test against.
 
 Never print `.env` or the URL - it logs in without a password. The template's script prints the URL it writes, so discard its output as in the loop above; errors still reach the terminal. If a project's copy of the script no longer logs the URL, the redirect does no harm. With `logLevel: 'debug'` in `wdio.conf.js`, the run log shows the navigation to that URL as well - quote errors from a run log, never the whole log.
 
