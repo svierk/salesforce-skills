@@ -121,6 +121,20 @@ A component that filters order lines and shows a total - compiled and linted wit
 
 The compiler turns this into `filterLines(term)`, `waitForTotal(expected)`, `isEmpty()` and `getLineByProduct(productName)` - the filter calls `getProductName()` of each `c-order-line` page object and returns the first match. The second argument of `containsElement` (`true`) makes it look inside the shadow root.
 
+Two things the compiler is strict about:
+
+- **Selector arguments carry over.** A compose statement that uses an element with a parameterized selector passes the method's argument on by itself - declaring it again in the statement fails with error 107, and declaring it under another name gives the method a second, useless argument.
+- **A `waitFor` must return something.** A predicate whose last statement returns nothing - a click - is polled again until the timeout, and a second click on a closing modal fails as stale. Wait for the element, then act in a statement of its own:
+
+  ```json
+  "compose": [
+    { "apply": "waitFor", "args": [{ "type": "function", "predicate": [{ "element": "action" }] }] },
+    { "element": "action", "apply": "clickButton" }
+  ]
+  ```
+
+  The template's `force-app/test/utam/__utam__/recordModal.utam.json` is a complete, small example: a root page object that runs a modal footer action by its API name.
+
 For anything beyond this - element lists in compose, `beforeLoad`, interfaces, frames, imperative extensions - read the grammar page for that topic ([sources.md](sources.md)) before writing it. Imperative extensions are the last resort: they are JavaScript the compiler cannot check.
 
 ## Generate a first draft
