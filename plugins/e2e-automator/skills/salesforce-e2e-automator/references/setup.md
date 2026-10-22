@@ -5,7 +5,7 @@ Bring UTAM end-to-end tests into a Salesforce DX project, prove them against the
 ## New project or existing one
 
 - **New project** - create it from the template and adapt names: `gh repo create <owner>/<name> --private --template svierk/salesforce-utam-e2e-testing --clone`. Change `name` in `package.json` and `sfdx-project.json`, and the scratch org definition.
-- **Existing project** - the usual case. Bring in only the UTAM lane, on a branch (`chore/e2e-tests` or the team's equivalent), and leave the project's own tooling as it is.
+- **Existing project** - the usual case. Bring in only the UTAM lane, on a work branch named the team's way (`branches` in `.github/salesforce-devops.yml`, if it exists; otherwise something like `chore/e2e-tests`), and leave the project's own tooling as it is.
 
 ## Checklist for an existing project
 
@@ -51,4 +51,4 @@ Read the `tests` job of the template's `.github/workflows/ci.yml` and the conven
 - **Forks.** Keep the template's `if:` that skips the job for pull requests from forks - they get no secrets.
 - **Evidence.** Offer a screenshot on failure: an `afterTest` hook in `wdio.conf.js` that calls `browser.saveScreenshot()` when `passed` is false, and an `actions/upload-artifact` step with `if: failure()`. Triage without a screenshot is guesswork.
 
-Setting secrets and variables changes the repository for everyone: show the commands, pipe key files instead of pasting them (`gh secret set SFDX_JWT_SECRET_KEY < server.key`), and run them after the user confirms. The certificate, connected app or external client app and the user setup are the same as for the pipeline - if the DevOps Builder is installed, it walks through them.
+Setting secrets and variables changes the repository for everyone: show the commands, pipe key files instead of pasting them (`gh secret set SFDX_JWT_SECRET_KEY < server.key`), and run them after the user confirms. The certificate, the connected app or external client app and the integration user are the same as for any Salesforce pipeline with the JWT bearer flow. If the project already has them, reuse them for the login and add the test user; if not, walk the user through the authentication guide of the DevOps Starter Kit (`docs/authentication.md` in `svierk/salesforce-devops-starter-kit`) - or let the DevOps Builder do it, if it is installed.
