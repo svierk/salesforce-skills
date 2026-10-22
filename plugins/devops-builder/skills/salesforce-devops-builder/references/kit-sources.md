@@ -16,6 +16,8 @@ gh release view v1.3.0 -R svierk/salesforce-devops-starter-kit
 gh release list -R svierk/salesforce-devops-starter-kit --limit 20
 ```
 
+Without a signed-in GitHub CLI, the public REST API answers the same question - fetch `https://api.github.com/repos/<owner>/<repo>/releases/latest` and read `tag_name`. This works for third-party actions too.
+
 Use that tag as `REF` in every read below, and in every `uses:` you write. Reading `main` instead can show inputs that are not released yet.
 
 ## Read a file at a release
