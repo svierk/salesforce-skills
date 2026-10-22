@@ -82,7 +82,7 @@ During Set up, once the branches and workflows exist:
 1. Fill the file from the design decisions and the table above. Ask for what you do not know - the tracker, the key format, the commit convention the team already uses (`git log --format=%s -30` shows it).
 2. Check it against the repository: every `environments` entry and `base` exists as a remote branch (`git ls-remote --heads origin`), and `promotion.workflow` exists in `.github/workflows`.
 3. Validate it against the schema if a validator is at hand - for example `npx --yes ajv-cli@5 validate --spec=draft2020 -s <schema file> -d .github/salesforce-devops.yml` after downloading the schema.
-4. Commit it with the workflows, so the team reviews the conventions together with the pipeline.
+4. Commit it on the setup branch with the workflows, so the team reviews the conventions together with the pipeline in one pull request.
 
 ## Auditing it
 
