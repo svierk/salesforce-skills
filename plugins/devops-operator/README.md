@@ -28,6 +28,14 @@ The plugin ships a hook that checks every `git` and `gh` command the agent runs 
 
 Environment branches come from the project configuration (below); without it, `main`, `master` and the default branch are protected. Outside Salesforce projects - no `sfdx-project.json` and no configuration file - the hook does nothing. It applies to every session in which the plugin is enabled, not only when the skill is in use.
 
+Pipeline owners who want the agent to run such commands can turn the guard off for themselves, in their own user settings (`~/.claude/settings.json`) or the project's local, uncommitted ones (`.claude/settings.local.json`):
+
+```json
+{ "env": { "DEVOPS_OPERATOR_GUARD": "off" } }
+```
+
+Never put it into a project's shared settings - that would turn the guard off for the whole team.
+
 ## Project configuration
 
 The operator reads [`.github/salesforce-devops.yml`](../../README.md#-project-configuration) in the project repository - blueprint, environment branches, where new work starts, branch naming, work items and commit style - so it follows the team's conventions instead of guessing. The DevOps Builder writes that file when it sets the pipeline up. Without it, the operator infers the conventions from the repository and says what it assumed.
