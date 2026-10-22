@@ -1,0 +1,9 @@
+{
+  "pageObjects": {
+    "utam-widgets/pageObjects/card": "package/dist/widgets/card.utam.json",
+    "utam-widgets/pageObjects/cardList": "package/dist/widgets/cardList.utam.json",
+    "utam-global/pageObjects/recordHome": "package/dist/global/recordHome.utam.json",
+    "utam-global/pageObjects/recordHomeDesktop": "package/dist/global/recordHomeDesktop.utam.json",
+    "utam-salesforceapp/pageObjects/chatter/feed": "package/dist/salesforceapp/chatter/feed.utam.json"
+  }
+}

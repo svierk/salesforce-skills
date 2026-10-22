@@ -1,0 +1,6 @@
+{
+  "description": { "author": "Test", "text": ["Represents a record home page"] },
+  "root": true,
+  "interface": true,
+  "methods": [{ "name": "getCard", "returnType": "utam-widgets/pageObjects/card" }]
+}

@@ -1,0 +1,5 @@
+{
+  "description": { "author": "Test", "text": ["Chatter feed with acme-card posts in the mobile app"] },
+  "root": true,
+  "selector": { "css": "acme-feed" }
+}
