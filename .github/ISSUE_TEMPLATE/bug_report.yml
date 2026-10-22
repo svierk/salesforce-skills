@@ -13,6 +13,7 @@ body:
       options:
         - devops-builder
         - devops-operator
+        - e2e-automator
     validations:
       required: true
   - type: input
