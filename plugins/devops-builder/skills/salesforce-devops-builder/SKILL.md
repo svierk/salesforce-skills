@@ -1,6 +1,6 @@
 ---
 name: salesforce-devops-builder
-description: 'Designs, sets up and maintains a Salesforce CI/CD pipeline on GitHub Actions with the Salesforce DevOps Starter Kit. TRIGGER when: choosing an org, sandbox or branching strategy for a Salesforce team; picking or explaining a kit blueprint (B1-B5); wiring the kit''s reusable workflows or building blocks into a repository; configuring GitHub Environments, secrets, rulesets or JWT authentication for a Salesforce pipeline; auditing, hardening or upgrading existing Salesforce workflows. DO NOT TRIGGER when: someone works on a single change - creating a branch, retrieving metadata, committing, opening or fixing a pull request, promoting one story - or debugs one failed run; that is day-to-day operation, not pipeline design.'
+description: 'Designs, sets up and maintains a Salesforce CI/CD pipeline on GitHub Actions with the Salesforce DevOps Starter Kit. TRIGGER when: choosing an org, sandbox or branching strategy for a Salesforce team; picking or explaining a kit blueprint (B1-B5); wiring the kit''s reusable workflows or building blocks into a repository; configuring GitHub Environments, secrets, rulesets or JWT authentication for a Salesforce pipeline; auditing, hardening or upgrading existing Salesforce workflows. DO NOT TRIGGER when: someone works on a single change - creating a branch, retrieving metadata, committing, opening or fixing a pull request, promoting one story - or debugs one failed run; that is day-to-day operation for the DevOps Operator, not pipeline design.'
 license: MIT
 ---
 
@@ -57,7 +57,7 @@ For the deeper "why" behind a recommendation (sandbox types, org vs. package dev
 
 Goal: the chosen blueprint running in the user's repository, verified by one real pull request.
 
-Work in this order - each step is useful on its own, so the team gets value even if setup stops halfway:
+Work in this order - each step is useful on its own, so the team gets value even if setup stops halfway. Everything that goes into the repository - workflows, Dependabot, CODEOWNERS, the project configuration - goes on one setup branch, `chore/pipeline-setup` or the team's equivalent, never straight onto `main`:
 
 1. **Authentication.** A dedicated integration user and the JWT bearer flow per org - [references/authentication.md](references/authentication.md). Verify each login locally with `sf org login jwt` before storing secrets.
 2. **GitHub Environments and secrets.** One environment per target org, plus validation twins without reviewers where the blueprint validates against several orgs - [references/github-setup.md](references/github-setup.md).
@@ -67,7 +67,8 @@ Work in this order - each step is useful on its own, so the team gets value even
 6. **Branch protection.** Rulesets per long-lived branch, the default branch, CODEOWNERS where the blueprint asks for them. Add required status checks **after** the first validation run, using the check names that run actually produced.
 7. **Dependabot** for `github-actions`, so the pins do not age silently.
 8. **Project configuration.** Write `.github/salesforce-devops.yml` with the blueprint, the environment branches and the team's conventions, so other skills and new joiners do not have to guess - [references/project-config.md](references/project-config.md).
-9. **Prove it.** Open a small test pull request, watch the run with `gh pr checks --watch`, and walk the user through the result.
+9. **Prove it.** Push the setup branch and open its pull request - the pipeline's first validation runs on its own introduction. Watch it with `gh pr checks --watch`, walk the user through the result, and add the required status checks from step 6 once the names are known.
+10. **Hand over.** Say what day-to-day work looks like in this blueprint, and offer to walk the first real story through it. If the DevOps Operator is installed, that is its job: it reads the project configuration you just wrote, so it starts work from the right base and names branches the team's way.
 
 When writing workflow files, follow [references/pipeline-hygiene.md](references/pipeline-hygiene.md): least-privilege `permissions:`, `persist-credentials: false`, secrets via `secrets:` or environment variables, `pull_request` and never `pull_request_target`.
 

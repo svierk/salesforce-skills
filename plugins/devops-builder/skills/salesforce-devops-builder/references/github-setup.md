@@ -55,7 +55,16 @@ gh repo view --json defaultBranchRef -q .defaultBranchRef.name
 gh repo edit --default-branch uat
 ```
 
-The default branch is where new pull requests and tools target by default: `integration` for the B2 release train, `uat` for B5, `main` everywhere else. Create the long-lived branches before switching: `git push origin main:uat`.
+The default branch is where new pull requests and tools target by default: `integration` for the B2 release train, `uat` for B5, `main` everywhere else.
+
+Create the long-lived branches before switching - through the API, from the current state of `main` on GitHub:
+
+```bash
+SHA=$(gh api "repos/$REPO/git/ref/heads/main" --jq .object.sha)
+gh api -X POST "repos/$REPO/git/refs" -f ref=refs/heads/uat -f sha="$SHA"
+```
+
+Not with `git push origin main:uat`: once the branch is listed as an environment, that is a push to an environment branch, and the DevOps Operator's guard blocks it - rightly, for every push after the first.
 
 ## Rulesets
 

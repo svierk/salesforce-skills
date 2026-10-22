@@ -88,6 +88,14 @@ gh api -H "Accept: application/vnd.github.raw+json" "repos/svierk/sfdx-deploy/co
 
 The site always shows the latest state of `main`; for a pinned release, read the repository at that tag.
 
+The site also serves its content for agents - useful without a signed-in GitHub CLI, or to load a lot at once:
+
+- `/llms.txt` - every page with a one-line summary; start here to find the right page
+- `/llms-full.txt` - all pages in one Markdown file, including the full input reference of every workflow and building block; large, so prefer a single page when one will do
+- `<page>.md` - the Markdown of any page, e.g. `/strategy/b2-multi-team-environment-branches.md`, with every link absolute
+
+These reflect `main` as well. Use them to understand and explain; take versions and the callers you write from the repository at the release tag.
+
 ## Find the kit in a user's repository
 
 ```bash
