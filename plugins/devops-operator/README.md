@@ -2,7 +2,7 @@
 
 Guided day-to-day work on a Salesforce project in Git and GitHub - from the org into a branch, through review, on to the next stage. Written for the people who ship changes but do not live in a terminal: admins, low-code builders, consultants. Developers get the same flows, with less explanation.
 
-The pipeline itself is the job of the [DevOps Builder](../devops-builder).
+The pipeline itself is the job of the [DevOps Builder](../devops-builder); end-to-end UI tests are the job of the [E2E Automator](../e2e-automator).
 
 ## What it does
 

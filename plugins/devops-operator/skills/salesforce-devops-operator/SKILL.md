@@ -1,6 +1,6 @@
 ---
 name: salesforce-devops-operator
-description: 'Guides day-to-day work on a Salesforce project in Git and GitHub, in plain language, for admins, low-code builders and developers alike. TRIGGER when: someone starts work on a story or ticket; creates or switches a branch; brings changes from a sandbox or scratch org into the project (retrieve); asks what they changed; commits; pushes, or a push is rejected, or asks for a force push; opens or updates a pull request; asks why a check, validation, test or code review failed; updates a branch or hits a merge conflict; promotes a story to a stage such as UAT; or wants to undo a Git mistake. DO NOT TRIGGER when: designing or changing the pipeline itself - workflows, environments, secrets, branch protection, authentication, choosing a blueprint; that is pipeline work for the DevOps Builder.'
+description: 'Guides day-to-day work on a Salesforce project in Git and GitHub, in plain language, for admins, low-code builders and developers alike. TRIGGER when: someone starts work on a story or ticket; creates or switches a branch; brings changes from a sandbox or scratch org into the project (retrieve); asks what they changed; commits; pushes, or a push is rejected, or asks for a force push; opens or updates a pull request; asks why a check, validation, test or code review failed; updates a branch or hits a merge conflict; promotes a story to a stage such as UAT; or wants to undo a Git mistake. DO NOT TRIGGER when: designing or changing the pipeline itself - workflows, environments, secrets, branch protection, authentication, choosing a blueprint; that is pipeline work for the DevOps Builder. Nor when debugging, fixing or writing an end-to-end UI test (UTAM) - once a failed check is known to be the UI test job, that is test work for the E2E Automator.'
 license: MIT
 ---
 
@@ -8,7 +8,7 @@ license: MIT
 
 Helps the people who ship changes on a Salesforce project - admins, low-code builders, consultants, developers - get their work from an org into Git, through review and on to the next stage, without having to be Git experts. Many of them build by clicking in Setup and have never used a terminal. Treat that as the normal case, not the exception.
 
-The pipeline itself (workflows, environments, rules) is the [DevOps Builder](https://github.com/svierk/salesforce-skills/tree/main/plugins/devops-builder)'s job. This skill works inside it.
+The pipeline itself (workflows, environments, rules) is the [DevOps Builder](https://github.com/svierk/salesforce-skills/tree/main/plugins/devops-builder)'s job. This skill works inside it. End-to-end UI tests - writing them, and finding out why one failed - are the [E2E Automator](https://github.com/svierk/salesforce-skills/tree/main/plugins/e2e-automator)'s.
 
 ## How to talk
 
@@ -58,6 +58,10 @@ Read the reference for the flow before starting it. Flows chain naturally - afte
 ## When it is pipeline work
 
 Some problems are not the user's change but the pipeline: a validation waiting for an approval, a required check that never starts, the pipeline failing to log in to an org, a rule that blocks for reasons nobody can act on - or a request to change workflows, environments or branch protection. Say so plainly, so the user does not keep retrying. If the DevOps Builder is installed, offer to switch to it - it diagnoses and fixes the setup; otherwise name the pipeline owner as the person to ask.
+
+## When it is a UI test
+
+A red check can be an end-to-end UI test - a job that logs in to an org with a browser and clicks through a business process, usually built with UTAM. Its failure is rarely fixed by retrieving or committing metadata: the cause can be the change, the test data in the org, the test itself or a Salesforce release, and telling them apart takes test know-how. Do the first step - name the job, the failing test and the step it stopped at, from the log - then hand over. If the E2E Automator is installed, offer to switch to it - it classifies the failure and fixes the test, or reports a defect in the change; otherwise name whoever maintains the UI tests. See [references/checks.md](references/checks.md#end-to-end-ui-tests).
 
 ## What happens next, per blueprint
 
