@@ -36,9 +36,13 @@ function repo({ branch = 'feature/ABC-1-discount', salesforce = true, config } =
 }
 
 /** The decision for a Bash tool call: 'deny', 'ask', or 'allow' when the hook stays silent. */
-function decide(command, cwd) {
+function decide(command, cwd, env = {}) {
   const event = { hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command }, cwd };
-  const out = execFileSync(shell, [hook], { input: JSON.stringify(event), encoding: 'utf8' }).trim();
+  const out = execFileSync(shell, [hook], {
+    input: JSON.stringify(event),
+    encoding: 'utf8',
+    env: { ...process.env, ...env }
+  }).trim();
   if (!out) return 'allow';
   const decision = JSON.parse(out).hookSpecificOutput;
   assert.ok(decision.permissionDecisionReason.length > 20, 'a decision always explains itself');
@@ -56,6 +60,14 @@ describe('scope', () => {
 
   test('ignores repositories that are not Salesforce projects', () => {
     assert.equal(decide('git push --force', repo({ salesforce: false })), 'allow');
+  });
+
+  test('stays silent when the user turned it off', () => {
+    assert.equal(decide('git push --force', repo(), { DEVOPS_OPERATOR_GUARD: 'off' }), 'allow');
+  });
+
+  test('stays on for any other value', () => {
+    assert.equal(decide('git push --force', repo(), { DEVOPS_OPERATOR_GUARD: 'on' }), 'deny');
   });
 
   test('applies to repositories that only have the config file', () => {
