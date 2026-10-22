@@ -21,7 +21,7 @@ Built around the [Salesforce UTAM E2E Testing](https://github.com/svierk/salesfo
 
 | Plugin                                    | For                                  | Does                                                                                                 | Status  |
 | ----------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------- | ------- |
-| [🧪 e2e-automator](plugins/e2e-automator) | Developers, testers, test automation | Turn stories into UTAM UI tests, write page objects for custom components, fix and upgrade the suite | Planned |
+| [🧪 e2e-automator](plugins/e2e-automator) | Developers, testers, test automation | Turn stories into UTAM UI tests, write page objects for custom components, fix and upgrade the suite | Preview |
 
 ## 🚀 Install
 
@@ -31,6 +31,7 @@ In Claude Code:
 /plugin marketplace add svierk/salesforce-skills
 /plugin install devops-builder@salesforce-skills
 /plugin install devops-operator@salesforce-skills
+/plugin install e2e-automator@salesforce-skills
 ```
 
 In editors without the `/plugin` command, the CLI does the same: `claude plugin marketplace add svierk/salesforce-skills`, then `claude plugin install <plugin>@salesforce-skills`.
@@ -46,7 +47,8 @@ To give a whole team the skills, add the marketplace and the plugins to the **pr
   },
   "enabledPlugins": {
     "devops-builder@salesforce-skills": true,
-    "devops-operator@salesforce-skills": true
+    "devops-operator@salesforce-skills": true,
+    "e2e-automator@salesforce-skills": true
   }
 }
 ```
