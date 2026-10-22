@@ -14,13 +14,14 @@ The run id is in the link `gh pr checks` prints. Read the failed step's log your
 
 ## What the kit's checks mean
 
-Pipelines built with the Salesforce DevOps Starter Kit have three kinds of failure. Name which one it is first - they need different people and different fixes.
+Pipelines built with the Salesforce DevOps Starter Kit have three kinds of failure, and some teams add a fourth: end-to-end UI tests. Name which one it is first - they need different people and different fixes.
 
 | Failed step                        | What it means                                                              | Usually fixed by                                        |
 | ---------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------- |
 | Code review / Code Analyzer        | A rule about code or metadata quality is broken above the team's threshold | Changing the flagged line; a developer for Apex and LWC |
 | Validation / check-only deployment | The change would not deploy to the org behind the target branch            | Adding what is missing, or fixing the component         |
 | Tests / coverage                   | An Apex test fails, or coverage drops below the required level             | A developer                                             |
+| E2E UI tests (UTAM, WebdriverIO)   | A click path through an org did not behave as the test expects             | Whoever maintains the UI tests - see below              |
 
 ### Validation errors, translated
 
@@ -46,6 +47,15 @@ An admin can often still do the first diagnosis - which test, which object, whic
 ### Code review
 
 Name the rule, the file and the line from the log or the pull request's annotations, and what the rule protects against. For declarative metadata, some rules are noisy - if a finding makes no sense for the change, say so and suggest asking the pipeline owner whether the threshold fits, rather than working around it.
+
+### End-to-end UI tests
+
+A job named like "E2E UI Tests" or running `wdio` opens an org in a browser and clicks through a business process. When it fails:
+
+- Find the failing test (`describe` and `it` titles in the log, often with a ticket key) and the step where it stopped. A screenshot artifact on the run, if there is one, shows the page at that moment.
+- Say what it means in plain words - "the test that creates a quote could not find the Discount field on the form" - not the stack trace.
+- Do not judge it yourself, and do not re-run it until it passes: a UI test that passes on the second try is flaky, and that is a finding too. The cause can be the change (a field removed from the layout), test data or configuration in the org, the test itself, or a Salesforce release.
+- Hand over. If the E2E Automator is installed, offer to switch to it; otherwise name whoever maintains the UI tests. Problems with the job's login or secrets are pipeline work, as below.
 
 ## Not a failure, but stuck
 
