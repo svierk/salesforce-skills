@@ -66,6 +66,17 @@ describe('scope', () => {
     assert.equal(decide('git push --force', repo(), { DEVOPS_OPERATOR_GUARD: 'off' }), 'allow');
   });
 
+  test('reads the whole event when turned off', () => {
+    // An event larger than the pipe buffer breaks the pipe if the hook exits before reading it.
+    const event = { tool_name: 'Bash', tool_input: { command: 'git status', pad: 'x'.repeat(300000) }, cwd: repo() };
+    const out = execFileSync(shell, [hook], {
+      input: JSON.stringify(event),
+      encoding: 'utf8',
+      env: { ...process.env, DEVOPS_OPERATOR_GUARD: 'off' }
+    });
+    assert.equal(out, '');
+  });
+
   test('stays on for any other value', () => {
     assert.equal(decide('git push --force', repo(), { DEVOPS_OPERATOR_GUARD: 'on' }), 'deny');
   });
