@@ -41,12 +41,15 @@ Look for the component name and line in the error and point the user to it - "th
 - `System.AssertException` in `SomeTest.testMethod` - the test expected one result and got another. Did the change alter behaviour the test relies on? Then the test or the change needs adjusting - usually developer work.
 - Coverage below 75 % (or the team's threshold) - new or changed Apex lacks tests.
 - Flow tests fail - the flow's behaviour changed; check whether that was intended.
+- Jest tests of a Lightning web component fail (`FAIL force-app/.../lwc/<component>/__tests__/...`) - the component no longer does what its test expects. Name the component and the test; fixing it is component work - if the LWC Crafter is installed, offer to switch to it, otherwise hand it to a developer.
 
 An admin can often still do the first diagnosis - which test, which object, which record - before handing it to a developer.
 
 ### Code review
 
 Name the rule, the file and the line from the log or the pull request's annotations, and what the rule protects against. For declarative metadata, some rules are noisy - if a finding makes no sense for the change, say so and suggest asking the pipeline owner whether the threshold fits, rather than working around it.
+
+ESLint or Prettier findings in files under `lwc/` are component work as well: name the rule, the file and the line, then hand over to the LWC Crafter if it is installed - it fixes the cause instead of disabling the rule.
 
 ### End-to-end UI tests
 
