@@ -1,6 +1,6 @@
 ---
 name: salesforce-e2e-automator
-description: 'Writes, runs and maintains end-to-end UI tests for Salesforce Lightning with UTAM, WebdriverIO and the Salesforce UTAM E2E Testing template. TRIGGER when: setting up UTAM E2E tests in a Salesforce project or in CI; turning a user story, ticket, acceptance criteria or manual test case into an automated UI test; writing or fixing a UTAM page object (.utam.json) for a Lightning web component or a Lightning page; looking for the Salesforce page object or method for a part of Lightning Experience; running, debugging or stabilising a failing or flaky UTAM test, also when its CI job failed; updating UI tests and page objects after a Salesforce release or a component change; reviewing a UTAM test suite or its coverage. DO NOT TRIGGER when: writing Apex tests, Jest unit tests for Lightning web components or Flow tests; a failed pull request check that is not the UI test job - that is the DevOps Operator; designing or changing the CI/CD pipeline itself - that is the DevOps Builder; UI testing with Selenium, Playwright, Provar or other tools without UTAM.'
+description: 'Writes, runs and maintains end-to-end UI tests for Salesforce Lightning with UTAM, WebdriverIO and the Salesforce UTAM E2E Testing template. TRIGGER when: setting up UTAM tests in a project or in CI; turning a story, ticket, acceptance criteria or manual test case into an automated UI test; writing or fixing a UTAM page object (.utam.json) for a component or a Lightning page; finding the Salesforce page object or method for a part of Lightning Experience; running, debugging or stabilising a failing or flaky UTAM test, also when its CI job failed; updating UI tests and page objects after a Salesforce release or a component change; reviewing a UTAM suite or its coverage. DO NOT TRIGGER when: writing Apex or Flow tests; building a Lightning web component or its Jest tests - that is the LWC Crafter; a failed pull request check that is not the UI test job - that is the DevOps Operator; changing the CI/CD pipeline itself - that is the DevOps Builder; UI testing without UTAM (Selenium, Playwright, Provar).'
 license: MIT
 ---
 
@@ -96,12 +96,13 @@ Goal: a suite that runs on the current Salesforce release, and a short, ranked l
 - **Review.** Walk the checklist in [references/maintenance.md](references/maintenance.md#review-checklist) - DOM access around page objects, sleeps and retry loops, index-based field access, hard-coded record ids, shared data, weak assertions, missing cleanup. Rank findings by how likely they break a run, each with file, line and fix.
 - **Coverage.** List the business processes the suite covers against the ones the user names as critical. Suggest the next tests by risk, not by count.
 
-## Alongside the DevOps skills
+## Alongside the other skills
 
-This skill does its whole job on its own - set up, CI job, tests, fixes. When the DevOps skills from the same marketplace are installed too, the work splits like this:
+This skill does its whole job on its own - set up, CI job, tests, fixes. When other skills from the same marketplace are installed too, the work splits like this:
 
 - **DevOps Builder** - owns the pipeline around the UI test job: environments, secrets, branch protection, when deployments happen. Changes there are its job; the UI test job itself, and its place in the schedule, stay with this skill. Without the builder, do both, with the same care for secrets.
 - **DevOps Operator** - hands over when a pull request's UI test job fails, having already named the job, the test and the step: start at Fix a test with that. Committing tests and opening the pull request is day-to-day work it guides. Its guard blocks commits on environment branches - one more reason to work on a branch.
+- **LWC Crafter** - builds and changes the Lightning web components the tests click through, and their Jest unit tests. A change to a component's markup can break its page object in `__utam__/`; the crafter names it in its handover - start at Fix a test with that. Ask it for a stable `data-id` where a component offers nothing to select by.
 - **`.github/salesforce-devops.yml`** - read it if it exists: `blueprint` and `environments` place the CI job after the right deployment, `branches` names the work branch. Without it, ask.
 
 ## Reference map
