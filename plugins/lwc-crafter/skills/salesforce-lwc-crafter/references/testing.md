@@ -74,6 +74,7 @@ describe('c-order-summary', () => {
 - **LDS and other wire adapters** (`getRecord`, `getObjectInfo`, `graphql`, `CurrentPageReference`): the project's mocks in `force-app/test/jest-mocks/lightning/`, mapped in `jest.config.js`, built with `createLdsTestWireAdapter` or `createTestWireAdapter`. Read the mock to see which helpers it offers (`emit`, `error`, `emitErrors`, ...); add one from the collection when a component imports a module the project has no mock for.
 - **Static resources and libraries:** mock `lightning/platformResourceLoader` (`loadScript: jest.fn()` resolving or rejecting) and put a fake of the library's global in place - the collection's `orgChartViewer` and `qrCodeGenerator` tests show both.
 - **Browser APIs Jest lacks:** canvas through `jest-canvas-mock`, `ResizeObserver` or `getUserMedia` as small fakes in the test.
+- **Fakes for frames and timers record, they do not run.** A `requestAnimationFrame` fake that calls its callback right away turns an animation loop into endless recursion - and a `catch` in the component can hide the stack overflow, so the test passes. Return an id and assert the call; run a callback by hand when the test needs one frame (`requestAnimationFrame.mock.calls[0][0]()`), or use Jest's fake timers.
 
 ## Base components are stubs
 
