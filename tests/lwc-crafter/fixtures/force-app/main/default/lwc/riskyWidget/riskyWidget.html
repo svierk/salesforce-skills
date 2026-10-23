@@ -1,0 +1,11 @@
+<template>
+  <div if:true={recordId} onclick={close}>
+    <template for:each={rows} for:item="row" for:index="i">
+      <span key={i}>{row.label}</span>
+    </template>
+    <img src={logoUrl} />
+    <lightning-button-icon icon-name="utility:close"></lightning-button-icon>
+    <!-- <script src="commented-out.js"></script> -->
+    <script src="https://cdn.example.com/lib.js"></script>
+  </div>
+</template>
