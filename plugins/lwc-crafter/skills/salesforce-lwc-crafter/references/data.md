@@ -30,6 +30,16 @@ Lightning Data Service (LDS) shares one cache between all components on the page
 The GraphQL wire adapter (`lightning/graphql`) fetches exactly the fields and records needed, with filters, sorting and cursor pagination, through the same LDS cache. Read what the org's release supports - queries, mutations, aggregates - in the developer guide before using it.
 
 - **Values go into `variables`**, never into the query string. A search term built into the query text breaks on the first quote and lets the user change the query. The query itself may be built from trusted configuration - object and field names an admin set - but validate them against `getObjectInfo` first.
+- **Variables are typed by field type.** The filter operators of the UI API expect their value in the field's own type: `like` on a text field takes a `String`, on an email field an `Email`, on a phone field a `PhoneNumber` - one `String` variable for all searched fields fails validation. Declare one variable per type you need, and read the types from the org's schema instead of guessing them: `__type(name: "<Object>_Filter")` lists the operator type per field, `__type(name: "<Type>Operators")` the value type per operator.
+- **Only filterable fields in a filter.** `getObjectInfo` marks each field `filterable`; long text areas are not, and one of them in a `where` fails the whole query.
+- **Check a generated query against the org** before you trust it - the UI API's GraphQL endpoint accepts the same query and variables, and its error messages name the problem:
+
+  ```bash
+  sf api request rest /services/data/v<api version>/graphql --method POST --body @query.json --target-org <alias>
+  ```
+
+  `query.json` holds `{ "query": "...", "variables": { ... } }` - take the query the component builds, for example from `getLastConfig()` of the wire adapter in a Jest test.
+
 - **Paginate with cursors** (`first`, `after`, `pageInfo.endCursor`), as the collection's `graphqlDatatable` does.
 - **Refresh** with the `refresh` function the wire result provides.
 
