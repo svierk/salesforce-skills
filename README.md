@@ -29,7 +29,7 @@ Built around the [Awesome LWC Collection](https://github.com/svierk/awesome-lwc-
 
 | Plugin                                | For                   | Does                                                                                                                 | Status  |
 | ------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------- | ------- |
-| [⚡ lwc-crafter](plugins/lwc-crafter) | Salesforce developers | Build, fix and review Lightning Web Components - reuse first, secure, tested and accessible - and set up the tooling | Planned |
+| [⚡ lwc-crafter](plugins/lwc-crafter) | Salesforce developers | Build, fix and review Lightning Web Components - reuse first, secure, tested and accessible - and set up the tooling | Preview |
 
 ## 🚀 Install
 
@@ -40,6 +40,7 @@ In Claude Code:
 /plugin install devops-builder@salesforce-skills
 /plugin install devops-operator@salesforce-skills
 /plugin install e2e-automator@salesforce-skills
+/plugin install lwc-crafter@salesforce-skills
 ```
 
 In editors without the `/plugin` command, the CLI does the same: `claude plugin marketplace add svierk/salesforce-skills`, then `claude plugin install <plugin>@salesforce-skills`.
@@ -56,7 +57,8 @@ To give a whole team the skills, add the marketplace and the plugins to the **pr
   "enabledPlugins": {
     "devops-builder@salesforce-skills": true,
     "devops-operator@salesforce-skills": true,
-    "e2e-automator@salesforce-skills": true
+    "e2e-automator@salesforce-skills": true,
+    "lwc-crafter@salesforce-skills": true
   }
 }
 ```
