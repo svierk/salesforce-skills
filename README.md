@@ -23,6 +23,14 @@ Built around the [Salesforce UTAM E2E Testing](https://github.com/svierk/salesfo
 | ----------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------- | ------- |
 | [🧪 e2e-automator](plugins/e2e-automator) | Developers, testers, test automation | Turn stories into UTAM UI tests, write page objects for custom components, fix and upgrade the suite | Preview |
 
+### Development
+
+Built around the [Awesome LWC Collection](https://github.com/svierk/awesome-lwc-collection) - ready-to-use Lightning Web Components with Jest tests, accessibility checks and documentation, and the project setup around them.
+
+| Plugin                                | For                   | Does                                                                                                                 | Status  |
+| ------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------- | ------- |
+| [⚡ lwc-crafter](plugins/lwc-crafter) | Salesforce developers | Build, fix and review Lightning Web Components - reuse first, secure, tested and accessible - and set up the tooling | Planned |
+
 ## 🚀 Install
 
 In Claude Code:

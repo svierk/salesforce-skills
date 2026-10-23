@@ -1,0 +1,17 @@
+{
+  "description": "Guardrail for Lightning web components: after every write to a component file, errors that must never ship - blocked or unsafe APIs, dynamic code, scripts from other hosts, Aura globals - go straight back to the agent to fix.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/lwc-guard.sh\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

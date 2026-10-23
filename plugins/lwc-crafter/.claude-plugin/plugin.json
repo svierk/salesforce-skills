@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "lwc-crafter",
+  "version": "0.0.0",
+  "description": "Build, fix, review and set up Lightning Web Components with the Awesome LWC Collection's practices - reuse first, platform data, secure by default, tested and accessible - with a guard that checks every component file as it is written.",
+  "author": {
+    "name": "Sebastiano Schwarz",
+    "url": "https://github.com/svierk"
+  },
+  "homepage": "https://github.com/svierk/salesforce-skills/tree/main/plugins/lwc-crafter",
+  "repository": "https://github.com/svierk/salesforce-skills",
+  "license": "MIT",
+  "keywords": ["salesforce", "lwc", "lightning-web-components", "jest", "slds"]
+}
