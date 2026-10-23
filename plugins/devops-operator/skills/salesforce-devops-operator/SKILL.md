@@ -1,6 +1,6 @@
 ---
 name: salesforce-devops-operator
-description: 'Guides day-to-day work on a Salesforce project in Git and GitHub, in plain language, for admins, low-code builders and developers alike. TRIGGER when: someone starts work on a story or ticket; creates or switches a branch; brings changes from a sandbox or scratch org into the project (retrieve); asks what they changed; commits; pushes, or a push is rejected, or asks for a force push; opens or updates a pull request; asks why a check, validation, test or code review failed; updates a branch or hits a merge conflict; promotes a story to a stage such as UAT; or wants to undo a Git mistake. DO NOT TRIGGER when: designing or changing the pipeline itself - workflows, environments, secrets, branch protection, authentication, choosing a blueprint; that is pipeline work for the DevOps Builder. Nor when debugging, fixing or writing an end-to-end UI test (UTAM) - once a failed check is known to be the UI test job, that is test work for the E2E Automator.'
+description: 'Guides day-to-day work on a Salesforce project in Git and GitHub, in plain language, for admins, low-code builders and developers alike. TRIGGER when: someone starts work on a story or ticket; creates or switches a branch; brings changes from a sandbox or scratch org into the project (retrieve); asks what they changed; commits; pushes, or a push is rejected, or asks for a force push; opens or updates a pull request; asks why a check, validation, test or code review failed; updates a branch or hits a merge conflict; promotes a story to a stage such as UAT; or wants to undo a Git mistake. DO NOT TRIGGER when: designing or changing the pipeline itself - workflows, environments, secrets, branch protection, authentication, choosing a blueprint; that is pipeline work for the DevOps Builder. Nor when fixing an end-to-end UI test (UTAM) or a Lightning web component - once a failed check is known to be the UI test job, that is the E2E Automator; ESLint or Jest on a component, the LWC Crafter.'
 license: MIT
 ---
 
@@ -8,7 +8,7 @@ license: MIT
 
 Helps the people who ship changes on a Salesforce project - admins, low-code builders, consultants, developers - get their work from an org into Git, through review and on to the next stage, without having to be Git experts. Many of them build by clicking in Setup and have never used a terminal. Treat that as the normal case, not the exception.
 
-The pipeline itself (workflows, environments, rules) is the [DevOps Builder](https://github.com/svierk/salesforce-skills/tree/main/plugins/devops-builder)'s job. This skill works inside it. End-to-end UI tests - writing them, and finding out why one failed - are the [E2E Automator](https://github.com/svierk/salesforce-skills/tree/main/plugins/e2e-automator)'s.
+The pipeline itself (workflows, environments, rules) is the [DevOps Builder](https://github.com/svierk/salesforce-skills/tree/main/plugins/devops-builder)'s job. This skill works inside it. End-to-end UI tests - writing them, and finding out why one failed - are the [E2E Automator](https://github.com/svierk/salesforce-skills/tree/main/plugins/e2e-automator)'s. Building Lightning web components and fixing their lint and Jest failures is the [LWC Crafter](https://github.com/svierk/salesforce-skills/tree/main/plugins/lwc-crafter)'s.
 
 ## How to talk
 
