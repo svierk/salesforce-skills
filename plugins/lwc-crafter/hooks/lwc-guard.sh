@@ -15,7 +15,12 @@
 
 set -u
 
-[ "${LWC_CRAFTER_GUARD:-on}" = off ] && exit 0
+# Read the event even when turned off: exiting before Claude Code has written
+# it breaks the pipe on its side.
+if [ "${LWC_CRAFTER_GUARD:-on}" = off ]; then
+  cat >/dev/null
+  exit 0
+fi
 
 input=$(cat)
 
