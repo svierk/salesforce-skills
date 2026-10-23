@@ -1,0 +1,5 @@
+.slds-button_brand {
+  background-color: #ff0000 !important;
+  border: var(--lwc-borderWidthThin, 1px) solid rgb(201, 201, 201);
+  --slds-c-button-color-background: red;
+}

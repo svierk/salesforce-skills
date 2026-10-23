@@ -1,0 +1,16 @@
+<template>
+  <lightning-card title={title} icon-name="standard:account">
+    <template lwc:if={hasItems}>
+      <ul>
+        <template for:each={items} for:item="item">
+          <li key={item.id}>{item.label}</li>
+        </template>
+      </ul>
+    </template>
+    <template lwc:else>
+      <p class="empty">{labels.empty}</p>
+    </template>
+    <lightning-button-icon icon-name="utility:refresh" alternative-text="Refresh" onclick={handleRefresh}></lightning-button-icon>
+    <img src={logoUrl} alt="" />
+  </lightning-card>
+</template>

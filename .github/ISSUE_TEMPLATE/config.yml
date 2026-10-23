@@ -6,3 +6,6 @@ contact_links:
   - name: 🧪 Salesforce UTAM E2E Testing
     url: https://github.com/svierk/salesforce-utam-e2e-testing
     about: A bug in the UTAM template's configuration, login script or example tests belongs in the template's repository.
+  - name: ⚡ Awesome LWC Collection
+    url: https://github.com/svierk/awesome-lwc-collection
+    about: A bug in one of the collection's components, its tests or its project setup belongs in the collection's repository.

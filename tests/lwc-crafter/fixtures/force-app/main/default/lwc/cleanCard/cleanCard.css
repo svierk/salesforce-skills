@@ -1,0 +1,5 @@
+/* a fallback inside var() is fine: color: #fff */
+.empty {
+  color: var(--slds-g-color-on-surface-2, #5c5c5c);
+  padding: var(--slds-g-spacing-3, 0.75rem);
+}
