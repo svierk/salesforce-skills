@@ -59,6 +59,20 @@ describe('lwc guard', () => {
     assert.equal(afterWrite(`${fixtures}riskyWidget/riskyWidget.js`, { LWC_CRAFTER_GUARD: 'off' }), '');
   });
 
+  test('reads the whole event when turned off', () => {
+    // An event larger than the pipe buffer breaks the pipe if the hook exits before reading it.
+    const event = {
+      tool_name: 'Write',
+      tool_input: { file_path: `${fixtures}cleanCard/cleanCard.js`, content: 'x'.repeat(300000) }
+    };
+    const out = execFileSync(shell, [hook], {
+      input: JSON.stringify(event),
+      encoding: 'utf8',
+      env: { ...process.env, CLAUDE_PLUGIN_ROOT: pluginRoot, LWC_CRAFTER_GUARD: 'off' }
+    });
+    assert.equal(out, '');
+  });
+
   test('reads the file as written, not the fixture it came from', () => {
     const dir = mkdtempSync(join(tmpdir(), 'lwc-guard-'));
     const component = join(dir, 'force-app', 'main', 'default', 'lwc', 'cleanCard');
