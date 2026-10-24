@@ -37,7 +37,7 @@ Built on Playwright, Google Chrome and ffmpeg - demo videos of Salesforce orgs, 
 
 | Plugin                                    | For                                               | Does                                                                                                                                              | Status  |
 | ----------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| [🎬 demo-designer](plugins/demo-designer) | Consultants, presales, developers, product owners | Storyboard, record and render demo videos with cursor, captions, cards and subtitles - for bids and pitches, sprint reviews, teasers and training | Planned |
+| [🎬 demo-designer](plugins/demo-designer) | Consultants, presales, developers, product owners | Storyboard, record and render demo videos with cursor, captions, cards and subtitles - for bids and pitches, sprint reviews, teasers and training | Preview |
 
 ## 🚀 Install
 
@@ -49,6 +49,7 @@ In Claude Code:
 /plugin install devops-operator@salesforce-skills
 /plugin install e2e-automator@salesforce-skills
 /plugin install lwc-crafter@salesforce-skills
+/plugin install demo-designer@salesforce-skills
 ```
 
 In editors without the `/plugin` command, the CLI does the same: `claude plugin marketplace add svierk/salesforce-skills`, then `claude plugin install <plugin>@salesforce-skills`.
@@ -66,7 +67,8 @@ To give a whole team the skills, add the marketplace and the plugins to the **pr
     "devops-builder@salesforce-skills": true,
     "devops-operator@salesforce-skills": true,
     "e2e-automator@salesforce-skills": true,
-    "lwc-crafter@salesforce-skills": true
+    "lwc-crafter@salesforce-skills": true,
+    "demo-designer@salesforce-skills": true
   }
 }
 ```
