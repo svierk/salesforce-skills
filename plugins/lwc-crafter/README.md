@@ -23,7 +23,7 @@ For Salesforce developers. Most problems with Lightning web components are not h
 Drawn from the collection, the Salesforce LWC Developer Guide and Salesforce's own anti-pattern series:
 
 - **Reuse before you build** - standard feature, base component, collection, recipes, and only then new code.
-- **Platform data first** - Lightning Data Service, then GraphQL, then Apex; one data source per record; the cache refreshed after every write.
+- **Platform data first, Apex last** - Lightning Data Service, then GraphQL - for lists, related records, aggregates and writes that would otherwise need a custom controller - and Apex only for what neither can do; one data source per record; the cache refreshed after every write.
 - **Secure by default** - no HTML strings in the DOM, no dynamic code, libraries as static resources; every `@AuraEnabled` method treated as the public endpoint it is.
 - **What a component starts, it stops** - listeners, timers, observers, subscriptions, libraries.
 - **SLDS 2 ready** - styling hooks instead of fixed colors and overrides, so themes and dark mode work.

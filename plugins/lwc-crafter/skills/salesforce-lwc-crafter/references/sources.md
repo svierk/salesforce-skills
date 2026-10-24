@@ -39,7 +39,7 @@ curl -s https://svierk.github.io/awesome-lwc-collection/components/<component>.m
 curl -s https://svierk.github.io/awesome-lwc-collection/llms-full.txt                  # every page in one file
 ```
 
-Search the index for the need ("table", "file", "map", "signature", "combobox") before building. A component page lists what it depends on - other components (`c/...`), Apex classes (`@salesforce/apex/...`), static resources (`@salesforce/resourceUrl/...`), field sets - and all of it has to come along when you copy it.
+Search the index for the need ("table", "file", "map", "signature", "combobox") before building, and for "GraphQL" when a component would otherwise need Apex to read or write records. A component page lists what it depends on - other components (`c/...`), Apex classes (`@salesforce/apex/...`), static resources (`@salesforce/resourceUrl/...`), field sets - and all of it has to come along when you copy it.
 
 To copy a component, read every file of its folder, its `__tests__` with the data files, and each dependency. For several files, a shallow clone into the session's scratchpad directory is faster than one request per file:
 
@@ -61,6 +61,9 @@ The collection is maintained, but older components can predate a recommendation.
 | How LWC works: templates, lifecycle, events, data, security | LWC Developer Guide, `https://developer.salesforce.com/docs/platform/lwc/guide`                                                                                                   |
 | Attributes, methods, events and slots of a base component   | Component Reference, `https://developer.salesforce.com/docs/component-library/overview/components`                                                                                |
 | Which data source: LDS, GraphQL, Apex                       | LWC Developer Guide, "Data Guidelines" (`/guide/data-guidelines.html`)                                                                                                            |
+| GraphQL queries, aggregates and what the release supports   | GraphQL API Developer Guide, "GraphQL Wire Adapter for LWC", `https://developer.salesforce.com/docs/platform/graphql/guide/graphql-wire-lwc.html`                                 |
+| GraphQL mutations from a component                          | LWC Developer Guide, `executeMutation` reference (`/guide/reference-graphql-mutation.html`); limits in the GraphQL API Developer Guide, "Mutations Limitations"                   |
+| Why and how to move a component from Apex to GraphQL        | "Replace Apex with GraphQL in Your Salesforce UI Architecture" (Medium), linked from the catalog pages of `graphqlDatatable` and `graphqlMapView`                                 |
 | What Lightning Web Security changes in an API               | Lightning Web Security guide and its Distortion Viewer, `https://developer.salesforce.com/docs/platform/lightning-components-security/guide`                                      |
 | Styling hooks, SLDS 2, utility classes, blueprints          | `https://www.lightningdesignsystem.com` and LWC Developer Guide, "Style Components"                                                                                               |
 | Styling that is not supported                               | LWC Developer Guide, "Anti-Patterns for Styling Components" (`/guide/create-components-css-antipatterns.html`)                                                                    |
