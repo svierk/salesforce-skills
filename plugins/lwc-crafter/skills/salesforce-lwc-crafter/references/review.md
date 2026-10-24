@@ -56,7 +56,7 @@ The rules are deliberately simple patterns. A finding the team decided to keep g
 Ranked by how much harm each item does when it is wrong. After the tools, read every bundle in scope for:
 
 1. **Security** - HTML or URLs built from data, Apex methods without `with sharing`, user mode, bind variables or allowlists, secrets in JavaScript, decisions the client makes that the server should ([security.md](security.md)).
-2. **Wrong or stale data** - Apex and LDS for the same record, no refresh after an imperative write, changed wired data, handlers that assume order or run once, missing error and empty states ([data.md](data.md)).
+2. **Wrong or stale data** - Apex and LDS for the same record, no refresh after an imperative write, changed wired data, handlers that assume order or run once, missing error and empty states, unchecked `errors` of a GraphQL result; Apex that only reads or writes what LDS or GraphQL would - a second cache and an endpoint to maintain ([data.md](data.md#graphql-before-apex)).
 3. **Leaks** - what `connectedCallback` starts and `disconnectedCallback` does not stop; work in `renderedCallback` without a guard ([runtime.md](runtime.md#lifecycle)).
 4. **Broken contracts** - `@api` properties changed inside, events with internal objects in `detail` or unnecessary `composed`, targets or properties in `js-meta.xml` that do not match the code, public API changes without a note about existing placements ([design.md](design.md#public-api)).
 5. **Accessibility** - clickable elements that are not buttons or links, inputs without labels, meaning carried by color alone, missing `toBeAccessible()` ([styling-and-accessibility.md](styling-and-accessibility.md#accessibility)).

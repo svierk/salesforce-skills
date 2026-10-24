@@ -8,11 +8,13 @@ Go down the list and stop at the first step that covers the need:
 
 1. **Standard feature.** Dynamic Forms, related lists, list views, path, Flow screens with standard components, quick actions with a page layout. A requirement that a standard feature covers needs configuration, not code - say so, even when the user asked for a component.
 2. **Base component.** `lightning-record-form`, `lightning-datatable`, `lightning-combobox`, `lightning-dual-listbox`, `lightning-file-upload`, `lightning-map`, `lightning/modal` and the rest of the Component Reference - accessible, styled, maintained by Salesforce. Check its attributes in the reference before deciding it does not fit.
-3. **The collection.** Search its catalog ([sources.md](sources.md#the-catalog)) - a configurable datatable over a field set or GraphQL, a multi-select combobox, file tables, maps, signature capture, QR codes, an org chart, PDF helpers and more.
+3. **The collection.** Search its catalog ([sources.md](sources.md#the-catalog)) - configurable datatables and map views, each also built on GraphQL without Apex, a multi-select combobox, file tables, signature capture, QR codes, an org chart, PDF helpers and more.
 4. **Salesforce recipes.** `lwc-recipes` shows the pattern for most single concepts.
 5. **Build it** - small, with a contract designed below.
 
 **Copying from the collection.** Take the whole unit: the bundle, its `__tests__` folder with the data files, the README, the Apex classes with their test classes, static resources, field sets and every component it imports. Keep the name unless it clashes. Then run the checker on the copy and fix what it reports there, adjust labels and texts to the project, and run the tests. A copied component without its tests is a component nobody can change safely.
+
+**Prefer the GraphQL variant.** Where the collection offers a component in a GraphQL version next to one with its own data layer - `graphqlDatatable` and `customDatatable`, `graphqlMapView` and `customMapView` - copy the GraphQL one: no Apex class, test class or class access to bring along and maintain ([data.md](data.md#graphql-before-apex)). Take the other only for what GraphQL cannot do, such as columns from a field set, and say so.
 
 ## Boundaries
 
