@@ -15,6 +15,7 @@ body:
         - devops-operator
         - e2e-automator
         - lwc-crafter
+        - demo-designer
     validations:
       required: true
   - type: input
