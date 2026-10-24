@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "lwc-crafter",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Build, fix, review and set up Lightning Web Components with the Awesome LWC Collection's practices - reuse first, platform data, secure by default, tested and accessible - with a guard that checks every component file as it is written.",
   "author": {
     "name": "Sebastiano Schwarz",
