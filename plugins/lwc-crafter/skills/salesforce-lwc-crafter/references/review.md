@@ -38,7 +38,6 @@ Reviewing components and finding out why one is broken. The tools find patterns;
 | `click-only`            | warning  | `onclick` on `div`, `span`, `li`, `td` or `img` without a `role`, or on an `a` without `href`                   |
 | `slds-override`         | warning  | CSS selectors on `.slds-*` classes                                                                              |
 | `design-token`          | warning  | SLDS 1 design tokens (`--lwc-*`)                                                                                |
-| `component-hook`        | warning  | Component-level styling hooks (`--slds-c-*`)                                                                    |
 | `hardcoded-color`       | warning  | Hex, `rgb()` or `hsl()` colors outside a `var()` fallback                                                       |
 | `important`             | warning  | `!important`                                                                                                    |
 | `meta-api-version`      | warning  | `js-meta.xml` without `apiVersion`                                                                              |
