@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "demo-designer",
+  "version": "0.0.0",
+  "description": "Design and record polished demo videos of Salesforce orgs, apps and sites - scripted click paths with cursor, captions, intro and outro cards, transitions and subtitles - for bids and pitches, sprint reviews, release teasers and training.",
+  "author": {
+    "name": "Sebastiano Schwarz",
+    "url": "https://github.com/svierk"
+  },
+  "homepage": "https://github.com/svierk/salesforce-skills/tree/main/plugins/demo-designer",
+  "repository": "https://github.com/svierk/salesforce-skills",
+  "license": "MIT",
+  "keywords": ["salesforce", "demo", "video", "screencast", "presales"]
+}
