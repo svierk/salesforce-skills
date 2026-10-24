@@ -404,13 +404,6 @@ const rules = [
     check: ({ code }) => matchLines(code, /var\(\s*--lwc-[A-Za-z]/g)
   },
   {
-    id: 'component-hook',
-    kind: 'css',
-    severity: 'warning',
-    message: 'Component-level styling hooks (--slds-c-*) are not supported in SLDS 2.',
-    check: ({ code }) => matchLines(code, /--slds-c-[\w-]+/g)
-  },
-  {
     id: 'hardcoded-color',
     kind: 'css',
     severity: 'warning',

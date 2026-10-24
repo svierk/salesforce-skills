@@ -15,19 +15,22 @@ How a component looks like Lightning in every theme - light, dark, SLDS 1 and SL
 - **Generated class names or attributes** of the LWC engine.
 - **`!important`** - a fight with SLDS that a class of your own or a styling hook wins cleanly.
 
-**Colors, spacing, fonts, borders through global styling hooks** (`--slds-g-*`), with a fallback for orgs still on SLDS 1:
+**Colors, spacing, fonts, borders through global styling hooks** (`--slds-g-*`), with a fallback value:
 
 ```css
 .summary {
-  color: var(--slds-g-color-on-surface-2, #5c5c5c);
+  color: var(--slds-g-color-on-surface-2, #2e2e2e);
   padding: var(--slds-g-spacing-3, 0.75rem);
   border-radius: var(--slds-g-radius-border-2, 0.25rem);
 }
 ```
 
-- **Fixed colors** (`#fff`, `rgb(...)`) ignore the theme and break dark mode.
+**Pick the hook by its SLDS 1 value.** The global hooks are defined in SLDS 1 orgs too, partly with other values than in SLDS 2 - `--slds-g-radius-border-1` is smaller in SLDS 1, for example. When a fixed value becomes a hook, take the hook whose SLDS 1 value equals it and keep that value as fallback: the component looks the same in SLDS 1 and follows the theme in SLDS 2. The SLDS Linter suggests hooks by their SLDS 2 value, so check its suggestion. Both values of every hook are in the `@salesforce-ux/sds-metadata` package, which the linter installs: `current/globalStylingHooks.metadata.json`, fields `values.slds` and `values.cosmos`. For colors, pick the hook by its role - border, surface, accent, text - and take its SLDS 1 value as fallback.
+
+- **Fixed colors** (`#fff`, `rgb(...)`) ignore the theme and break dark mode. The exception is a surface that has to stay light or dark in every theme, such as the background of a QR code, a canvas with a black pen, or a text overlay on an image - keep its color, with a comment that says why.
+- **Layout sizes** (`100%`, the height of a chart or canvas) stay as they are, even where the linter suggests a sizing hook with a similar value.
 - **SLDS 1 design tokens** (`--lwc-colorBorder`, `--lwc-borderWidthThin`) do not exist in SLDS 2.
-- **Component-level hooks** (`--slds-c-*`) are not supported in SLDS 2.
+- **Component-level hooks** (`--slds-c-*`) only as the base component documents them for SLDS 2. Several SLDS 1 names were renamed; the SLDS Linter reports the old ones.
 
 Look up the hook names on `lightningdesignsystem.com` - do not invent them. The SLDS Linter checks CSS and templates for SLDS 2 and fixes much of it:
 
@@ -35,6 +38,8 @@ Look up the hook names on `lightningdesignsystem.com` - do not invent them. The 
 npx @salesforce-ux/slds-linter lint force-app/main/default/lwc/<component>
 npx @salesforce-ux/slds-linter lint force-app/main/default/lwc/<component> --fix
 ```
+
+The Salesforce Code Analyzer runs the same rules in its ESLint engine, tagged `SLDS`. A `code-analyzer.yml` that turns the engine off drops them too; to avoid duplicate JavaScript findings next to the project's own ESLint, turn off the engine's JavaScript and LWC base configs instead.
 
 **Layout:** `lightning-layout` or SLDS grid classes, responsive with the `slds-*-size_*` classes or a media query. Logical properties (`margin-inline-start`, `padding-block`) instead of left and right work in right-to-left languages too.
 

@@ -91,6 +91,7 @@ npm view @salesforce-ux/slds-linter version
 | `@salesforce/eslint-plugin-lightning` | Salesforce platform rules that the configurations above use                                      |
 | `@sa11y/jest`                         | `toBeAccessible()` - automated accessibility checks in Jest                                      |
 | `@salesforce-ux/slds-linter`          | SLDS 2 readiness for CSS and templates, with `--fix` and a SARIF report                          |
+| `@salesforce-ux/sds-metadata`         | The data behind it: every styling hook with its SLDS 1 and SLDS 2 value, renamed component hooks |
 
 ## Salesforce CLI
 
@@ -101,7 +102,7 @@ sf template generate lightning component --type lwc --name <name> --output-dir <
 sf lightning dev component --name <name> --target-org <alias>          # Local Dev: one component, hot reload
 sf lightning dev app --target-org <alias>                              # Local Dev: a Lightning app
 sf project deploy start --source-dir <bundle> --target-org <alias>
-sf code-analyzer run --workspace force-app --view table                # ESLint, PMD, regex, RetireJS and more - Apex security included
+sf code-analyzer run --workspace force-app --view table                # ESLint with the SLDS rules, PMD, regex, RetireJS and more - Apex security included
 npx @salesforce-ux/slds-linter lint <folder>                           # SLDS 2 readiness, add --fix to fix what it can
 ```
 

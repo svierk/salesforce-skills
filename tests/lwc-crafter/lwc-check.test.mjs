@@ -88,7 +88,6 @@ describe('a component with anti-patterns', () => {
       'riskyWidget.css:2 hardcoded-color',
       'riskyWidget.css:2 important',
       'riskyWidget.css:3 design-token',
-      'riskyWidget.css:4 component-hook',
       'riskyWidget.js-meta.xml:1 meta-api-version',
       'riskyWidget.js-meta.xml:1 meta-targets',
       'riskyWidget.js-meta.xml:1 meta-label',

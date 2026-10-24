@@ -27,7 +27,7 @@ Compare each item with the project before writing, and show the user the list of
 
 8. **`.forceignore`.** `**/__tests__/**`, `**/jsconfig.json`, `**/.eslintrc.json`, `**/tsconfig.json` - test and editor files do not belong in the org. The collection also ignores `**/*.ts`; leave that line out if the project writes components in TypeScript. If the project has UTAM page objects, `**/__utam__/**` belongs here too.
 9. **Editor.** `.vscode/extensions.json` and `.vscode/settings.json` (format on save, ESLint for JavaScript and HTML) - offer, do not impose.
-10. **Optional, for teams that publish components:** the README check (`scripts/check-readmes.mjs` as `lint:readme`, with the component folder adjusted to the project) and the Code Analyzer configuration (`code-analyzer.yml`, which turns off the analyzer's own ESLint engine because the project's ESLint already runs).
+10. **Optional, for teams that publish components:** the README check (`scripts/check-readmes.mjs` as `lint:readme`, with the component folder adjusted to the project) and the Code Analyzer configuration (`code-analyzer.yml`, which keeps only the SLDS rules of the analyzer's ESLint engine, because the project's ESLint already lints the JavaScript).
 
 ## Prove it
 
