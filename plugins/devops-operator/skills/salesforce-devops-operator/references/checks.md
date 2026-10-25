@@ -51,6 +51,12 @@ Name the rule, the file and the line from the log or the pull request's annotati
 
 ESLint or Prettier findings in files under `lwc/` are component work as well: name the rule, the file and the line, then hand over to the LWC Crafter if it is installed - it fixes the cause instead of disabling the rule.
 
+### UI bundles
+
+A project on Salesforce Multi-Framework has React or Angular apps under `uiBundles/`, each with its own lint, tests and build - often a job of its own per bundle. When one of them fails, name the bundle, the step and the first error, then hand over: that is app work - if the Multi-Framework Wizard is installed, offer to switch to it, otherwise hand it to a developer.
+
+A validation or deployment that fails with `Expected source files for type 'UIBundle'` is different: the bundle was deployed without its build output. On a pull request that is the pipeline - it must build every bundle before it deploys - so it goes to the pipeline owner or the DevOps Builder, not into the change.
+
 ### End-to-end UI tests
 
 A job named like "E2E UI Tests" or running `wdio` opens an org in a browser and clicks through a business process. When it fails:
