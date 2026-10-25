@@ -16,6 +16,7 @@ body:
         - e2e-automator
         - lwc-crafter
         - demo-designer
+        - multi-framework-wizard
     validations:
       required: true
   - type: input
