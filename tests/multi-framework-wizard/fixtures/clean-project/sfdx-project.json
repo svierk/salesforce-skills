@@ -1,0 +1,5 @@
+{
+  "packageDirectories": [{ "path": "force-app", "default": true }],
+  "name": "clean-project",
+  "sourceApiVersion": "67.0"
+}

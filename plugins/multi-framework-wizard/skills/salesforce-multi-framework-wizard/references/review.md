@@ -1,0 +1,105 @@
+# Review
+
+The X-ray's rules, a checklist for what tools cannot see, and the symptoms of a broken surface with their causes.
+
+## X-ray rules
+
+`scripts/xray.mjs` reads code files without their comments, seed data in `data` folders and the metadata of bundles, apps, permission sets and trusted sites. It skips `node_modules`, build output, `__tests__`, `e2e` and `*.test.*` / `*.spec.*` files. Run it on the Polyglot Arcade release to see a clean project with all four patterns.
+
+| Rule                         | Severity | Finds                                                                                                              |
+| ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
+| `org-relative-bundle-url`    | error    | `/lightning/app/<namespace>__<bundle app>` - opens an empty Lightning app instead of the bundle                    |
+| `hardcoded-bundle-url`       | error    | A concrete `https://<...>.salesforce.app` URL in code or seed data - it belongs to one org                         |
+| `postmessage-any-origin`     | error    | `postMessage(..., '*')`                                                                                            |
+| `sdk-in-lwr`                 | error    | `@salesforce/platform-sdk` imported in an app with `lwr.config.json` - LWR cannot load it                          |
+| `embed-no-csp`               | error    | Host LWCs, but no active frame-src trusted site in the package directories                                         |
+| `csp-wildcard`               | error    | A trusted site for `*` or `*.<top-level domain>`; as a warning, any other wildcard than `https://*.salesforce.app` |
+| `message-origin-check`       | warning  | A window `message` listener in a file that never reads `.origin` (MessagePort listeners are left out)              |
+| `lightning-link-without-app` | warning  | `/lightning/n/`, `/lightning/r/` or `/lightning/o/` in a UI bundle without `/lightning/app/<app>` before it        |
+| `api-version-literal`        | warning  | `/services/data/vNN.N` in a UI bundle                                                                              |
+| `embed-remount`              | warning  | `lightning-ui-embedding` with a bound `src` and no `key` - the frame cannot take a new URL                         |
+| `embed-error-unhandled`      | warning  | A host LWC that never listens to `sf-embedding.component.error`                                                    |
+| `embed-bootstrap`            | warning  | A bundle that calls `getViewSDK` or `createViewSDK` but never imports `@salesforce/platform-sdk/ui-embedding`      |
+| `csp-internal-frame`         | warning  | An embeddable bundle and a host, but no active frame-src trusted site for `https://*.salesforce.app`               |
+| `jest-embedding-stub`        | warning  | A host LWC with Jest tests and no jest config that maps `lightning/uiEmbedding`                                    |
+| `bundle-no-app`              | warning  | A UIBundle with target `CustomApplication` that no Custom Application points at                                    |
+| `app-hidden`                 | warning  | A permission set that makes a bundle's app invisible - which removes the access                                    |
+| `dev-site-in-package`        | warning  | A `localhost` trusted site inside a package directory                                                              |
+| `embed-sandbox`              | info     | `lightning-ui-embedding` without a `sandbox` attribute                                                             |
+| `csp-extra-directives`       | info     | A frame-src trusted site that allows other directives too                                                          |
+| `bundle-not-built`           | info     | A bundle without its build output folder - build before deploying                                                  |
+
+The map above the findings lists the bundles with framework, app, Data SDK, embeddability and build state, the Lightning apps, the host LWCs with their frames, events and message channels, the trusted sites for frames, the LWR guests, and the integration patterns in Polyglot Arcade's numbering.
+
+## Review checklist
+
+Read the design and the code in this order - the first items hurt most when they are wrong.
+
+**Trust and security**
+
+- Every guest's input is validated by whoever writes it; results are attributed to what the host knows, not what the guest says.
+- No session, token or frontdoor URL reaches an external guest; no secret is in a bundle's code or build.
+- Window messages go to one origin and are accepted from one; the bridge runs every envelope check.
+- Trusted sites: one per origin, frame-src only, no wildcard beyond `*.salesforce.app`, development origins outside the package directories.
+- Org-wide settings the design needs - Edge Network, first-party cookies, trusted domains for inline frames - are listed, with their trade-off, in the setup docs.
+- Apex reached from a bundle is secured as a public endpoint.
+
+**Data integrity**
+
+- One data path per record: every surface reads and writes through the UI API; nobody copies data across a frame to write it a second time.
+- The permission set grants exactly what each surface queries, and players or users cannot edit what they should only create.
+- Live reads skip the cache; Lightning components refresh after a fan-out message.
+- Seed data is upserted by external IDs, and the setup is safe to run again.
+
+**Composition and roles**
+
+- One entry point; machines redirect to it; composition happens in a Lightning app of its own.
+- Each frame has a named pattern and a writer; the host shows errors and a setup hint instead of an empty frame.
+- Props and events are documented on both sides with mirrored types; props objects are stable; dotted lifecycle events are bound in code.
+- Every surface works standalone and embedded; the View SDK is feature-detected.
+
+**Navigation and configuration**
+
+- Links into Lightning name their app; links to bundles use the stored start URL; sibling bundles are derived from `SFDC_ENV`.
+- Org-specific URLs are written by a connect step onto configuration records - one place per fact.
+- What can be derived from configuration - pattern, embed URL, back link - is derived in one tested function.
+
+**Build and deploy**
+
+- Every bundle is built before every deploy - locally, in the setup, in the pipeline.
+- The setup names the org on every command, stops on production, and survives a second run - ideally proven by a release workflow.
+- Templates' license headers and notices are kept.
+
+**Tests and accessibility**
+
+- Framework-free logic has unit tests; each bundle has end-to-end tests against its static build with axe and touch; host LWCs have Jest tests with the embedding stub and an accessibility assertion.
+- The frame has an accessible title; the end of an interaction is announced in a live region.
+
+**Documentation**
+
+- An overview diagram, a diagram per pattern, a sequence per cross-frame interaction, an ER diagram.
+- An ADR per decision that rules out an option, with the platform facts and what was verified on which release.
+
+## Diagnosing
+
+| Symptom                                                                            | Likely cause and fix                                                                                                                                                                                                                                                                                                                             |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| The frame stays blank, or reports `HEARTBEAT_TIMEOUT`                              | No active frame-src trusted site for the guest's origin; the guest forbids framing (`X-Frame-Options`, `frame-ancestors`); the guest never sends its heartbeat - the `ui-embedding` bootstrap is not imported, or the bridge is inactive because `hostMetaData` is missing; the org's default language is not English or it is not on Hyperforce |
+| `SAME_ORIGIN_SRC`                                                                  | The `src` is on the org's own origin. Host the guest elsewhere                                                                                                                                                                                                                                                                                   |
+| `SESSION_BINDING_MUTATED`                                                          | `src` or `sandbox` changed after mount. Remount the frame - keyed iteration or `lwc:if`                                                                                                                                                                                                                                                          |
+| Another error code                                                                 | The UI Embedding Error Codes reference ([sources.md](sources.md#salesforce-documentation)) - with `phase` from the error event                                                                                                                                                                                                                   |
+| The frame shows the full app instead of the embedded view                          | The embed path is missing from the configuration record; the connect step did not run                                                                                                                                                                                                                                                            |
+| Props never arrive, or only once                                                   | The guest reads the state once instead of subscribing; the host builds a new props object on every render, or never a new one when an input changes                                                                                                                                                                                              |
+| The host never sees the guest's event                                              | A dotted event name bound in the template; the guest dispatches before the handshake and does not queue; the event name differs between guest and host                                                                                                                                                                                           |
+| The host says the result was not saved                                             | The guest's write failed - field-level security, a missing permission set, a GraphQL error in the guest's console - or a host-saves guest sent a value the validation rejects                                                                                                                                                                    |
+| A UI bundle does not open from the App Launcher                                    | Salesforce Edge Network off; the Multi-Framework Apps domain not enabled; the bundle or its app inactive; the app invisible in the user's permission set (which removes the access)                                                                                                                                                              |
+| A link opens an empty Lightning app ("This app doesn't have any navigation items") | An org-relative `/lightning/app/<bundle app>` URL. Use the bundle's start URL                                                                                                                                                                                                                                                                    |
+| A tab opens inside the wrong Lightning app                                         | `/lightning/n/<tab>` without the app - link through `/lightning/app/<app>/n/<tab>`                                                                                                                                                                                                                                                               |
+| A host shows "not plugged in" or a launch button has no target                     | The configuration record has no URL: run the connect step, or set the host's override property                                                                                                                                                                                                                                                   |
+| Deploy fails with `Expected source files for type 'UIBundle'`                      | The bundle was not built, or source tracking remembers the previous build's hashed files. Build it; deploy with `--source-dir force-app` once, then continue                                                                                                                                                                                     |
+| Data calls fail on the dev server                                                  | No default org, an expired login, or a different org than intended - check `sf org display`, and ask before changing the default                                                                                                                                                                                                                 |
+| GraphQL fields are unknown or null                                                 | The schema changed - run `graphql:schema` and `graphql:codegen` again - or field-level security hides the field                                                                                                                                                                                                                                  |
+| One surface shows old data after another wrote                                     | The read uses the SDK's cache - use `no-cache` for live data; the Lightning side did not refresh after the fan-out message                                                                                                                                                                                                                       |
+| A local guest stays blank with `ERR_BLOCKED_BY_LOCAL_NETWORK_ACCESS_CHECKS`        | Chrome's Local Network Access - allow local network access for the org's domain in the site settings; deploy the development-only trusted site                                                                                                                                                                                                   |
+| The Agentforce Conversation Client does not load                                   | Agentforce off, no employee agent, the first-party cookie requirement still on, or the app's origin missing under Trusted Domains for Inline Frames with the Lightning Out type                                                                                                                                                                  |
+| Jest: `Cannot find module 'lightning/uiEmbedding'`                                 | Map it to a stub in `jest.config.js`, like Polyglot Arcade's `jest-mocks/lightning/uiEmbedding`                                                                                                                                                                                                                                                  |

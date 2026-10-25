@@ -31,6 +31,14 @@ Built around the [Awesome LWC Collection](https://github.com/svierk/awesome-lwc-
 | ------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------- | ------- |
 | [⚡ lwc-crafter](plugins/lwc-crafter) | Salesforce developers | Build, fix and review Lightning Web Components - reuse first, secure, tested and accessible - and set up the tooling | Preview |
 
+### Architecture
+
+Built around [Polyglot Arcade](https://github.com/svierk/polyglot-arcade) - Salesforce Multi-Framework end to end: an Angular hub, a React cabinet and an LWC OSS game that share one org's data and meet on Lightning pages as microfrontends, along four integration patterns and documented decisions.
+
+| Plugin                                                      | For                                | Does                                                                                                                                              | Status  |
+| ----------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| [🧙 multi-framework-wizard](plugins/multi-framework-wizard) | Architects, tech leads, developers | Design, build, embed, review and fix apps with React, Angular, LWC and external microfrontends on one org's data - with Agentforce where it helps | Planned |
+
 ### Showcase
 
 Built on Playwright, Google Chrome and ffmpeg - demo videos of Salesforce orgs, apps and sites, recorded from a real browser along a scripted click path and finished like a hand-edited screencast.

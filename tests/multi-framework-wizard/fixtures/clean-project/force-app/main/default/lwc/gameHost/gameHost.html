@@ -1,0 +1,14 @@
+<template>
+  <lightning-card title={title}>
+    <template for:each={frames} for:item="frame">
+      <lightning-ui-embedding
+        key={frame.key}
+        src={frame.src}
+        sandbox="allow-scripts allow-same-origin allow-forms"
+        shell-title={title}
+        props={embedProps}
+        ongameover={handleGameOver}
+      ></lightning-ui-embedding>
+    </template>
+  </lightning-card>
+</template>
