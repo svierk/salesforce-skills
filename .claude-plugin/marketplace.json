@@ -47,6 +47,14 @@
       "version": "0.1.0",
       "category": "showcase",
       "keywords": ["salesforce", "demo", "video", "screencast", "presales"]
+    },
+    {
+      "name": "multi-framework-wizard",
+      "source": "./plugins/multi-framework-wizard",
+      "description": "Design, build, embed, review and fix Salesforce Multi-Framework applications the way Polyglot Arcade does - React and Angular UI bundles, Lightning web components and externally hosted apps on one org's data, composed on Lightning pages as microfrontends, with Agentforce where it helps.",
+      "version": "0.1.0",
+      "category": "architecture",
+      "keywords": ["salesforce", "multi-framework", "react", "angular", "microfrontends"]
     }
   ]
 }
