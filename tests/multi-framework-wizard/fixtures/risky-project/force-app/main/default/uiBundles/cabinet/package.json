@@ -1,0 +1,8 @@
+{
+  "name": "cabinet",
+  "private": true,
+  "dependencies": {
+    "@salesforce/platform-sdk": "^11.64.0",
+    "react": "^19.2.0"
+  }
+}

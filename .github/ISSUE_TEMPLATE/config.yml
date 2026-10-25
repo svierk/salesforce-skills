@@ -9,3 +9,6 @@ contact_links:
   - name: ⚡ Awesome LWC Collection
     url: https://github.com/svierk/awesome-lwc-collection
     about: A bug in one of the collection's components, its tests or its project setup belongs in the collection's repository.
+  - name: 🕹️ Polyglot Arcade
+    url: https://github.com/svierk/polyglot-arcade
+    about: A bug in the arcade's UI bundles, its host LWC, its setup scripts or its documentation belongs in the arcade's repository.

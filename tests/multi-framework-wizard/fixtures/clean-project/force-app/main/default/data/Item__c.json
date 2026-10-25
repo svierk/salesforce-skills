@@ -1,0 +1,9 @@
+{
+  "records": [
+    {
+      "attributes": { "type": "Item__c", "referenceId": "guest" },
+      "Key__c": "guest",
+      "App_Url__c": "https://guest.example.com"
+    }
+  ]
+}

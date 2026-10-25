@@ -1,0 +1,9 @@
+{
+  "records": [
+    {
+      "attributes": { "type": "Item__c", "referenceId": "cabinet" },
+      "Key__c": "cabinet",
+      "App_Url__c": "https://acme--c.vf.salesforce.app/app/c__cabinet"
+    }
+  ]
+}
