@@ -16,7 +16,9 @@ For consultants, presales, developers and product owners who need to show what t
 
 - **Storyboard first** - scenes, captions and seconds as a table you agree on before anything is recorded, with timing rules that keep every beat readable.
 - **Real click paths** - Playwright drives your installed Chrome through the org or site; Lightning base components are found by their labels, through shadow DOM.
-- **Studio finish** - sharp 1080p frames from Chrome's screencast, an eased cursor, caption pills with badges, cards in your or your customer's brand, cross-fades, square and portrait cuts, GIFs, a narration track.
+- **Studio finish** - sharp 1080p frames from Chrome's screencast at an even 30 fps, an eased cursor, caption pills with badges, focus frames that follow their element, sub-pixel camera zooms, cards in your or your customer's brand, cross-fades, square and portrait cuts, GIFs, a narration track.
+- **Motion graphics** - intros, chapter idents, concept diagrams and 3D scenes (three.js) as web pages, rendered frame by frame for exact timing.
+- **Measured, not guessed** - a smoothness check finds single-frame flicker and judder that stills do not show.
 - **Bid-ready** - one chapter per requirement, a personalised intro per prospect, subtitles and chapter marks for the submission.
 
 ## The recorder

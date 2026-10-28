@@ -6,7 +6,7 @@ license: MIT
 
 # Salesforce Demo Designer
 
-Helps consultants, presales, developers and product owners show what they built - to a prospect in a bid, to stakeholders in a sprint review, to users in a training clip, to the community in a post. The result looks hand-edited but is fully scripted: a real browser session in a Salesforce org or on a site, a visible cursor with click ripples, captions that carry the message without sound, branded intro, chapter and outro cards, cross-fades, subtitles and chapter marks. Because the demo is a script, every variant - another prospect, another language, a square cut, next release's numbers - is a re-run, not a re-edit.
+Helps consultants, presales, developers and product owners show what they built - to a prospect in a bid, to stakeholders in a sprint review, to users in a training clip, to the community in a post. The result looks hand-edited but is fully scripted: a real browser session in a Salesforce org or on a site, a visible cursor with click ripples, captions that carry the message without sound, focus frames and camera zooms on what matters, branded intro, chapter and outro cards, frame-exact motion graphics (3D included), cross-fades, subtitles and chapter marks. Because the demo is a script, every variant - another prospect, another language, a square cut, next release's numbers - is a re-run, not a re-edit.
 
 The toolbox is small and free: the installed Google Chrome driven by Playwright, Chrome's screencast for sharp frames, ffmpeg for encoding, and the Salesforce CLI for logging in. The skill ships the recorder as a library (`scripts/demo-kit.mjs`) and the cards as a template (`assets/cards.html`).
 
@@ -30,7 +30,7 @@ The format sets the length, the cards and how much the captions must say - detai
 4. **Storyboard before recording.** Agree on scenes, captions and timing with the user as a table first. A storyboard change costs seconds; a take costs minutes.
 5. **Probe before recording.** Screenshot every page of the path and try every selector in a throwaway script. Recording with a selector that does not match wastes a take.
 6. **Look at every take.** Render a contact sheet and stills at the key moments and look at them before handing anything over - captions readable and not covering the subject, nothing private in frame, every beat visible long enough.
-7. **Ask before changing an org.** Seeding demo data, a click path that creates or updates records, a new demo user, a change to an app's navigation - say what changes and wait for a yes. Prefer read-only click paths; when a demo must create records, plan their cleanup.
+7. **Ask before changing an org.** Seeding demo data, a click path that creates or updates records, a new demo user, a change to an app's navigation, pausing automation - say what changes and wait for a yes. Prefer read-only click paths; when a demo must create records, plan their cleanup. A retake repeats every side effect - submissions, emails, applied actions: block, cut or reset (with a yes), never just record again.
 8. **Prospect material stays private.** A video with a prospect's name or logo goes to that prospect only - never publish it, and use their logo only inside the bid.
 9. **Recording is headed.** Say up front that a Chrome window opens while recording and must stay visible; the user should not work on the machine meanwhile. Headless Chrome crops and softens the frames.
 
@@ -40,14 +40,14 @@ The format sets the length, the cards and how much the captions must say - detai
 2. **Storyboard.** Scenes with what happens on screen, the caption or narration, and seconds - totalled against the length. For a bid, one chapter per requirement, named with its ID. Agree it with the user. [references/storyboard.md](references/storyboard.md)
 3. **Workspace.** A folder outside the user's repository with `playwright-core` and `ffmpeg-static`, the library and the cards copied in. [references/recording.md](references/recording.md#workspace)
 4. **Probe.** For a Salesforce org: check it, log in, find the readiness element, the elements to click, and what to hide or blur. [references/salesforce.md](references/salesforce.md). For a site: screenshot it in light and dark, pick the scheme that suits the brand.
-5. **Record.** Write `storyboard.mjs` with the library and run it. [references/recording.md](references/recording.md#the-storyboard-script)
-6. **Review and iterate.** Contact sheet and stills, fix timing, captions or selectors, record again. Each change of the user's goes into the script, so the next take keeps it.
+5. **Record.** Write `storyboard.mjs` with the library and run it; build generated scenes - intro, idents, concept diagrams, physical-to-digital bridges - as motion pages rendered frame by frame. [references/recording.md](references/recording.md#the-storyboard-script), [motion graphics](references/recording.md#motion-graphics)
+6. **Review and iterate.** Contact sheet and stills for content, `smoothness()` and frame strips for motion; fix the cause, not the symptom, and record or re-render only what changed. Each change of the user's goes into the script, so the next take keeps it. [references/delivery.md](references/delivery.md#feedback-rounds)
 7. **Deliver.** The MP4 where the user wants it, with subtitles and chapter marks; variants such as a square cut, a GIF or a narrated version; the post or cover message if wanted. [references/delivery.md](references/delivery.md)
 
 ## The library at a glance
 
 ```js
-import { launch, stage, salesforceLogin, ready, captureScene, captureCard, render } from './demo-kit.mjs';
+import { launch, stage, salesforceLogin, ready, captureScene, captureCard, captureFrames, render, smoothness } from './demo-kit.mjs';
 
 const browser = await launch(); // the installed Chrome, headed
 const cards = await stage(browser, { width: 1600, height: 900, scale: 1.2, cursor: false }); // 1920x1080
@@ -61,12 +61,16 @@ const scenes = [
   await captureScene(app, 'quote', async (d) => {
     await d.caption('Pick the products', { badge: 'NEW' });
     await d.click(d.page.getByRole('button', { name: 'Add products' }));
+    await d.focus(d.page.getByRole('dialog')); // frames it while visible, follows it
+    await d.zoom(d.page.getByRole('dialog'), { scale: 1.4 }); // camera move, applied when encoding
     await d.hold(1500);
   }),
+  await captureFrames(cards, 'bridge', 'motion/bridge.html', { seconds: 6 }), // page with window.seek(t)
   await captureCard(cards, 'outro', { scene: 'outro', seconds: 3, data: { title: 'Ready for <em>Spring</em>' } })
 ];
 await browser.close();
-await render(scenes, 'out/demo.mp4'); // cross-fades, writes out/demo.srt, returns chapter marks
+const video = await render(scenes, 'out/demo.mp4'); // cross-fades, writes out/demo.srt, returns chapter marks
+console.log(await smoothness(video.file)); // single-frame blips and stalls - flicker you cannot see in stills
 ```
 
 Every function, option and default is in [references/recording.md](references/recording.md#the-library).
@@ -82,8 +86,8 @@ This skill does its whole job on its own. When other skills from the same market
 
 ## Reference map
 
-- [references/storyboard.md](references/storyboard.md) - the brief, formats and aspect ratios, timing, caption copy, structures for teaser, pitch, sprint review and training, bids and RFPs, narration
-- [references/recording.md](references/recording.md) - workspace, the storyboard script, the library API, probing, what goes wrong and why
-- [references/salesforce.md](references/salesforce.md) - login and org check, readiness, locators in Lightning, what to hide, personas and demo data, Experience Cloud
-- [references/delivery.md](references/delivery.md) - review checklist, variants, files, channels, posts and bid submissions
+- [references/storyboard.md](references/storyboard.md) - the brief, formats and aspect ratios, timing, caption copy, visual language, structures for teaser, pitch, sprint review and training, bids and RFPs, narration
+- [references/recording.md](references/recording.md) - workspace, the storyboard script, the library API, camera and focus, motion graphics (3D included), long demos, probing, what goes wrong and why
+- [references/salesforce.md](references/salesforce.md) - login and org check, readiness, locators in Lightning, what to hide, personas and demo data, AI features, retakes and side effects, Lightning quirks, Experience Cloud
+- [references/delivery.md](references/delivery.md) - review checklist, feedback rounds, variants, files, channels, posts and bid submissions
 - [references/sources.md](references/sources.md) - where to read current facts about the tools

@@ -1,14 +1,15 @@
 // Demo Kit - turns a scripted browser session into a polished demo video:
-// a visible cursor with click ripples, captions, intro, chapter and outro
-// cards, cross-fades, subtitles and chapter marks.
+// a visible cursor with click ripples, captions, focus frames, camera zooms,
+// intro, chapter and outro cards, frame-exact motion graphics, cross-fades,
+// subtitles and chapter marks.
 //
 // Copy this file and ../assets/cards.html into a demo workspace that has
 // playwright-core and ffmpeg-static installed; a storyboard script imports it.
 // Both packages are loaded on first use, so the pure helpers below work
 // without them.
 
-import { execFileSync } from 'node:child_process';
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { copyFileSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -24,26 +25,28 @@ export function outputSize({ width, height, scale }) {
 }
 
 /**
- * ffmpeg concat-demuxer list that shows every frame from its own timestamp to
- * the next one, clipped to [start, end]. The screencast only sends a frame
- * when the page changes, so the durations carry the real timing - a static
- * page is one frame with a long duration. The last frame before `start` is
- * kept: it is what the page showed when the scene began.
+ * The screencast frame to show at each tick of a constant frame rate. Chrome
+ * only sends a frame when the page changes, so each one stays on screen until
+ * the next arrives; the last frame before `start` is what the page showed when
+ * the scene began. Building the constant-rate sequence here - instead of
+ * handing durations to ffmpeg's concat demuxer, which rounds every timestamp
+ * to 1/25 s - keeps motion even: no merged frames, no frozen frame every few.
  */
-export function concatList(frames, start, end) {
+export function frameSequence(frames, start, end, fps = 30) {
   const kept = frames.filter((f, i) => {
     const next = frames[i + 1];
     return f.t < end && (f.t >= start || !next || next.t > start);
   });
   if (!kept.length) throw new Error('No frames were captured - the browser window must stay visible while recording.');
-  let list = '';
-  kept.forEach((f, i) => {
-    const from = Math.max(f.t, start);
-    const to = Math.min(kept[i + 1]?.t ?? end, end);
-    list += `file '${f.file}'\nduration ${Math.max(0, to - from).toFixed(4)}\n`;
-  });
-  // The demuxer ignores the duration of the last entry unless the file is repeated.
-  return `${list}file '${kept.at(-1).file}'\n`;
+  const out = [];
+  let j = 0;
+  const n = Math.max(1, Math.round((end - start) * fps));
+  for (let k = 0; k < n; k++) {
+    const t = start + k / fps;
+    while (j + 1 < kept.length && kept[j + 1].t <= t + 1e-6) j++;
+    out.push(kept[j].file);
+  }
+  return out;
 }
 
 /** Where each scene starts in the joined video, when neighbours overlap by `fade` seconds. */
@@ -120,11 +123,148 @@ export function chapters(scenes, fade) {
   return scenes.flatMap((scene, i) => (scene.chapter ? [`${mmss(offsets[i])} ${scene.chapter}`] : []));
 }
 
+/* ---------- Camera: pure helpers ----------------------------------------- */
+
+/** The smallest box around all `rects` ({ x, y, width, height }). */
+export function unionRect(rects) {
+  const x = Math.min(...rects.map((r) => r.x));
+  const y = Math.min(...rects.map((r) => r.y));
+  const right = Math.max(...rects.map((r) => r.x + r.width));
+  const bottom = Math.max(...rects.map((r) => r.y + r.height));
+  return { x, y, width: right - x, height: bottom - y };
+}
+
+/**
+ * Camera for a zoom onto `rect` (CSS pixels): the factor is capped so the
+ * whole target fits into `margin` of the frame - a zoom that cuts its subject
+ * off is worse than none - and the centre is moved so the crop stays inside
+ * the page.
+ */
+export function fitZoom(rect, viewport, { scale = 1.6, margin = 0.86 } = {}) {
+  const fit = Math.min((margin * viewport.width) / rect.width, (margin * viewport.height) / rect.height);
+  const s = Math.max(1, Math.min(scale, fit));
+  const halfW = viewport.width / s / 2;
+  const halfH = viewport.height / s / 2;
+  const clampTo = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  return {
+    scale: s,
+    x: clampTo(rect.x + rect.width / 2, halfW, viewport.width - halfW),
+    y: clampTo(rect.y + rect.height / 2, halfH, viewport.height - halfH)
+  };
+}
+
+/** The part of the page a camera state shows, in CSS pixels. */
+export function cropOf(cam, viewport) {
+  const width = viewport.width / cam.scale;
+  const height = viewport.height / cam.scale;
+  return { x: cam.x - width / 2, y: cam.y - height / 2, width, height };
+}
+
+/**
+ * Camera state at `t` seconds of a scene. `keys` are moves ({ t, ms, scale,
+ * x, y }) recorded by zoom() and zoomOut(); between moves the camera holds,
+ * during a move it eases from the previous state.
+ */
+export function cameraAt(keys, t, viewport) {
+  let cam = { scale: 1, x: viewport.width / 2, y: viewport.height / 2 };
+  for (const k of keys) {
+    if (t < k.t) break;
+    const p = Math.min(1, (t - k.t) / (k.ms / 1000));
+    const e = ease(p);
+    const to = { scale: k.scale, x: k.x, y: k.y };
+    cam =
+      p >= 1
+        ? to
+        : {
+            scale: cam.scale + (to.scale - cam.scale) * e,
+            x: cam.x + (to.x - cam.x) * e,
+            y: cam.y + (to.y - cam.y) * e
+          };
+  }
+  return cam;
+}
+
+/**
+ * ffmpeg `perspective` filter that plays the camera moves on frames of the
+ * given input size. It maps a sub-pixel crop rectangle onto the frame with
+ * cubic interpolation, evaluated per frame. (zoompan rounds crop size and
+ * position to whole pixels each frame, so text breathes and shimmers during a
+ * zoom.) Returns '' when the scene has no moves.
+ */
+export function cameraFilter(keys, viewport, fps = 30) {
+  if (!keys.length) return '';
+  const T = `(in/${fps})`;
+  const E = (p) => `if(lt(${p},0.5),4*pow(${p},3),1-pow(-2*(${p})+2,3)/2)`;
+  const expr = (prop, initial) => {
+    let out = String(keys.at(-1)[prop]);
+    for (let i = keys.length - 1; i >= 0; i--) {
+      const k = keys[i];
+      const from = i === 0 ? initial : keys[i - 1][prop];
+      const t0 = k.t.toFixed(3);
+      const t1 = (k.t + k.ms / 1000).toFixed(3);
+      const p = `((${T}-${t0})/${(k.ms / 1000).toFixed(3)})`;
+      out = `if(lt(${T},${t0}),${from},if(lt(${T},${t1}),${from}+(${k[prop] - from})*${E(p)},${out}))`;
+    }
+    return out;
+  };
+  const z = `(${expr('scale', 1)})`;
+  const cx = `(${expr('x', viewport.width / 2)})*W/${viewport.width}`;
+  const cy = `(${expr('y', viewport.height / 2)})*H/${viewport.height}`;
+  const x0 = `max(0,min(W-W/${z},${cx}-W/${z}/2))`;
+  const y0 = `max(0,min(H-H/${z},${cy}-H/${z}/2))`;
+  const x1 = `(${x0}+W/${z})`;
+  const y2 = `(${y0}+H/${z})`;
+  return `perspective=x0='${x0}':y0='${y0}':x1='${x1}':y1='${y0}':x2='${x0}':y2='${y2}':x3='${x1}':y3='${y2}':interpolation=cubic:sense=source:eval=frame`;
+}
+
+/* ---------- Smoothness: pure helpers ------------------------------------- */
+
+/**
+ * Single-frame flicker: frame i+1 differs from both neighbours while the
+ * neighbours match each other (A-B-A). `d1[i]` is the mean difference between
+ * frames i and i+1, `d2[i]` between frames i and i+2. Returns frame indices.
+ */
+export function findBlips(d1, d2, { threshold = 0.6, ratio = 0.35 } = {}) {
+  const hits = [];
+  for (let i = 0; i + 1 < d1.length && i < d2.length; i++) {
+    if (d1[i] > threshold && d1[i + 1] > threshold && d2[i] < Math.min(d1[i], d1[i + 1]) * ratio) hits.push(i + 1);
+  }
+  return hits;
+}
+
+/** Single-frame stalls inside motion: a frame that repeats while the frames around it move. */
+export function findStalls(d1, { moving = 0.4, still = 0.05 } = {}) {
+  const hits = [];
+  for (let i = 1; i + 1 < d1.length; i++)
+    if (d1[i] < still && d1[i - 1] > moving && d1[i + 1] > moving) hits.push(i + 1);
+  return hits;
+}
+
 /* ---------- ffmpeg ------------------------------------------------------- */
 
-async function ffmpeg(args) {
+async function ffmpegBin() {
   const { default: bin } = await import('ffmpeg-static');
-  execFileSync(bin, ['-y', '-hide_banner', '-loglevel', 'error', ...args], { stdio: ['ignore', 'inherit', 'inherit'] });
+  return bin;
+}
+
+async function ffmpeg(args) {
+  execFileSync(await ffmpegBin(), ['-y', '-hide_banner', '-loglevel', 'error', ...args], {
+    stdio: ['ignore', 'inherit', 'inherit']
+  });
+}
+
+/** Links (or, where links are not allowed, copies) the frames into a numbered sequence for ffmpeg's image2 input. */
+function writeSequence(files, dir) {
+  mkdirSync(dir, { recursive: true });
+  files.forEach((file, k) => {
+    const to = join(dir, `s${String(k).padStart(6, '0')}.jpg`);
+    try {
+      symlinkSync(file, to);
+    } catch {
+      copyFileSync(file, to);
+    }
+  });
+  return join(dir, 's%06d.jpg');
 }
 
 /* ---------- Browser ------------------------------------------------------ */
@@ -146,11 +286,13 @@ const DEFAULT_THEME = {
   captionBorder: 'rgba(107, 155, 255, 0.4)',
   accent: 'linear-gradient(120deg, #5b21d6, #1d4ed8 50%, #00b8f0)',
   ripple: 'rgba(0, 200, 248, 0.45)',
+  focus: '#1d4ed8',
   captionPosition: 'bottom'
 };
 
-// Runs inside every document of a stage: cursor, caption pill, hidden and
-// blurred elements. Serialised by Playwright - no references to module scope.
+// Runs inside every document of a stage: cursor, caption pill, focus frame,
+// hidden and blurred elements. Serialised by Playwright - no references to
+// module scope.
 function overlay({ theme, hide, blur, cursor }) {
   const store = {
     get: (key) => {
@@ -169,7 +311,7 @@ function overlay({ theme, hide, blur, cursor }) {
     }
   };
   const css = `
-    html { scrollbar-width: none; scroll-behavior: auto !important; }
+    html, * { scrollbar-width: none !important; scroll-behavior: auto !important; }
     ${hide.length ? `${hide.join(', ')} { display: none !important; }` : ''}
     ${blur.length ? `${blur.join(', ')} { filter: blur(10px) !important; }` : ''}
     #__demo-cursor { position: fixed; left: 0; top: 0; z-index: 2147483647; pointer-events: none; width: 30px; height: 30px;
@@ -178,6 +320,8 @@ function overlay({ theme, hide, blur, cursor }) {
       border-radius: 50%; background: ${theme.ripple}; transform: scale(0); opacity: 0; }
     #__demo-cursor.down::after { animation: __demo-ripple .45s ease-out; }
     @keyframes __demo-ripple { from { transform: scale(.3); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
+    #__demo-focus { position: fixed; left: 0; top: 0; z-index: 2147483645; pointer-events: none; border: 3px solid ${theme.focus};
+      border-radius: 6px; box-shadow: 0 0 0 4px color-mix(in srgb, ${theme.focus} 18%, transparent); opacity: 0; transition: opacity .25s ease; }
     #__demo-caption { position: fixed; left: 50%; ${theme.captionPosition === 'top' ? 'top' : 'bottom'}: 34px; z-index: 2147483646; pointer-events: none; display: flex;
       gap: 12px; align-items: center; padding: 11px 22px; border-radius: 999px; font: 600 21px/1.2 ${theme.font};
       color: ${theme.captionText}; background: ${theme.captionBg}; border: 1px solid ${theme.captionBorder};
@@ -198,7 +342,9 @@ function overlay({ theme, hide, blur, cursor }) {
       fill="#fff" stroke="#0b1120" stroke-width="1.4" stroke-linejoin="round"/></svg>`;
     const pill = document.createElement('div');
     pill.id = '__demo-caption';
-    document.documentElement.append(style, pointer, pill);
+    const frame = document.createElement('div');
+    frame.id = '__demo-focus';
+    document.documentElement.append(style, frame, pointer, pill);
 
     const place = ({ x, y }) => (pointer.style.transform = `translate(${x - 4}px, ${y - 2}px)`);
     addEventListener(
@@ -232,7 +378,83 @@ function overlay({ theme, hide, blur, cursor }) {
       if (instant || !pill.innerHTML) fill();
       else setTimeout(fill, 260);
     };
-    window.__demo = { caption: show };
+
+    // The focus frame follows its elements every animation frame (scrolling, late layout) and
+    // shows only the part that is really visible: clipped by every scrolling or overflow-hidden
+    // ancestor - across shadow roots - and by the viewport. Nothing visible, no frame.
+    let targets = [];
+    let pad = 6;
+    let shown = null;
+    const clipOf = (el) => {
+      let r = { left: 0, top: 0, right: innerWidth, bottom: innerHeight };
+      for (let n = el.parentElement || el.getRootNode().host; n; n = n.parentElement || n.getRootNode().host) {
+        const cs = getComputedStyle(n);
+        if (/(auto|scroll|hidden|clip)/.test(cs.overflow + cs.overflowX + cs.overflowY)) {
+          const b = n.getBoundingClientRect();
+          r = {
+            left: Math.max(r.left, b.left),
+            top: Math.max(r.top, b.top),
+            right: Math.min(r.right, b.right),
+            bottom: Math.min(r.bottom, b.bottom)
+          };
+        }
+      }
+      return r;
+    };
+    const visibleRect = () => {
+      let box = null;
+      for (const el of targets) {
+        if (!el.isConnected) continue;
+        const b = el.getBoundingClientRect();
+        const c = clipOf(el);
+        const r = {
+          left: Math.max(b.left, c.left),
+          top: Math.max(b.top, c.top),
+          right: Math.min(b.right, c.right),
+          bottom: Math.min(b.bottom, c.bottom)
+        };
+        if (r.right - r.left < 2 || r.bottom - r.top < 2) continue;
+        box = box
+          ? {
+              left: Math.min(box.left, r.left),
+              top: Math.min(box.top, r.top),
+              right: Math.max(box.right, r.right),
+              bottom: Math.max(box.bottom, r.bottom)
+            }
+          : r;
+      }
+      return box;
+    };
+    const track = () => {
+      const r = targets.length ? visibleRect() : null;
+      if (r) {
+        const to = { x: r.left - pad, y: r.top - pad, w: r.right - r.left + 2 * pad, h: r.bottom - r.top + 2 * pad };
+        // glide when moving between elements, follow exactly otherwise
+        shown = shown
+          ? {
+              x: shown.x + (to.x - shown.x) * 0.35,
+              y: shown.y + (to.y - shown.y) * 0.35,
+              w: shown.w + (to.w - shown.w) * 0.35,
+              h: shown.h + (to.h - shown.h) * 0.35
+            }
+          : to;
+        Object.assign(frame.style, {
+          transform: `translate(${shown.x}px, ${shown.y}px)`,
+          width: `${shown.w}px`,
+          height: `${shown.h}px`,
+          opacity: 1
+        });
+      } else frame.style.opacity = 0;
+      requestAnimationFrame(track);
+    };
+    requestAnimationFrame(track);
+    const focus = (els, p = 6) => {
+      targets = els || [];
+      pad = p;
+      if (!targets.length) shown = null;
+    };
+    const visible = () => !!visibleRect();
+    window.__demo = { caption: show, focus, visible };
 
     // A full page load starts a new document: put cursor and caption back where they were.
     const mouse = store.get('__demo-mouse');
@@ -275,10 +497,16 @@ class Director {
     this.mouse = { x: viewport.width / 2, y: viewport.height / 2 };
     this.sceneStart = null;
     this.cues = [];
+    this.camera = [];
+    this.cam = { scale: 1, x: viewport.width / 2, y: viewport.height / 2 };
   }
 
   locate(target) {
     return typeof target === 'string' ? this.page.locator(target).first() : target;
+  }
+
+  now() {
+    return Date.now() / 1000 - (this.sceneStart ?? Date.now() / 1000);
   }
 
   /** Moves the cursor along an eased path; time-based, so it takes `ms` however slow each event is. */
@@ -294,7 +522,10 @@ class Director {
     this.mouse = { x, y };
   }
 
-  /** Glides to the element - scrolling it into view first if needed - and clicks it. */
+  /**
+   * Glides to the element - scrolling it into view first if needed - and clicks it.
+   * While zoomed, the camera first pulls back when the element lies outside the crop.
+   */
   async click(target, { ms = 600, x = 0.5, y = 0.5 } = {}) {
     const element = this.locate(target);
     await element.waitFor({ state: 'visible' });
@@ -303,7 +534,13 @@ class Director {
       await this.scrollToElement(element);
       box = await element.boundingBox();
     }
-    await this.moveTo(box.x + box.width * x, box.y + box.height * y, ms);
+    const px = box.x + box.width * x;
+    const py = box.y + box.height * y;
+    if (this.cam.scale > 1) {
+      const c = cropOf(this.cam, this.viewport);
+      if (px < c.x || px > c.x + c.width || py < c.y || py > c.y + c.height) await this.zoomOut();
+    }
+    await this.moveTo(px, py, ms);
     await sleep(110);
     await this.page.mouse.down();
     await sleep(80);
@@ -323,6 +560,7 @@ class Director {
 
   /** Scrolls the page to `y` with an eased animation (CSS smooth scrolling has no fixed duration). */
   async scrollTo(y, ms = 1000) {
+    if (this.cam.scale > 1) await this.zoomOut();
     await this.page.evaluate(
       ({ to, ms }) =>
         new Promise((done) => {
@@ -341,13 +579,42 @@ class Director {
     );
   }
 
-  /** Scrolls so the element's top sits `offset` pixels below the top of the viewport. */
+  /**
+   * Scrolls so the element's top sits `offset` pixels below the top of what scrolls it: the
+   * nearest scrollable ancestor - a Lightning page region, a modal body, a panel - or the
+   * window. Eased, in the page, frame by frame; synthetic wheel steps land unevenly.
+   */
   async scrollToElement(target, { offset = 90, ms = 1000 } = {}) {
-    const top = await this.locate(target).evaluate(
-      (el, offset) => el.getBoundingClientRect().top + scrollY - offset,
-      offset
+    if (this.cam.scale > 1) await this.zoomOut();
+    await this.locate(target).evaluate(
+      (el, { offset, ms }) =>
+        new Promise((done) => {
+          let box = null;
+          for (let n = el.parentElement || el.getRootNode().host; n; n = n.parentElement || n.getRootNode().host) {
+            const cs = getComputedStyle(n);
+            if (/(auto|scroll)/.test(cs.overflowY) && n.scrollHeight > n.clientHeight + 1) {
+              box = n;
+              break;
+            }
+          }
+          const top = el.getBoundingClientRect().top;
+          const from = box ? box.scrollTop : scrollY;
+          const base = box ? box.getBoundingClientRect().top : 0;
+          const max = box ? box.scrollHeight - box.clientHeight : document.documentElement.scrollHeight - innerHeight;
+          const to = Math.max(0, Math.min(max, from + top - base - offset));
+          const begin = performance.now();
+          const step = (now) => {
+            const p = Math.min(1, (now - begin) / ms);
+            const k = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+            if (box) box.scrollTop = from + (to - from) * k;
+            else scrollTo(0, from + (to - from) * k);
+            if (p < 1) requestAnimationFrame(step);
+            else done();
+          };
+          requestAnimationFrame(step);
+        }),
+      { offset, ms }
     );
-    await this.scrollTo(Math.max(0, top), ms);
   }
 
   async scrollToBottom(ms = 2400) {
@@ -366,6 +633,48 @@ class Director {
     if (this.sceneStart === null) return;
     const open = this.cues.at(-1);
     if (open && open.end === undefined) open.end = now - this.sceneStart;
+  }
+
+  /**
+   * Frames one or more elements with the theme's focus colour - one clear focus per moment.
+   * The frame follows them while the page moves and hides wherever they are clipped from view,
+   * so it never frames something the viewer cannot see. Throws if nothing of them is visible.
+   */
+  async focus(target, { pad = 6 } = {}) {
+    const elements = await Promise.all([target].flat().map((t) => this.locate(t).elementHandle()));
+    await this.page.evaluate(([els, p]) => window.__demo?.focus(els, p), [elements, pad]);
+    await sleep(60);
+    if (!(await this.page.evaluate(() => window.__demo?.visible()))) {
+      await this.unfocus();
+      throw new Error('focus(): the target is not visible - scroll it into view (scrollToElement) first.');
+    }
+  }
+
+  async unfocus() {
+    await this.page.evaluate(() => window.__demo?.focus(null));
+  }
+
+  /**
+   * Zooms the camera onto one or more elements, applied when the scene is encoded. The factor
+   * is capped so the whole target stays in frame. Captions belong to the page and zoom with
+   * it: zoom in caption-free beats or caption after zoomOut().
+   */
+  async zoom(target, { scale = 1.6, ms = 900, margin = 0.86 } = {}) {
+    if (this.sceneStart === null) throw new Error('zoom() works inside captureScene only.');
+    const boxes = await Promise.all([target].flat().map((t) => this.locate(t).boundingBox()));
+    const cam = fitZoom(unionRect(boxes.filter(Boolean)), this.viewport, { scale, margin });
+    this.camera.push({ t: this.now(), ms, ...cam });
+    this.cam = cam;
+    await sleep(ms);
+  }
+
+  /** Back to the full frame. scrollTo, scrollToElement and clicks outside the crop call it themselves. */
+  async zoomOut(ms = 700) {
+    if (this.cam.scale === 1 || this.sceneStart === null) return;
+    const cam = { scale: 1, x: this.viewport.width / 2, y: this.viewport.height / 2 };
+    this.camera.push({ t: this.now(), ms, ...cam });
+    this.cam = cam;
+    await sleep(ms);
   }
 
   async hold(ms) {
@@ -415,13 +724,17 @@ export async function ready(director, target, { timeout = 60000, settle = 800 } 
 
 /**
  * Records one scene: everything `run(director)` does, as sharp frames from
- * Chrome's screencast with their real timestamps, encoded to <dir>/<name>.mp4
- * at a constant 30 fps. Returns what render() needs.
+ * Chrome's screencast with their real timestamps, resampled to a constant
+ * 30 fps, with the camera moves of zoom() applied, encoded to <dir>/<name>.mp4.
+ * Returns what render() needs. JPEG quality above ~90 makes Chrome drop frames
+ * during fast scrolls; 90 looks the same after encoding.
  */
-export async function captureScene(director, name, run, { dir = 'out', chapter } = {}) {
-  const { page, size } = director;
+export async function captureScene(director, name, run, { dir = 'out', chapter, quality = 90 } = {}) {
+  const { page, size, viewport } = director;
   await page.evaluate(() => window.__demo?.caption(null, null, true)).catch(() => {});
   director.cues = [];
+  director.camera = [];
+  director.cam = { scale: 1, x: viewport.width / 2, y: viewport.height / 2 };
 
   const framesDir = resolve(dir, 'frames', name);
   rmSync(framesDir, { recursive: true, force: true });
@@ -430,13 +743,13 @@ export async function captureScene(director, name, run, { dir = 'out', chapter }
   let cropped = false;
   const cdp = await page.context().newCDPSession(page);
   cdp.on('Page.screencastFrame', ({ data, metadata, sessionId }) => {
-    const file = `f${String(frames.length).padStart(5, '0')}.jpg`;
-    writeFileSync(join(framesDir, file), Buffer.from(data, 'base64'));
+    const file = join(framesDir, `f${String(frames.length).padStart(5, '0')}.jpg`);
+    writeFileSync(file, Buffer.from(data, 'base64'));
     frames.push({ file, t: metadata.timestamp });
-    if (metadata.deviceHeight < director.viewport.height - 2) cropped = true;
+    if (metadata.deviceHeight < viewport.height - 2) cropped = true;
     cdp.send('Page.screencastFrameAck', { sessionId }).catch(() => {});
   });
-  await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 95, maxWidth: size.width, maxHeight: size.height });
+  await cdp.send('Page.startScreencast', { format: 'jpeg', quality, maxWidth: size.width, maxHeight: size.height });
   await sleep(150);
 
   const start = Date.now() / 1000;
@@ -448,30 +761,17 @@ export async function captureScene(director, name, run, { dir = 'out', chapter }
     end = Date.now() / 1000;
     director.closeCue(end);
     director.sceneStart = null;
+    await page.evaluate(() => window.__demo?.focus(null)).catch(() => {});
     await cdp.send('Page.stopScreencast').catch(() => {});
     await cdp.detach().catch(() => {});
   }
   if (cropped) throw new Error('Screencast frames are cropped - record with a headed browser (launch() does).');
 
-  writeFileSync(join(framesDir, 'list.txt'), concatList(frames, start, end));
+  const input = writeSequence(frameSequence(frames, start, end, 30), join(framesDir, 'seq'));
   const file = resolve(dir, `${name}.mp4`);
-  await ffmpeg([
-    '-f',
-    'concat',
-    '-safe',
-    '0',
-    '-i',
-    join(framesDir, 'list.txt'),
-    '-vf',
-    `fps=30,scale=${size.width}:${size.height}:flags=lanczos,format=yuv420p`,
-    '-c:v',
-    'libx264',
-    '-preset',
-    'slow',
-    '-crf',
-    '14',
-    file
-  ]);
+  const camera = cameraFilter(director.camera, viewport, 30);
+  const vf = [camera, `scale=${size.width}:${size.height}:flags=lanczos`, 'format=yuv420p'].filter(Boolean).join(',');
+  await ffmpeg(['-framerate', '30', '-i', input, '-vf', vf, '-c:v', 'libx264', '-preset', 'slow', '-crf', '14', file]);
   const duration = end - start;
   const fps = frames.length / duration;
   console.log(`${name}: ${duration.toFixed(2)}s, ${frames.length} frames (~${fps.toFixed(0)} fps)`);
@@ -480,28 +780,136 @@ export async function captureScene(director, name, run, { dir = 'out', chapter }
   return { name, file, duration, size, cues: director.cues, chapter };
 }
 
+let server = null;
+
+/**
+ * Serves `root` (default: the workspace) over http on localhost, so motion pages can load ES
+ * modules (three.js and friends refuse file:// URLs) and videos can seek (byte ranges).
+ * Returns the base URL; one server per process.
+ */
+export async function serve(root = '.') {
+  if (server) return server.url;
+  const { createServer } = await import('node:http');
+  const { readFile } = await import('node:fs/promises');
+  const { extname } = await import('node:path');
+  const types = {
+    '.html': 'text/html',
+    '.js': 'text/javascript',
+    '.mjs': 'text/javascript',
+    '.css': 'text/css',
+    '.json': 'application/json',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.svg': 'image/svg+xml',
+    '.mp4': 'video/mp4',
+    '.woff2': 'font/woff2'
+  };
+  const base = resolve(root);
+  const srv = createServer(async (req, res) => {
+    try {
+      const path = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+      const file = resolve(base, `.${path}`);
+      if (!file.startsWith(base)) throw new Error('outside root');
+      const body = await readFile(file);
+      const type = types[extname(file)] || 'application/octet-stream';
+      const range = /bytes=(\d*)-(\d*)/.exec(req.headers.range || '');
+      if (range) {
+        const from = range[1] ? Number(range[1]) : 0;
+        const to = range[2] ? Number(range[2]) : body.length - 1;
+        res.writeHead(206, {
+          'content-type': type,
+          'accept-ranges': 'bytes',
+          'content-range': `bytes ${from}-${to}/${body.length}`
+        });
+        res.end(body.subarray(from, to + 1));
+      } else {
+        res.writeHead(200, { 'content-type': type, 'accept-ranges': 'bytes' });
+        res.end(body);
+      }
+    } catch {
+      res.writeHead(404);
+      res.end();
+    }
+  });
+  await new Promise((done) => srv.listen(0, '127.0.0.1', done));
+  srv.unref();
+  server = { url: `http://127.0.0.1:${srv.address().port}` };
+  return server.url;
+}
+
+/**
+ * Renders a motion page frame by frame: for every frame the page's
+ * `window.seek(t)` sets the state at `t` seconds (it may return a promise),
+ * then one screenshot is taken. No dropped frames and exact timing, however
+ * expensive the page is to draw - 3D scenes, many layers, videos. `url` is a
+ * full URL or a path in the workspace (served over http, see serve()). The
+ * page may set `window.motionReady = false` until its assets are loaded.
+ */
+export async function captureFrames(director, name, url, { seconds, fps = 30, dir = 'out', chapter, before } = {}) {
+  const { page, size } = director;
+  const target = /^[a-z]+:/i.test(url) ? url : `${await serve()}/${url.replace(/^\.?\//, '')}`;
+  await page.goto(target);
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForFunction(() => typeof window.seek === 'function' && window.motionReady !== false, null, {
+    timeout: 60000
+  });
+  if (before) await before(director);
+  const framesDir = resolve(dir, 'frames', name);
+  rmSync(framesDir, { recursive: true, force: true });
+  mkdirSync(framesDir, { recursive: true });
+  const cdp = await page.context().newCDPSession(page);
+  const n = Math.round(seconds * fps);
+  for (let k = 0; k < n; k++) {
+    await page.evaluate(async (t) => {
+      await window.seek(t);
+      await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+    }, k / fps);
+    const { data } = await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 95 });
+    writeFileSync(join(framesDir, `s${String(k).padStart(6, '0')}.jpg`), Buffer.from(data, 'base64'));
+  }
+  await cdp.detach().catch(() => {});
+  const file = resolve(dir, `${name}.mp4`);
+  await ffmpeg([
+    '-framerate',
+    String(fps),
+    '-i',
+    join(framesDir, 's%06d.jpg'),
+    '-vf',
+    `scale=${size.width}:${size.height}:flags=lanczos,format=yuv420p`,
+    '-r',
+    '30',
+    '-c:v',
+    'libx264',
+    '-preset',
+    'slow',
+    '-crf',
+    '14',
+    file
+  ]);
+  console.log(`${name}: ${seconds}s, ${n} frames rendered`);
+  return { name, file, duration: n / fps, size, cues: [], chapter };
+}
+
 /**
  * Records a card from cards.html - intro, chapter or outro - filled with
- * `data`, holding it for `seconds`. Use a stage with cursor: false.
+ * `data`, holding it for `seconds`. Rendered frame by frame through the
+ * card's seek(), so every animation lands exactly. Use a stage with cursor: false.
  */
 export async function captureCard(
   director,
   name,
   { cards = 'cards.html', scene, data = {}, seconds = 3, dir, chapter }
 ) {
-  await director.page.goto(`${pathToFileURL(resolve(cards)).href}?scene=${scene}`);
-  await director.page.evaluate((d) => window.fill(d), data);
-  await director.page.evaluate(() => document.fonts.ready);
-  await director.page.waitForLoadState('networkidle');
-  return captureScene(
-    director,
-    name,
-    async () => {
-      await director.page.evaluate(() => window.play());
-      await sleep(seconds * 1000);
-    },
-    { dir, chapter }
-  );
+  return captureFrames(director, name, `${pathToFileURL(resolve(cards)).href}?scene=${scene}`, {
+    seconds,
+    dir,
+    chapter,
+    before: async (d) => {
+      await d.page.evaluate((v) => window.fill(v), data);
+      await d.page.evaluate(() => document.fonts.ready);
+      await d.page.waitForLoadState('networkidle');
+    }
+  });
 }
 
 /**
@@ -551,6 +959,46 @@ export async function contactSheet(video, out, { duration, every = 1, cols = 4, 
 /** The frame at `at` seconds, full size. */
 export async function still(video, at, out) {
   await ffmpeg(['-ss', String(at), '-i', video, '-frames:v', '1', out]);
+}
+
+/**
+ * Measures what eyes call flicker: single-frame blips (a frame that differs
+ * from both neighbours) and single-frame stalls inside motion (a repeated
+ * frame that makes movement judder). Frames are compared at a small grey
+ * size. Returns their times in seconds - stills show neither.
+ */
+export async function smoothness(video, { width = 160, fps = 30 } = {}) {
+  const height = Math.round((width * 9) / 16);
+  const n = width * height;
+  const r = spawnSync(
+    await ffmpegBin(),
+    [
+      '-hide_banner',
+      '-loglevel',
+      'error',
+      '-i',
+      video,
+      '-vf',
+      `fps=${fps},scale=${width}:${height}:flags=area,format=gray`,
+      '-f',
+      'rawvideo',
+      '-'
+    ],
+    { maxBuffer: 2 ** 31 }
+  );
+  const buf = r.stdout;
+  const count = Math.floor(buf.length / n);
+  const diff = (a, b) => {
+    let s = 0;
+    for (let k = 0; k < n; k++) s += Math.abs(buf[a * n + k] - buf[b * n + k]);
+    return s / n;
+  };
+  const d1 = [];
+  const d2 = [];
+  for (let i = 0; i + 1 < count; i++) d1.push(diff(i, i + 1));
+  for (let i = 0; i + 2 < count; i++) d2.push(diff(i, i + 2));
+  const at = (i) => +(i / fps).toFixed(2);
+  return { frames: count, blips: findBlips(d1, d2).map(at), stalls: findStalls(d1).map(at) };
 }
 
 /** A GIF with its own palette - for READMEs and docs, where video does not autoplay. */

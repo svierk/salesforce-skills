@@ -1,6 +1,6 @@
 # Storyboard
 
-A demo is decided on paper. This file covers what to ask, how long things take on screen, how to write captions, and how each format is built.
+A demo is decided on paper. This file covers what to ask, how long things take on screen, how to write captions, the visual language, and how each format is built.
 
 ## The brief
 
@@ -46,6 +46,11 @@ Lightning Experience is built for wide screens; below about 1024 CSS pixels it g
 | Hold on a result  | 1.5 s or more - the result is the point of the beat   |
 | Scroll            | 1-2.5 s for a page, eased                             |
 | Cross-fade        | 0.4-0.5 s                                             |
+| Focus frame       | 1.2 s or more on its element                          |
+| Zoom in or out    | 0.7-1 s, eased                                        |
+| Chapter ident     | 2.5-3 s readable, plus the wipe in and out            |
+| Recap montage     | About 2.5 s a step when the narrator names each one   |
+| Concept slide     | 15-20 s when someone talks over it                    |
 | Narration         | About 2.5 words a second                              |
 
 The video is the sum of the scenes minus one fade per join. Add up the storyboard table before recording; if it runs long, cut beats, not holds - a rushed result is a lost result. Pages that load slowly are loaded before a scene starts, not during it.
@@ -59,11 +64,26 @@ The video is the sum of the scenes minus one fade per join. Add up the storyboar
 - **Hide it before a change of subject** with `caption(null)`, so an old caption does not hang over a new page.
 - **Sentence case, the language of the post,** and nothing that is not true (ground rule 3).
 
+## Visual language
+
+The finish that makes a demo look produced, not recorded. Decide it with the brief, then keep it the same in every scene.
+
+- **One functional accent.** Take the brand's signature colour and reserve it for the moments that matter - focus frames, the data signal, the AI result, the action. Structure stays neutral (white, light grey), information dark. An accent that is everywhere marks nothing.
+- **One focus per moment.** Zoom or frame the one element the narration is about; routine navigation moves quickly, the important beats get time to land.
+- **Product recordings stay the product.** Do not restyle the interface; the brand lives around it - cards, idents, focus colour, transitions.
+- **Generated visuals for what the product cannot show:** the opening, transitions between chapters, concept diagrams, and bridges from the physical world to the data (the product in use, the plant floor, the device that sends the signal). Never to fake functionality.
+- **Executive audiences.** Line art and stick figures read as sketches. Use 3D with real light and soft shadows - products, machines, abstract layers - and abstract mannequin-style figures for people, never photorealistic faces. People move with planted feet and bend their knees: a figure that slides over the floor breaks the illusion. See [recording.md](recording.md#motion-graphics).
+- **Restraint.** Precise, controlled motion with eased starts and stops, few particles, no neon, no glowing brains or holograms.
+- **Brand reveals** work when the brand is made by the subject's own world: draw the logo from its SVG paths as the product would - cut, engraved, printed, plotted - then hand over to the flat logo at exactly the drawn logo's screen position, so the cut is invisible.
+- **Mark what is not live.** A concept view, a mock-up page, demo data or a task created by hand for the story gets a small badge ("Concept view", "Mock-up", "Demo data"). Keep badge texts short; they are read in a glance.
+- **Room for text.** Objects and their shadows stay clear of labels: place a 3D element beside the text column and light it so the shadow falls away from the text. Long labels break where you decide, not where the line ends.
+- **Owners on the objects.** In architecture or layer slides, put who brings each part (the customer's data, the platform, the project) as uniform lettering on the object itself; mixing logos of different weights looks restless.
+
 ## Structures
 
 **Teaser.** Intro card with what is new (eyebrow with the version range, title, up to three chips) - two to four highlights, one caption each - outro with a strong line, the numbers that hold, and the link. 15-30 s. The post that goes with it repeats the highlights as text.
 
-**Pitch walkthrough.** Intro card for the prospect ("Prepared for ...", their logo if the bid allows it) - an agenda is the chapter list - one chapter per requirement or process: a chapter card with the requirement ID and the prospect's own words, the click path, the result held, a caption with the value - outro with the next step and the contact. Keep the base storyboard generic and pass prospect data in, so the next bid is a re-run.
+**Pitch walkthrough.** Intro card for the prospect ("Prepared for ...", their logo if the bid allows it) - an agenda is the chapter list - one chapter per requirement or process: a chapter card with the requirement ID and the prospect's own words, the click path, the result held, a caption with the value - outro with the next step and the contact. For longer pitches, close with a recap montage - each step's chapter name with a short clip of its scene - before the outro. Keep the base storyboard generic and pass prospect data in, so the next bid is a re-run.
 
 **Sprint review / story.** Story card with ID and title - the click path along the acceptance criteria, one caption each - result. One story per clip; a review is several clips, not one long take.
 

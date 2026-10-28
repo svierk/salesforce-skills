@@ -1,36 +1,31 @@
 // Tests the Demo Designer's recorder library without a browser or ffmpeg: the
-// timing of frames, the cross-fade graph, subtitles and chapter marks. The
-// import itself proves the library loads without playwright-core and
-// ffmpeg-static, which it only needs once it records.
+// timing of frames, the camera, the smoothness checks, the cross-fade graph,
+// subtitles and chapter marks. The import itself proves the library loads
+// without playwright-core and ffmpeg-static, which it only needs once it records.
 
 import { readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  cameraAt,
+  cameraFilter,
   chapters,
-  concatList,
+  cropOf,
   crossfadeGraph,
+  findBlips,
+  findStalls,
+  fitZoom,
+  frameSequence,
   joinCues,
   outputSize,
   plain,
   sceneOffsets,
   srt,
-  totalDuration
+  totalDuration,
+  unionRect
 } from '../../plugins/demo-designer/skills/salesforce-demo-designer/scripts/demo-kit.mjs';
 
 const skill = new URL('../../plugins/demo-designer/skills/salesforce-demo-designer/', import.meta.url).pathname;
-
-/** The entries of a concat list as [file, duration] pairs; the repeated last file has no duration. */
-function entries(list) {
-  const lines = list.trim().split('\n');
-  const out = [];
-  for (let i = 0; i < lines.length; i++) {
-    const file = lines[i].match(/^file '(.+)'$/)[1];
-    const duration = lines[i + 1]?.startsWith('duration') ? Number(lines[++i].split(' ')[1]) : undefined;
-    out.push([file, duration]);
-  }
-  return out;
-}
 
 describe('outputSize', () => {
   test('multiplies the viewport by the scale', () => {
@@ -43,7 +38,7 @@ describe('outputSize', () => {
   });
 });
 
-describe('concatList', () => {
+describe('frameSequence', () => {
   const frames = [
     { file: 'a.jpg', t: 9.5 },
     { file: 'b.jpg', t: 10.2 },
@@ -51,33 +46,107 @@ describe('concatList', () => {
     { file: 'd.jpg', t: 13.5 }
   ];
 
-  test('shows every frame until the next one, from the start of the scene', () => {
-    assert.deepEqual(entries(concatList(frames, 10, 12)), [
-      ['a.jpg', 0.2],
-      ['b.jpg', 0.8],
-      ['c.jpg', 1],
-      ['c.jpg', undefined]
+  test('shows every frame until the next one arrives, at a constant rate', () => {
+    assert.deepEqual(frameSequence(frames, 10, 12, 5), [
+      'a.jpg',
+      'b.jpg',
+      'b.jpg',
+      'b.jpg',
+      'b.jpg',
+      'c.jpg',
+      'c.jpg',
+      'c.jpg',
+      'c.jpg',
+      'c.jpg'
     ]);
   });
 
-  test('adds up to the length of the scene', () => {
-    const total = entries(concatList(frames, 10, 12)).reduce((sum, [, d]) => sum + (d ?? 0), 0);
-    assert.ok(Math.abs(total - 2) < 1e-3);
+  test('has one entry per frame of the scene', () => {
+    assert.equal(frameSequence(frames, 10, 12, 30).length, 60);
   });
 
   test('keeps the last frame before the start when the page did not change', () => {
-    assert.deepEqual(entries(concatList([{ file: 'still.jpg', t: 3 }], 5, 8)), [
-      ['still.jpg', 3],
-      ['still.jpg', undefined]
-    ]);
+    assert.deepEqual(frameSequence([{ file: 'still.jpg', t: 3 }], 5, 6, 3), ['still.jpg', 'still.jpg', 'still.jpg']);
   });
 
   test('drops frames that arrive after the end', () => {
-    assert.ok(!concatList(frames, 10, 12).includes('d.jpg'));
+    assert.ok(!frameSequence(frames, 10, 12, 30).includes('d.jpg'));
+  });
+
+  test('does not merge or skip frames that arrive every tick', () => {
+    const steady = Array.from({ length: 40 }, (_, i) => ({ file: `f${i}`, t: i / 30 }));
+    assert.deepEqual(
+      frameSequence(steady, 0, 1, 30),
+      steady.slice(0, 30).map((f) => f.file)
+    );
   });
 
   test('refuses a scene without frames', () => {
-    assert.throws(() => concatList([], 0, 1), /No frames/);
+    assert.throws(() => frameSequence([], 0, 1), /No frames/);
+  });
+});
+
+describe('camera', () => {
+  const viewport = { width: 1600, height: 900 };
+
+  test('caps the zoom so the whole target stays in frame', () => {
+    const wide = fitZoom({ x: 100, y: 100, width: 1200, height: 100 }, viewport, { scale: 2 });
+    assert.ok(Math.abs(wide.scale - (0.86 * 1600) / 1200) < 1e-9);
+    assert.equal(fitZoom({ x: 700, y: 400, width: 100, height: 50 }, viewport, { scale: 1.6 }).scale, 1.6);
+  });
+
+  test('never zooms out below the full frame', () => {
+    assert.equal(fitZoom({ x: 0, y: 0, width: 1600, height: 900 }, viewport).scale, 1);
+  });
+
+  test('keeps the crop inside the page near an edge', () => {
+    const cam = fitZoom({ x: 0, y: 0, width: 100, height: 60 }, viewport, { scale: 2 });
+    const crop = cropOf(cam, viewport);
+    assert.deepEqual([crop.x, crop.y, crop.width, crop.height], [0, 0, 800, 450]);
+  });
+
+  test('frames several elements together', () => {
+    assert.deepEqual(
+      unionRect([
+        { x: 10, y: 20, width: 30, height: 40 },
+        { x: 100, y: 5, width: 10, height: 10 }
+      ]),
+      { x: 10, y: 5, width: 100, height: 55 }
+    );
+  });
+
+  test('eases between moves and holds after them', () => {
+    const keys = [{ t: 1, ms: 1000, scale: 2, x: 400, y: 225 }];
+    assert.deepEqual(cameraAt(keys, 0.5, viewport), { scale: 1, x: 800, y: 450 });
+    const mid = cameraAt(keys, 1.5, viewport);
+    assert.ok(Math.abs(mid.scale - 1.5) < 1e-9 && Math.abs(mid.x - 600) < 1e-9);
+    assert.deepEqual(cameraAt(keys, 5, viewport), { scale: 2, x: 400, y: 225 });
+  });
+
+  test('builds a per-frame perspective filter, or nothing without moves', () => {
+    assert.equal(cameraFilter([], viewport), '');
+    const f = cameraFilter([{ t: 1, ms: 800, scale: 1.5, x: 600, y: 300 }], viewport, 30);
+    assert.match(f, /^perspective=x0='/);
+    assert.match(f, /interpolation=cubic:sense=source:eval=frame$/);
+    assert.match(f, /\(in\/30\)/);
+  });
+});
+
+describe('smoothness', () => {
+  test('finds a single frame that differs from both neighbours', () => {
+    // frames: A A B A A - frame 2 is the blip
+    const d1 = [0, 3, 3, 0];
+    const d2 = [3, 0, 3];
+    assert.deepEqual(findBlips(d1, d2), [2]);
+  });
+
+  test('ignores steady motion', () => {
+    assert.deepEqual(findBlips([2, 2, 2, 2], [4, 4, 4]), []);
+  });
+
+  test('finds a repeated frame inside motion', () => {
+    assert.deepEqual(findStalls([2, 2, 0, 2, 2]), [3]);
+    assert.deepEqual(findStalls([0, 0, 0, 0]), []);
   });
 });
 
@@ -160,5 +229,10 @@ describe('cards template', () => {
 
   test('holds every animation until play()', () => {
     assert.match(html, /body:not\(\.go\) \*\s*\{\s*animation-play-state: paused !important;/);
+  });
+
+  test('lets the recorder set every animation to a time, for frame-exact cards', () => {
+    assert.match(html, /window\.seek = /);
+    assert.match(html, /a\.currentTime = t \* 1000/);
   });
 });

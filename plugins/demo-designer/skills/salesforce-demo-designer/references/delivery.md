@@ -17,11 +17,25 @@ Read the images, then check:
 - [ ] Every claim true - numbers, versions, "new" (ground rule 3)
 - [ ] Nothing private in frame: real names, emails, phone numbers, the user's photo, internal URLs, org banners
 - [ ] The cursor visible where something happens, and clicks land on what the caption names
+- [ ] Every focus frame on a visible element - a contact sheet of the moment after each `focus` call shows it
+- [ ] Zooms keep their subject and the next action in frame
+- [ ] `smoothness(video.file)` lists no blip or stall you cannot explain (a real hover highlight is fine)
+- [ ] Animated people and machines look right in motion: a frame strip at 5-10 fps (`fps=5,tile=8x2`) shows planted feet, no crossing legs, no jumps
+- [ ] Generated text read and true, and nothing on screen that later scenes created too early
 - [ ] Results held long enough to take in; no beat lost to a slow page
 - [ ] Intro chips and outro text fully visible before the fades
 - [ ] Length within the budget of the brief
 
-Show the user the stills with your verdict, and say what you did not check - you see frames, not motion. Each correction goes into the storyboard script, then record again.
+Show the user the stills with your verdict, and say what you did not check - you see frames, not motion; `smoothness` and frame strips are how you check motion. Each correction goes into the storyboard script, then record again.
+
+## Feedback rounds
+
+Long demos go through several rounds. For each one:
+
+- **Root cause before fix.** "It flickers" can be dropped frames, a timing bug in the encode, zoom shimmer or a real UI effect; measure first, fix the cause, measure again and report the numbers.
+- **Fix without repeating side effects.** Prefer re-editing, re-rendering graphics or cutting a take over re-recording a scene that changes data (see [salesforce.md](salesforce.md#retakes-and-side-effects)).
+- **Answer the question asked.** When the user asks for an opinion ("what do you think?"), give one with the trade-off, then build it.
+- **Log the round** - request, changes, learnings - next to the scripts, and keep chapter marks current when lengths change.
 
 ## Files
 
