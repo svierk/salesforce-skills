@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "demo-designer",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Design and record polished demo videos of Salesforce orgs, apps and sites - scripted click paths with cursor, captions, intro and outro cards, transitions and subtitles - for bids and pitches, sprint reviews, release teasers and training.",
   "author": {
     "name": "Sebastiano Schwarz",
