@@ -1,9 +1,9 @@
 <!doctype html>
 <!--
   Intro, chapter and outro cards for the Demo Kit. captureCard() opens this
-  file with ?scene=intro|chapter|outro, calls fill(data) and then play().
+  file with ?scene=intro|chapter|outro, calls fill(data) and then seek(t) for every frame.
   Sizes are in vmin, so one file serves 16:9, 1:1, 4:5 and 9:16 stages.
-  Restyle freely - keep fill(), play() and the paused-until-play rule.
+  Restyle freely - keep fill(), seek(), play() and the paused-until-play rule.
 
   data: {
     brand:   { bg, surface, text, muted, accent: [from, via, to] },
@@ -341,6 +341,14 @@
       };
 
       window.play = () => document.body.classList.add('go');
+
+      // Frame-exact rendering: the recorder sets every animation to time t, frame by frame.
+      window.seek = (t) => {
+        for (const a of document.getAnimations()) {
+          a.pause();
+          a.currentTime = t * 1000;
+        }
+      };
     </script>
   </body>
 </html>
