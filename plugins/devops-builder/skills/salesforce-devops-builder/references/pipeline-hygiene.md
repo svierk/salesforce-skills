@@ -37,6 +37,15 @@ Name these in every setup, because no workflow solves them:
 - **Drift detection** - a scheduled comparison between each org and its branch, so changes made directly in an org show up before they break a deployment.
 - **Integration user** per org, dedicated and least-privilege - see [authentication.md](authentication.md).
 
+## Repositories without an org
+
+Demo, training and template repositories often have no org and no secrets. A validation job that logs in then fails on every run, and people learn to ignore a red pipeline. Offer a static-only variant instead:
+
+- **Keep** what runs without an org: the kit's code review block (Code Analyzer with the SF CLI, Prettier, ESLint), LWC Jest (`sfdx-run-tests` with `apex: false`), and a job per UI bundle with the bundle as working directory - lint, unit tests, build. Installing with `npm ci --ignore-scripts` skips a bundle's `postinstall`; run its step (for example `npx patch-package`) explicitly.
+- **Drop** the org login, deployments, Apex tests, the scratch org workflow, and scanners that need a token (SonarCloud, Codecov) - or keep them only where the token exists.
+- **Auto-merge** only where required status checks exist (see the checklist below).
+- Say in the workflow's header comment that it is static on purpose, so the next person does not add an org login back.
+
 ## Audit checklist
 
 Run from the root of the user's repository:
@@ -59,7 +68,18 @@ grep -rnE '\$\{\{ *(secrets|github\.event)\.' .github/workflows
 
 # Checkouts - each one should set persist-credentials: false
 grep -rn -A6 'uses: *actions/checkout' .github/workflows
+
+# Template leftovers: repository names in conditions - the job never runs in a copy
+grep -rnE 'github\.(repository|repository_owner) *[!=]=' .github/workflows
+
+# Badges and workflow links that point to another repository
+grep -noE 'github\.com/[^/ )]+/[^/ )]+/(actions|workflows)' README.md | grep -v "$(gh repo view --json nameWithOwner -q .nameWithOwner)"
+
+# Auto-merge - only safe when the target branch has required status checks
+grep -rln 'merge --auto' .github/workflows && gh api "repos/{owner}/{repo}/rules/branches/main" --jq '[.[].type]'
 ```
+
+`gh api .../rules/branches/<branch>` answers 403 ("Upgrade to GitHub Pro or make this repository public") for a private repository on GitHub Free: it cannot have rulesets or branch protection at all, so there are no required checks.
 
 Then, per finding class:
 
@@ -69,11 +89,14 @@ Then, per finding class:
 | High     | `${{ secrets.* }}` or attacker-controlled `${{ github.event.* }}` inside a `run:` script          |
 | High     | Production deployment without an environment, or an environment without required reviewers        |
 | High     | Mutable refs (`@main`, `@v1`) on any action that sees org credentials                             |
+| High     | `gh pr merge --auto` on a branch without required status checks - it merges at once, red or green |
 | Medium   | No `permissions:` block, or broader permissions than the workflow needs                           |
 | Medium   | Validation not a required status check; force pushes or deletions allowed on long-lived branches  |
 | Medium   | One repository-wide secret set used for several orgs                                              |
 | Medium   | Pins more than one minor version behind the latest release, or no Dependabot for `github-actions` |
+| Medium   | A condition on a repository name or owner that is not this repository - the job never runs        |
 | Low      | `persist-credentials` not set to `false`; test level left implicit                                |
 | Low      | Delta-only deployments without a periodic full validation                                         |
+| Low      | Badges or links to the workflows of another repository - they show someone else's status          |
 
 End the audit with what is already in good shape, so the user knows what not to touch.
