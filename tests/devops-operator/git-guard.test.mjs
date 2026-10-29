@@ -148,6 +148,63 @@ describe('environment branches', () => {
   });
 });
 
+describe('branch switches in the same command', () => {
+  for (const command of [
+    'git switch -c feature/ABC-2-pricing && git commit -m wip',
+    'git switch --create=feature/ABC-2-pricing && git commit -m wip',
+    'git checkout -b feature/ABC-2-pricing && git add . && git commit -m wip'
+  ]) {
+    test(`allows ${command} on an environment branch`, () => {
+      assert.equal(decide(command, repo({ branch: 'main' })), 'allow');
+    });
+  }
+
+  test('denies a commit after switching to an environment branch', () => {
+    assert.equal(decide('git switch main && git commit -m wip', repo()), 'deny');
+    assert.equal(decide('git checkout main && git merge feature/ABC-1-discount', repo()), 'deny');
+  });
+
+  test('denies a commit after switching back with -', () => {
+    const dir = repo();
+    git(dir, 'switch', '-q', 'main');
+    git(dir, 'switch', '-q', 'feature/ABC-1-discount');
+    assert.equal(decide('git switch - && git commit -m wip', dir), 'deny');
+  });
+
+  test('only counts the switch for the repository it happened in', () => {
+    const other = repo();
+    assert.equal(decide(`git -C ${other} switch -c feature/x && git commit -m wip`, repo({ branch: 'main' })), 'deny');
+  });
+
+  test('a commit before the switch still counts on the environment branch', () => {
+    assert.equal(decide('git commit -m wip && git switch -c feature/x', repo({ branch: 'main' })), 'deny');
+  });
+});
+
+describe('heredocs', () => {
+  test('ignores git commands inside a heredoc body', () => {
+    const command =
+      "cat > notes.md <<'EOF'\ngit commit -m wip\ngit push --force\nEOF\ngh issue create --body-file notes.md";
+    assert.equal(decide(command, repo({ branch: 'main' })), 'allow');
+  });
+
+  test('still checks the command that reads the heredoc', () => {
+    assert.equal(decide("git commit -F - <<'MSG'\nfeat: add discount flow\nMSG", repo({ branch: 'main' })), 'deny');
+  });
+
+  test('checks commands after the heredoc ends', () => {
+    assert.equal(decide('cat > notes.md <<EOF\ntext\nEOF\ngit push --force', repo()), 'deny');
+  });
+
+  test('handles <<- with tab-indented delimiters', () => {
+    assert.equal(decide('cat <<-EOF\n\tgit push --force\n\tEOF\necho done', repo()), 'allow');
+  });
+
+  test('treats <<< here-strings as part of their line', () => {
+    assert.equal(decide('git commit -F - <<< "feat: add discount flow"', repo({ branch: 'main' })), 'deny');
+  });
+});
+
 describe('commands that throw work away', () => {
   const dir = repo();
   for (const command of [
