@@ -52,6 +52,8 @@ A Salesforce DX project with UI bundles needs more than a deploy. Polyglot Arcad
 6. **Connect** - the org-specific bundle URLs stored on the configuration records.
 7. **GraphQL** - the org's schema downloaded and the types generated in every bundle.
 
+**The first setup in an org has an order.** The permission set names the app, the app names the bundle, the bundle's build needs the operation types, and the types need a schema in which the user can already read the new fields - which the permission set grants. With the operation types committed, the build needs no org, and one deployment of fields, bundle, app and permission set goes through; then assign the permission set, seed, and fetch the schema for the next change.
+
 What makes it a good setup, whatever the project:
 
 - **It shows the steps and asks once** - Enter to run, `--yes` to skip the question in CI - and every step can be left out (`--skip-<step>`).

@@ -91,7 +91,7 @@ Goal: a UI bundle that runs standalone, deploys with one command, reads and writ
 5. **Links to the other surfaces** from `SFDC_ENV` and configuration records, never typed-in URLs - [references/architecture.md](references/architecture.md#navigation-between-surfaces).
 6. **Build, deploy, connect.** Build every bundle before the deploy - the bundle ships its build output. A setup that runs preflight, build, deploy, permission set, seed data and the connect step in order, and is safe to run again - [references/org-and-deploy.md](references/org-and-deploy.md#one-command-setup).
 7. **Test without an org:** unit tests, Playwright against the static build with axe and touch, Jest for the LWCs - [references/ui-bundles.md](references/ui-bundles.md#tests-without-an-org).
-8. **See it working.** Ask the user to open the app from the App Launcher - you cannot see their screen - and to try it with the keyboard.
+8. **See it working.** Check it yourself first: `sf api request graphql --body <file with the plain GraphQL operation> --target-org <alias>` shows what the bundle's query returns, and headless Playwright can sign in through `sf org open --url-only` - used in-process, never printed - open the app's `AppMenuItem.StartUrl` and take a screenshot. Then ask the user to open the app from the App Launcher and to try it with the keyboard.
 
 ## Embed
 
