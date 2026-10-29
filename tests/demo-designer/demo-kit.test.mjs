@@ -16,6 +16,7 @@ import {
   findStalls,
   fitZoom,
   frameSequence,
+  isEditable,
   joinCues,
   outputSize,
   plain,
@@ -215,6 +216,33 @@ describe('subtitles and chapters', () => {
   test('turns caption markup into subtitle text', () => {
     assert.equal(plain('Refreshed artwork &amp; palette'), 'Refreshed artwork & palette');
     assert.equal(plain('QR codes,<br><em>right in Salesforce</em>'), 'QR codes, right in Salesforce');
+  });
+});
+
+describe('typing', () => {
+  test('accepts text fields, textareas, contenteditable and frames', () => {
+    assert.ok(isEditable({ tag: 'INPUT' }));
+    assert.ok(isEditable({ tag: 'input', type: 'tel' }));
+    assert.ok(isEditable({ tag: 'TEXTAREA' }));
+    assert.ok(isEditable({ tag: 'DIV', editable: true }));
+    assert.ok(isEditable({ tag: 'IFRAME' }));
+  });
+
+  test('refuses the page, buttons and controls without text', () => {
+    for (const focus of [
+      { tag: 'BODY' },
+      { tag: 'BUTTON' },
+      { tag: 'INPUT', type: 'checkbox' },
+      { tag: 'INPUT', type: 'submit' },
+      { tag: 'A' }
+    ]) {
+      assert.equal(isEditable(focus), false, JSON.stringify(focus));
+    }
+  });
+
+  test('refuses read-only and disabled fields', () => {
+    assert.equal(isEditable({ tag: 'INPUT', readOnly: true }), false);
+    assert.equal(isEditable({ tag: 'TEXTAREA', disabled: true }), false);
   });
 });
 
