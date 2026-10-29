@@ -10,6 +10,8 @@
 #
 # Environment branches come from .github/salesforce-devops.yml (environments
 # and base); without that file, main, master and the remote's default branch.
+# A branch switch earlier in the same command counts (git switch -c x && git
+# commit commits on x), and heredoc bodies are data, never commands.
 # Outside a Salesforce project - no sfdx-project.json and no config file - the
 # hook does nothing. DEVOPS_OPERATOR_GUARD=off turns it off for one person -
 # set in their own settings, never in a project's shared ones.
@@ -92,6 +94,16 @@ is_protected() {
   return 1
 }
 
+# A branch switch earlier in the same command (git switch -c x && git commit):
+# later segments in that repository are checked against the branch switched to.
+switched_dir= switched_branch=
+
+switch_to() {
+  # $1 repository directory, $2 branch name ("" when detached or unknown)
+  switched_dir=$1
+  switched_branch=$2
+}
+
 check_git() {
   # $@: the words of one git invocation, without the leading "git"
   dir=$cwd
@@ -109,6 +121,9 @@ check_git() {
   sub=$1
   shift
   current=$(git -C "$dir" branch --show-current 2>/dev/null)
+  if [ -n "$switched_dir" ] && [ "$switched_dir" = "$dir" ]; then
+    current=$switched_branch
+  fi
 
   case $sub in
     push)
@@ -176,6 +191,24 @@ check_git() {
             decide ask "This checkout throws away uncommitted changes to the files it touches, and they cannot be recovered. Continue?" ;;
         esac
       done
+      new= target= positional=
+      for arg in "$@"; do
+        if [ -n "$new" ]; then target=$arg; new=; continue; fi
+        case $arg in
+          -b | -B | --orphan) new=1 ;;
+          --detach) switch_to "$dir" ""; return 0 ;;
+          -) [ -n "$positional" ] || positional=- ;;
+          -*) ;;
+          *) [ -n "$positional" ] || positional=$arg ;;
+        esac
+      done
+      if [ -n "$target" ]; then
+        switch_to "$dir" "$target"
+      elif [ "$positional" = - ]; then
+        switch_to "$dir" "$(git -C "$dir" rev-parse --abbrev-ref '@{-1}' 2>/dev/null)"
+      elif [ -n "$positional" ] && git -C "$dir" show-ref --verify --quiet "refs/heads/$positional"; then
+        switch_to "$dir" "$positional"
+      fi
       ;;
     restore)
       staged= worktree=
@@ -197,6 +230,25 @@ check_git() {
             decide ask "Switching with --discard-changes throws away uncommitted changes, and they cannot be recovered. Continue?" ;;
         esac
       done
+      new= target= positional=
+      for arg in "$@"; do
+        if [ -n "$new" ]; then target=$arg; new=; continue; fi
+        case $arg in
+          -c | -C | --create | --force-create | --orphan) new=1 ;;
+          --create=* | --force-create=* | --orphan=*) target=${arg#*=} ;;
+          -d | --detach) switch_to "$dir" ""; return 0 ;;
+          -) [ -n "$positional" ] || positional=- ;;
+          -*) ;;
+          *) [ -n "$positional" ] || positional=$arg ;;
+        esac
+      done
+      if [ -n "$target" ]; then
+        switch_to "$dir" "$target"
+      elif [ "$positional" = - ]; then
+        switch_to "$dir" "$(git -C "$dir" rev-parse --abbrev-ref '@{-1}' 2>/dev/null)"
+      elif [ -n "$positional" ]; then
+        switch_to "$dir" "$positional"
+      fi
       ;;
     branch)
       for arg in "$@"; do
@@ -223,9 +275,33 @@ check_gh() {
   esac
 }
 
+# Drops the bodies of heredocs: they are data - a commit message, an issue text -
+# not commands, even when they mention git. Handles <<WORD, <<-WORD and quoted
+# delimiters; <<< here-strings stay on their line.
+strip_heredocs() {
+  delim= strip_tabs=
+  re="<<(-?)[[:space:]]*[\"']?([A-Za-z_][A-Za-z0-9_]*)"
+  while IFS= read -r line || [ -n "$line" ]; do
+    if [ -n "$delim" ]; then
+      check=$line
+      if [ -n "$strip_tabs" ]; then
+        check=$(printf '%s' "$line" | sed 's/^	*//')
+      fi
+      [ "$check" = "$delim" ] && delim=
+      continue
+    fi
+    printf '%s\n' "$line"
+    plain=${line//<<</ }
+    if [[ $plain =~ $re ]]; then
+      strip_tabs=${BASH_REMATCH[1]}
+      delim=${BASH_REMATCH[2]}
+    fi
+  done
+}
+
 # Split the command into its simple commands and check each git or gh call.
 set -f
-segments=$(printf '%s\n' "$command" | sed -e 's/&&/\
+segments=$(printf '%s\n' "$command" | strip_heredocs | sed -e 's/&&/\
 /g' -e 's/||/\
 /g' -e 's/[;|]/\
 /g')

@@ -26,7 +26,7 @@ The plugin ships a hook that checks every `git` and `gh` command the agent runs 
 - **Blocked:** force pushes, pushes to an environment branch, and commits, merges, rebases or cherry-picks on an environment branch. The agent gets the reason and the safe alternative.
 - **Confirmed first:** commands that throw work away (`reset --hard`, `clean`, `restore`, `checkout -- <files>`, `branch -D`, `stash drop`, deleting a remote branch) and merging a pull request.
 
-Environment branches come from the project configuration (below); without it, `main`, `master` and the default branch are protected. Outside Salesforce projects - no `sfdx-project.json` and no configuration file - the hook does nothing. It applies to every session in which the plugin is enabled, not only when the skill is in use.
+Environment branches come from the project configuration (below); without it, `main`, `master` and the default branch are protected. A branch switch earlier in the same command counts - `git switch -c feature/x && git commit` commits on `feature/x` and is allowed - and the body of a heredoc, such as a commit message or an issue text, is never read as a command. Outside Salesforce projects - no `sfdx-project.json` and no configuration file - the hook does nothing. It applies to every session in which the plugin is enabled, not only when the skill is in use.
 
 Pipeline owners who want the agent to run such commands can turn the guard off for themselves, in their own user settings (`~/.claude/settings.json`) or the project's local, uncommitted ones (`.claude/settings.local.json`):
 
