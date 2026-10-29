@@ -17,6 +17,7 @@ Read the images, then check:
 - [ ] Every claim true - numbers, versions, "new" (ground rule 3)
 - [ ] Nothing private in frame: real names, emails, phone numbers, the user's photo, internal URLs, org banners
 - [ ] The cursor visible where something happens, and clicks land on what the caption names
+- [ ] Every typed value visible while it is typed - a contact sheet samples too rarely; take `still()`s a few tenths of a second apart around each `type` step
 - [ ] Every focus frame on a visible element - a contact sheet of the moment after each `focus` call shows it
 - [ ] Zooms keep their subject and the next action in frame
 - [ ] `smoothness(video.file)` lists no blip or stall you cannot explain (a real hover highlight is fine)
@@ -27,6 +28,17 @@ Read the images, then check:
 - [ ] Length within the budget of the brief
 
 Show the user the stills with your verdict, and say what you did not check - you see frames, not motion; `smoothness` and frame strips are how you check motion. Each correction goes into the storyboard script, then record again.
+
+## Live demos
+
+When the video is recorded in front of an audience - a workshop, a pitch - with the presenter prompting the agent and often giving it a time budget, the recording is only half of it:
+
+- **Prepare everything but the run.** Storyboard, selectors, data and look are decided and tested before the session; a project skill or playbook says how to run it, so the live session neither asks questions nor researches. Answer a time budget in one line ("Enough - a run takes about 3 minutes") and start.
+- **A distinct output name** for the live take (`--out out/<name>-live.mp4`), so it overwrites neither the rehearsal take nor an earlier file in the user's downloads.
+- **Play it right away** after the review - the audience is waiting for the result, not for a path.
+- **A backup take.** Keep the best rehearsal take next to the script; after two failed runs, play it, say it is the rehearsal take, and debug after the session.
+- **Rehearse like the session.** A fresh agent with only the playbook, the presenter's exact prompt, a stopwatch, and - for demos that change an org - a separate org, never the one the session uses. Take screenshots or stills as evidence, and turn every hesitation of the fresh agent into a line of the playbook.
+- **Side effects stay out of the live run.** A dry run that stops before the submit is the default; a real submit needs the user's yes and test data (see [salesforce.md](salesforce.md#retakes-and-side-effects)).
 
 ## Feedback rounds
 

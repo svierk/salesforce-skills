@@ -217,6 +217,33 @@ export function cameraFilter(keys, viewport, fps = 30) {
   return `perspective=x0='${x0}':y0='${y0}':x1='${x1}':y1='${y0}':x2='${x0}':y2='${y2}':x3='${x1}':y3='${y2}':interpolation=cubic:sense=source:eval=frame`;
 }
 
+/* ---------- Typing: pure helpers ----------------------------------------- */
+
+const NOT_TYPED_INTO = new Set([
+  'button',
+  'checkbox',
+  'color',
+  'file',
+  'hidden',
+  'image',
+  'radio',
+  'range',
+  'reset',
+  'submit'
+]);
+
+/**
+ * Whether keys typed now reach a field: a text input, a textarea or a contenteditable element,
+ * not read-only or disabled. A focused iframe counts - its inside is out of reach.
+ */
+export function isEditable({ tag, type = null, readOnly = false, disabled = false, editable = false }) {
+  if (disabled || readOnly) return false;
+  if (editable) return true;
+  const name = String(tag).toUpperCase();
+  if (name === 'TEXTAREA' || name === 'IFRAME') return true;
+  return name === 'INPUT' && !NOT_TYPED_INTO.has(String(type ?? 'text').toLowerCase());
+}
+
 /* ---------- Smoothness: pure helpers ------------------------------------- */
 
 /**
@@ -547,14 +574,61 @@ class Director {
     await this.page.mouse.up();
   }
 
-  /** Types like a person - into the focused element, or into `target` after clicking it. */
+  /** The deepest focused element, through shadow roots, as `isEditable` reads it. */
+  async focused() {
+    return this.page.evaluate(() => {
+      let element = document.activeElement;
+      while (element?.shadowRoot?.activeElement) element = element.shadowRoot.activeElement;
+      return {
+        tag: element?.tagName ?? 'BODY',
+        type: element?.getAttribute?.('type') ?? null,
+        readOnly: Boolean(element?.readOnly),
+        disabled: Boolean(element?.disabled),
+        editable: Boolean(element?.isContentEditable)
+      };
+    });
+  }
+
+  /**
+   * Types like a person - into the focused element, or into `target` after clicking it.
+   * Without a target it refuses when nothing editable has focus: the keys would go to the
+   * page, where End, Space and PageDown scroll it and the text lands nowhere.
+   */
   async type(text, { target, delay = 70, clear = false } = {}) {
     if (target) await this.click(target);
+    else {
+      const focus = await this.focused();
+      if (!isEditable(focus)) {
+        throw new Error(
+          `type() without a target, but the focus is on <${focus.tag.toLowerCase()}>, not on an editable field - the keys would go to the page. Pass { target }, or check that the click before it left the focus in the field.`
+        );
+      }
+    }
     if (clear) await this.page.keyboard.press('ControlOrMeta+A');
     await this.page.keyboard.type(text, { delay });
   }
 
+  /**
+   * One key, such as `Enter` or `Escape`. `End` and `Home` in a single-line text field move the
+   * caret directly: as a key press, Chrome scrolls the whole page when the caret already sits at
+   * that end, and the typing that follows happens out of frame.
+   */
   async press(key) {
+    if (key === 'End' || key === 'Home') {
+      const moved = await this.page.evaluate((k) => {
+        let element = document.activeElement;
+        while (element?.shadowRoot?.activeElement) element = element.shadowRoot.activeElement;
+        if (element?.tagName !== 'INPUT' || typeof element.value !== 'string') return false;
+        try {
+          const at = k === 'End' ? element.value.length : 0;
+          element.setSelectionRange(at, at); // throws for types without a caret (email, number)
+          return true;
+        } catch {
+          return false;
+        }
+      }, key);
+      if (moved) return;
+    }
     await this.page.keyboard.press(key);
   }
 
