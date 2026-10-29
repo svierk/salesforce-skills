@@ -1,6 +1,7 @@
-// Runs the Multi-Framework Wizard's X-ray against three projects in fixtures/:
+// Runs the Multi-Framework Wizard's X-ray against the projects in fixtures/:
 // one that wires every surface right and must stay silent, one with a known
-// finding for every rule, and one that frames apps without any trusted site.
+// finding for every rule, one that frames apps without any trusted site, and
+// a bundle as the reactbasic template generates it.
 
 import { spawnSync } from 'node:child_process';
 import { describe, test } from 'node:test';
@@ -130,11 +131,12 @@ describe('a project with every mistake', () => {
       'player.permissionset-meta.xml:3 app-hidden',
       'Vercel_Wildcard.cspTrustedSite-meta.xml:4 csp-wildcard',
       'Local_Dev.cspTrustedSite-meta.xml:4 dev-site-in-package',
-      'Guest_Wide.cspTrustedSite-meta.xml:4 csp-extra-directives'
+      'Guest_Wide.cspTrustedSite-meta.xml:4 csp-extra-directives',
+      'sfdx-project.json:0 forceignore-node-modules'
     ]) {
       assert.ok(all.includes(expected), `missing ${expected}`);
     }
-    assert.equal(all.length, 23);
+    assert.equal(all.length, 24);
   });
 
   test('honours a suppression with a reason, and only then', () => {
@@ -149,6 +151,15 @@ describe('a project with every mistake', () => {
 
   test('leaves MessagePort listeners alone', () => {
     assert.ok(!findings('clean-project').some((finding) => finding.endsWith('message-origin-check')));
+  });
+});
+
+describe('a bundle straight from the template', () => {
+  test('reports the missing app although target is left out, and the missing .forceignore entry', () => {
+    assert.deepEqual(findings('template-project').sort(), [
+      '.forceignore:0 forceignore-node-modules',
+      'plain.uibundle-meta.xml:0 bundle-no-app'
+    ]);
   });
 });
 

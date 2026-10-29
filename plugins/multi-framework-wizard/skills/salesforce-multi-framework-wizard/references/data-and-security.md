@@ -38,6 +38,7 @@ The entry point builds its navigation from the records, the host builds its fram
 
 - **Upsert by an external ID, never insert.** The arcade's data plan upserts games by `Game_Key__c` and the showcase Account by `Arcade_Key__c`. A second run updates the records in place, and the results that reference them survive.
 - **Seed only configuration and showcase records**, never results or personal data. Showcase records are fictional and named so they are recognisable as such.
+- **Campaign members and other junction records cannot be upserted** when their lookups are not updateable (`CampaignId`, `LeadId`): give them an external ID of their own, query which exist, and insert only the missing ones. `sf data upsert bulk --json` reports its counts in `result.jobInfo` (`numberRecordsProcessed`, `numberRecordsFailed`), `sf data import bulk` in `successfulRecords` and `failedRecords`.
 - **Org-specific values are not seed data.** The `*.salesforce.app` URLs differ per org and are written by the connect step after the deployment ([org-and-deploy.md](org-and-deploy.md#connect-step)).
 
 ## Trust boundaries

@@ -1,0 +1,2 @@
+# The CLI reads only this file - keep the bundles' dependencies out of every deploy
+**/uiBundles/*/node_modules/**

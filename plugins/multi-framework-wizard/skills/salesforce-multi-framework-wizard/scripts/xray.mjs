@@ -5,7 +5,7 @@
 // checks the seams between them for the mistakes that have one right answer:
 // links that cannot launch a bundle, org-specific URLs in code, frames that
 // cannot remount or hide their errors, messages to any origin, trusted sites
-// wider than needed.
+// wider than needed, bundle dependencies that would go into a deployment.
 //
 //   node xray.mjs [path] [--errors-only] [--json] [--mermaid]
 //
@@ -241,8 +241,24 @@ export function discover(root) {
   const channels = ofType('.messageChannel-meta.xml').map((file) => basename(file, '.messageChannel-meta.xml'));
   const lwrGuests = ofType('lwr.config.json').map((file) => dirname(file));
   const jestConfigs = files.filter((file) => /(?:^|[\\/])jest\.config\.[cm]?[jt]s$/.test(file));
+  // The Salesforce CLI reads only the root .forceignore - not the one the templates put in each bundle
+  const forceignoreFile = join(root, '.forceignore');
+  const forceignore = existsSync(forceignoreFile) ? { file: forceignoreFile, text: read(forceignoreFile) } : null;
 
-  return { root, files, packageDirs, apps, bundles, hosts, sites, visibilities, channels, lwrGuests, jestConfigs };
+  return {
+    root,
+    files,
+    packageDirs,
+    apps,
+    bundles,
+    hosts,
+    sites,
+    visibilities,
+    channels,
+    lwrGuests,
+    jestConfigs,
+    forceignore
+  };
 }
 
 /** The integration patterns the project uses, in the numbering of Polyglot Arcade. */
@@ -428,7 +444,8 @@ function projectFindings(map) {
         );
       }
     }
-    if (bundle.target === 'CustomApplication' && !bundle.app) {
+    // The reactbasic template leaves target out; such a bundle still launches as an App Launcher app
+    if ((bundle.target ?? 'CustomApplication') === 'CustomApplication' && !bundle.app) {
       add(
         bundle.file,
         0,
@@ -446,6 +463,19 @@ function projectFindings(map) {
         `${bundle.outputDir}/ does not exist - the bundle is deployed with its build output, so run npm ci and npm run build in it before every deploy.`
       );
     }
+  }
+
+  const ignoresNodeModules = (map.forceignore?.text ?? '')
+    .split('\n')
+    .some((line) => !line.trim().startsWith('#') && !line.trim().startsWith('!') && /node_modules/.test(line));
+  if (map.bundles.length && !ignoresNodeModules) {
+    add(
+      map.forceignore?.file ?? join(map.root, 'sfdx-project.json'),
+      0,
+      'warning',
+      'forceignore-node-modules',
+      `The root .forceignore does not exclude the bundles' node_modules - the Salesforce CLI ignores the .forceignore inside a bundle, so a deploy of the whole package directory uploads them and fails ("fetch failed"). Add **/uiBundles/*/node_modules/** to the root .forceignore.`
+    );
   }
 
   const bundleApps = new Set(map.bundles.map((b) => b.app).filter(Boolean));

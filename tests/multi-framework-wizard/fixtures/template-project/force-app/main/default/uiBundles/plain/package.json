@@ -1,0 +1,8 @@
+{
+  "name": "plain",
+  "private": true,
+  "dependencies": {
+    "react": "^19.2.0",
+    "@salesforce/platform-sdk": "^12.4.5"
+  }
+}
