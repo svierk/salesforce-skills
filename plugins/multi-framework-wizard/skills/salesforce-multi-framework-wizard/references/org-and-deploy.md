@@ -38,7 +38,7 @@ Polyglot Arcade's `config/project-scratch-def.json` sets what the features need,
 }
 ```
 
-An agent in the design needs Agentforce in the definition too - read the features and settings in the Agentforce DX guide for the release.
+An agent in the design needs Agentforce in the definition too - read the features and settings in the Agentforce DX guide for the release. Leave out `webAppOptIn` from older samples: Multi-Framework is on by default, and the setting now fails the settings deploy.
 
 ## One-command setup
 
@@ -60,6 +60,7 @@ What makes it a good setup, whatever the project:
 - **It is safe to run again** and keeps all data: upserts by external ID, deploys that replace, a connect step that overwrites the URLs.
 - **It names the org on every command** (`--target-org`) and never changes the default org.
 - **It stops on a production org** - add the org check of the preflight before the first change.
+- **It waits for permission set groups.** A group recalculates after a deploy and cannot be assigned before its `Status` is `Updated` - poll `PermissionSetGroup` first, as Salesforce's recipes do in CI.
 
 ## Connect step
 
@@ -76,6 +77,7 @@ sf data update record --sobject Arcade_Game__c --record-id <id> --values "App_Ur
 
 ## Upgrades
 
+- **Salesforce's packages move together.** `@salesforce/platform-sdk`, `@salesforce/ui-bundle`, the Vite or Angular plugin and `@salesforce/graphiti` share one version number: raise them together in every bundle, each staying in `dependencies` or `devDependencies` where it is, and let the lockfile bring the embedding bridge along. Then run every bundle's checks and one round per integration pattern in a fresh scratch org - Polyglot Arcade's move from 11.x to 12.x needed no code change and was accepted that way.
 - **The setup is the upgrade:** `git pull`, `npm install`, `npm run setup` - it deploys what is new and updates configuration in place.
 - **Leftovers are removed by hand,** because a deploy does not delete: a renamed page, an old tab, a replaced host. Document each in an upgrade page with the exact command, and run it only after the user confirms - a delete in the org cannot be undone by a redeploy:
 
@@ -87,7 +89,7 @@ sf data update record --sobject Arcade_Game__c --record-id <id> --values "App_Ur
 
 ## Release acceptance
 
-Polyglot Arcade's `scratch-org.yml` runs on release tags and on demand, so it does not use up the Dev Hub's scratch org limit on every push. It creates a scratch org with a JWT login to the Dev Hub, runs the setup, records a result, runs the setup again and checks that the configuration was updated and the result survived, then deletes the org. That one workflow proves the setup is repeatable - the property every later upgrade depends on.
+Polyglot Arcade's `scratch-org.yml` runs on release tags and on demand, so it does not use up the Dev Hub's scratch org limit on every push. It creates a scratch org with a JWT login to the Dev Hub, runs the setup, records a result, runs the setup again and checks that the configuration was updated and the result survived, then deletes the org. That one workflow proves the setup is repeatable - the property every later upgrade depends on. Each run holds one of the Dev Hub's active scratch orgs until it deletes the org - plan for the limit when people create scratch orgs from the same Dev Hub.
 
 ## Pipelines
 

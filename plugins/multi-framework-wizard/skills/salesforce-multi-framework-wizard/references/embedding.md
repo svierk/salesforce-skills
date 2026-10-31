@@ -15,6 +15,8 @@ How an app gets onto a Lightning or Experience Cloud page as a microfrontend: a 
 
 Org requirements at Winter '27: a Hyperforce org with English as the default language. `node <skill dir>/scripts/preflight.mjs` checks both.
 
+Verified beyond the table: on API 68.0 (October 2026), a scratch org also framed the guest routes of Salesforce's Angular Recipes bundle from `/app/c__angularRecipes`. Until the guide lists Angular, treat it as unsupported - a design that depends on it names the risk in its decision record.
+
 ## The host LWC
 
 A thin Lightning web component, generalised from `arcadeGameHost`:
@@ -70,7 +72,8 @@ renderedCallback() {
 - **`src` and `sandbox` are fixed at mount.** Changing either raises `SESSION_BINDING_MUTATED`. To show another URL, unmount and mount a new frame - the keyed iteration above, or an `lwc:if` around it.
 - **Errors are shown, not swallowed.** `sf-embedding.component.error` carries `phase`, `code`, `message` and whether a retry can help. Show the code and message in the card; a blank frame with nothing in the console is the hardest bug of all. `sf-embedding.component.ready` tells when the guest is up.
 - **Custom guest events bind declaratively** when their name has no dot (`ongameover`). Name them in lowercase without dots or hyphens.
-- **`src` comes from configuration** - the configuration record's App URL plus the embed path, joined by one tested function (`buildEmbedSrc` in the arcade). An `@api appUrl` property overrides it for local development. When nothing is configured, the card says how to fix it instead of showing an empty frame.
+- **Events to the guest** go the other way: `dispatchEvent(new CustomEvent('contactsdata', { detail }))` on the `lightning-ui-embedding` element (an `lwc:ref`) reaches the guest's View SDK listener. Use them for moments - a command such as "refresh now", data the host has just read - and props for state the guest needs at any time. An event sent before the guest listens is lost: the guest asks once it listens (Salesforce's GraphQL Data recipe dispatches `requestcontacts`), and the host answers and sends again when its data changes.
+- **`src` comes from configuration** - the configuration record's App URL plus the embed path, joined by one tested function (`buildEmbedSrc` in the arcade). The function appends the route to the URL's path: a UI bundle lives under `/app/<namespace>__<name>`, so `url.pathname = '/embed'` drops that prefix and the frame loads a 404, reported as `HEARTBEAT_TIMEOUT` (X-ray `embed-src-replaces-path`). An `@api appUrl` property overrides it for local development. When nothing is configured, the card says how to fix it instead of showing an empty frame.
 - **Record context as props.** On a record page, pass `recordId` and `objectApiName`; the guest attributes its results to that record.
 - **`sandbox` with the tokens the guest needs** - the arcade uses `allow-scripts allow-same-origin allow-forms`; check the embedding guide for the release's defaults before widening it.
 - **Properties for admins.** The host is the part App Builder sees: expose the view or item to show as a property with a `datasource` that lists the configured keys, and the targets the host makes sense on.
@@ -91,13 +94,16 @@ if (ui) {
   const unsubscribe = ui.subscribe((next) => applyProps(next.props));
 }
 sdk.dispatchEvent?.(new CustomEvent('gameover', { detail, bubbles: true }));
+
+// Events from the host arrive on the same SDK; remove the listener with the component.
+sdk.addEventListener?.('contactsdata', (event) => showContacts(event.detail));
 ```
 
 The arcade's cabinet uses `getViewSDK()`; the embedding guide of the same release shows `createViewSDK()` from `@salesforce/platform-sdk/view`. Read the installed package's exports before writing the call ([sources.md](sources.md#npm-packages)).
 
 - **Feature-detect every call.** Off an embedding surface the SDK is empty, and the same code runs standalone.
 - **Subscribe, don't read once.** Props change while the frame lives - the arcade switches games without a reload. Unsubscribe when the component goes away.
-- **An embed route** (`/embed`): chromeless - no header bar, no own navigation - compact, sized by its content and not by the viewport, the view chosen by props. A class on the root element (`embedded`) lets the styles adapt.
+- **An embed route** (`/embed`): chromeless - no header bar, no own navigation - compact, sized by its content and not by the viewport, the view chosen by props. A class on the root element (`embedded`) lets the styles adapt. The platform's session banner shows inside every frame of a UI bundle too, above the embedded view; the switch for it ([ui-bundles.md](ui-bundles.md#anatomy)) affects the whole bundle, so decide it for standalone and embedded use together.
 - **Event `detail` is plain data**, documented and typed on both sides. Include whether the guest's write reached Salesforce (`saved`), so the host does not claim success it cannot see.
 - **The rest of the guide** - styling to match Salesforce, resizing, tracking unsaved changes, screen readers - is in the UI Embedding guide ([sources.md](sources.md#salesforce-documentation)).
 
@@ -133,6 +139,7 @@ host LWC (Salesforce)                          guest (in the frame)
   - attributed to what the host knows, not what the guest says - the arcade saves a round for the game record it embeds, whatever game key the guest reports, and takes the Account from the page;
   - written with `createRecord` or the GraphQL wire under the user's permissions, so sharing and field-level security apply;
   - the value itself is what the guest reports. For a score that is acceptable; for anything with money or consequences, the guest needs its own authentication and a server-side check.
+- **The host reads for a guest without a session** the same way: it queries with Lightning Data Service or the GraphQL wire under the user's permissions and sends the result down as an event. Send only what the user may see and the guest needs to show - an externally hosted guest takes the data out of Salesforce.
 - **Never hand a session, token or frontdoor URL to an external guest.** If a guest must read Salesforce data itself, it needs an integration of its own, designed and reviewed as one.
 
 ## Trust settings

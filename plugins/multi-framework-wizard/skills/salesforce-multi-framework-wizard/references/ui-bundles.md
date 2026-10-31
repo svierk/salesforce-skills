@@ -28,7 +28,7 @@ How a React or Angular app becomes a Salesforce app: scaffolded from a template,
 ## Runtime environment
 
 - **`SFDC_ENV`** is set on the page in the org: `basePath` (for example `/app/c__pixelCabinet`), `appName`, `orgUrl`. React passes `basePath` without a trailing slash as the router's `basename`; the Angular template handles its base path itself. Outside an org - dev server, unit and e2e tests - `SFDC_ENV` is undefined: every helper that reads it returns `null` and the UI hides what needs it.
-- **`__SF_API_VERSION__`** is injected at build time by the plugins. Never write an API version into a URL in the bundle.
+- **`__SF_API_VERSION__`** is injected at build time by the plugins - from the org the build asks, see [Build and deploy](#build-and-deploy). Never write an API version into a URL in the bundle.
 - **Assets are relative** (`base: './'`, `deployUrl: './'`), because the bundle is served under its base path.
 - **Fonts and libraries come from npm and are bundled.** A CDN needs a trusted site per host and breaks without network access to it.
 
@@ -38,8 +38,10 @@ How a React or Angular app becomes a Salesforce app: scaffolded from a template,
 - **A domain API on top** - `arcadeApi.ts`, `ArcadeApi` - with named operations prefixed per surface (`CabinetCreateScore`, `HubGames`), so logs, codegen and debugging show which surface sent what.
 - **Cache by how the data changes.** Reads of data that changes on other surfaces or for other users skip the SDK's query cache (`cacheControl: 'no-cache'`); configuration that changes with a deployment can be cached.
 - **Types from the org's schema.** `npm run graphql:schema` downloads the schema by introspection, `npm run graphql:codegen` generates the operation types, and the GraphQL ESLint plugin checks every operation against it. The schema is per org and not committed; the build skips codegen when it is missing, so CI builds without an org - commit the generated operation types for that. `npm run build` type-checks (`tsc -b`) before Vite's codegen plugin runs: after changing an operation, run `npm run graphql:codegen` first. A new custom field is missing from the schema until the user can read it - the permission set comes before the schema download.
+- **Keep the committed types honest.** Generated against a richer org, they name fields the project does not have - nothing fails, until the next codegen produces an unrelated diff. Where CI deploys to a scratch org anyway, run `graphql:schema` and `graphql:codegen` there and fail on `git diff --exit-code` for the types file. If the bundle formats the generated file, run its Prettier from the bundle folder first, or the check fails on formatting alone.
+- **Drop stale answers.** A debounced search or a refetch can resolve out of order: number the requests and ignore every answer but the latest. Salesforce's recipes needed that fix in both frameworks.
 - **Field-level security shows up as missing data.** A field the user cannot read is null or fails the query: grant exactly what the bundle needs in its permission set, and handle the absence.
-- **REST through `sdk.fetch`** only for what GraphQL cannot do - an Apex REST endpoint is then a public endpoint with every rule that comes with it ([data-and-security.md](data-and-security.md)).
+- **REST through `sdk.fetch`** only for what GraphQL cannot do - an Apex REST endpoint is then a public endpoint with every rule that comes with it ([data-and-security.md](data-and-security.md)). The gateway of a deployed bundle does not pass every documented path: an open report against Winter '27 (trailheadapps/multiframework-recipes#154) lists `401 INVALID_SESSION_ID` for most `connect/` and `chatter/` resources. Call the endpoint from the deployed bundle before a design depends on it.
 - **SDK extensions, labels and i18n** (`defineDataExtension`, the labels extension, `@salesforce/platform-sdk/i18n`) arrived in Winter '27 - read the current API in the package before using them.
 
 ## Structure that survives three frameworks
@@ -59,6 +61,7 @@ How a React or Angular app becomes a Salesforce app: scaffolded from a template,
 ## Build and deploy
 
 - **Build before deploy.** A bundle is deployed with its build output (`outputDir`, usually `dist/`). Every bundle needs `npm ci` and `npm run build` before `sf project deploy start` - locally, in the setup script and in every pipeline.
+- **Build against the target org.** The build plugins ask the Salesforce CLI for the org's API version and bake it in - from the **default** org, unless `SF_TARGET_ORG` names another. Build with `SF_TARGET_ORG=<alias> npm run build` in the setup and in pipelines: a build against another org fails at run time with `GraphQL Error:` and HTTP 401, and an expired default org bakes in `50.0`.
 - **One bundle alone:** `sf project deploy start --source-dir force-app/main/default/uiBundles/<name> --target-org <alias>` after its build.
 - **Hashed build files and source tracking.** After a rebuild, a scratch org's source tracking can remember the previous hashed files as deleted and fail with `Expected source files for type 'UIBundle'`. Deploy the source directory once with `--source-dir`, then continue - [review.md](review.md#diagnosing).
 - **Packaging** of internal apps goes through second-generation packages since Winter '27; external, site-based apps could not be packaged at that release, and Developer Edition orgs only have the `c` namespace. Check the release before promising either.
@@ -72,6 +75,8 @@ How a React or Angular app becomes a Salesforce app: scaffolded from a template,
 | LWC   | `sfdx-lwc-jest` with `@sa11y/jest`                          | Host and native components, with a stub for `lightning-ui-embedding` ([embedding.md](embedding.md#the-host-lwc))          |
 
 - The arcade's `build:e2e` script rewrites asset paths to root-relative ones and adds a single-page fallback, so `serve` can host the build for Playwright.
+- Each bundle pins its own Playwright version, so each installs its own browser (`npx playwright install chromium` in its folder) - a CI cache keyed on one bundle's lockfile misses the other's.
+- Give every bundle's e2e server its own port. With `reuseExistingServer`, a server left running by another project on the same port answers instead, and the tests run against the wrong app.
 - The SFDX project's Jest ignores `uiBundles/` - each bundle brings its own runner. Vitest tests import `describe`, `it` and `expect` from `vitest`; with the template's ESLint config, globals are reported as `no-undef`.
 - CI installs with `npm ci --ignore-scripts`, which skips the template's `postinstall` - run `npx patch-package` right after it.
 - CI runs one job per bundle with that bundle as working directory and its own Node version, plus one job for the SFDX project. A separate workflow on release tags creates a scratch org, runs the setup twice and checks that data survived ([org-and-deploy.md](org-and-deploy.md#release-acceptance)).

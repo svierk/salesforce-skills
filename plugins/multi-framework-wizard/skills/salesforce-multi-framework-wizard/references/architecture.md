@@ -77,16 +77,17 @@ A hidden app cannot be launched: `applicationVisibilities` with `visible` false 
 
 ## Communication
 
-One job per channel. Polyglot Arcade has four, and most multi-framework apps need the same:
+One job per channel. Polyglot Arcade has four, and most multi-framework apps need the same; Salesforce's Micro-Frontend Recipes add a fifth, events from the host to the guest:
 
-| Channel                      | Between                                 | Carries                                                                        |
-| ---------------------------- | --------------------------------------- | ------------------------------------------------------------------------------ |
-| UI API - Data SDK, LDS, wire | Every surface → Salesforce data         | Records: configuration, the shared data, new results                           |
-| Props                        | Host LWC → framed app                   | Context: which view, which record (`recordId`, `objectApiName`), settings      |
-| Events                       | Framed app → host LWC                   | Intents and results: "a round ended, it was saved", "a record was selected"    |
-| Lightning Message Service    | Host LWC → other components on the page | Notifications with identifiers - "this changed" - so others refresh their data |
+| Channel                      | Between                                 | Carries                                                                              |
+| ---------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------ |
+| UI API - Data SDK, LDS, wire | Every surface → Salesforce data         | Records: configuration, the shared data, new results                                 |
+| Props                        | Host LWC → framed app                   | Context: which view, which record (`recordId`, `objectApiName`), settings            |
+| Events                       | Framed app → host LWC                   | Intents and results: "a round ended, it was saved", "a record was selected"          |
+| Events to the guest          | Host LWC → framed app                   | Moments: a command ("refresh now"), data the host read for a guest without a session |
+| Lightning Message Service    | Host LWC → other components on the page | Notifications with identifiers - "this changed" - so others refresh their data       |
 
-- **Surfaces exchange intents and identifiers, never copies of data** that someone then writes a second time. Data goes through the UI API; channels say what happened.
+- **Surfaces exchange intents and identifiers, never copies of data** that someone then writes a second time. Data goes through the UI API; channels say what happened. A host may send read-only data down for a guest without a session to show; the guest never writes it back.
 - **Each side knows the channel, not the other side.** The arcade's leaderboard listens to a message channel and works next to any host, or none.
 - **The contract is written down twice** - in the host and in the guest, with mirrored types and a comment that points to the other side (the cabinet's `GameOverDetail` is "mirrored by arcadeGameHost.handleGameOver").
 

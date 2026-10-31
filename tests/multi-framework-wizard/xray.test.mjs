@@ -124,6 +124,7 @@ describe('a project with every mistake', () => {
       'frameHost.html:4 embed-sandbox',
       'frameHost.html:0 csp-internal-frame',
       'frameHost.js:0 embed-error-unhandled',
+      'frameHost.js:9 embed-src-replaces-path',
       'jest.config.js:0 jest-embedding-stub',
       'hub.uibundle-meta.xml:0 bundle-no-app',
       'hub.uibundle-meta.xml:0 bundle-not-built',
@@ -136,7 +137,7 @@ describe('a project with every mistake', () => {
     ]) {
       assert.ok(all.includes(expected), `missing ${expected}`);
     }
-    assert.equal(all.length, 24);
+    assert.equal(all.length, 25);
   });
 
   test('honours a suppression with a reason, and only then', () => {

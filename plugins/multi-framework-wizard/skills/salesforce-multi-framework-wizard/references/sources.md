@@ -80,6 +80,8 @@ Sources disagree while a feature moves. In Winter '27 the release blog called mi
 
 `trailheadapps/multiframework-recipes` - Salesforce's examples: `force-app/main/react-recipes`, `force-app/main/angular-recipes` and the micro-frontend recipes in its README. Read them for the current way to do a single thing - a query, a mutation, a frame - before writing it.
 
+The Micro-Frontend Recipes are one host LWC per topic in `force-app/main/microfrontend-recipes/lwc` - render, props from the host, events to the host, events from the host, GraphQL data sent by the host, unsaved changes, theme tokens, auto-resize, ready state, error state - and their guests live in both bundles under `/embedding/<topic>`. Read the host and the guest of a topic together.
+
 ## Salesforce's own skills
 
 `forcedotcom/afv-library` (also installable with `npx skills add forcedotcom/sf-skills`, and in Claude Code through `salesforce-development@claude-plugins-official`) publishes `experience-react` - generators for React UI bundles: project, features, data access, deployment, packaging, the Conversation Client, localization, MFA - plus `agentforce-adlc` for agents and `platform-lightning-widgets` for Lightning types and widgets. Read their `SKILL.md` for the generator steps of the day instead of copying them.

@@ -9,7 +9,16 @@ export default class GameHost extends LightningElement {
   @wire(MessageContext) messageContext;
 
   get frames() {
-    return this.appUrl ? [{ key: this.appUrl, src: this.appUrl }] : [];
+    const src = this.embedSrc;
+    return src ? [{ key: src, src }] : [];
+  }
+
+  // Appends the embed route, so a base URL with a path - a UI bundle - keeps it.
+  get embedSrc() {
+    if (!this.appUrl) return null;
+    const url = new URL(this.appUrl);
+    url.pathname = `${url.pathname.replace(/\/+$/, '')}/embed`;
+    return url.toString();
   }
 
   async handleGameOver(event) {
