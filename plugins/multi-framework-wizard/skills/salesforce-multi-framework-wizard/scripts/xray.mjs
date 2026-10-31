@@ -4,7 +4,8 @@
 // with lightning-ui-embedding, trusted sites, message channels, LWR guests - and
 // checks the seams between them for the mistakes that have one right answer:
 // links that cannot launch a bundle, org-specific URLs in code, frames that
-// cannot remount or hide their errors, messages to any origin, trusted sites
+// cannot remount or hide their errors, guest URLs that lose their path,
+// messages to any origin, trusted sites
 // wider than needed, bundle dependencies that would go into a deployment.
 //
 //   node xray.mjs [path] [--errors-only] [--json] [--mermaid]
@@ -368,6 +369,15 @@ const fileRules = [
       )
   },
 
+  {
+    id: 'embed-src-replaces-path',
+    severity: 'warning',
+    message:
+      'Sets the pathname of the guest URL to a fixed path, so the path of the base URL is lost. A UI bundle lives under /app/<namespace>__<name> and a guest may live in a folder: the frame loads a 404 and reports HEARTBEAT_TIMEOUT. Append the route to the existing url.pathname instead.',
+    applies: (file, ctx) => ctx.isHostScript(file),
+    check: ({ code }) => matchLines(code, /\.pathname\s*=\s*(['"`])\//g)
+  },
+
   // -------- infos: decide it on purpose
   {
     id: 'embed-sandbox',
@@ -537,11 +547,13 @@ function projectFindings(map) {
 export function check(map, { errorsOnly = false } = {}) {
   const lwrDirs = map.lwrGuests;
   const hostHtml = new Set(map.hosts.map((h) => h.html));
+  const hostScripts = new Set(map.hosts.flatMap((h) => h.scripts));
   const appNames = [...new Set(map.bundles.flatMap((b) => [b.app, b.name]).filter(Boolean))];
   const ctx = {
     bundleOf: (file) => map.bundles.find((b) => within(file, b.dir)),
     isLwr: (file) => lwrDirs.some((dir) => within(file, dir)),
     isHostHtml: (file) => hostHtml.has(file),
+    isHostScript: (file) => hostScripts.has(file),
     bundleAppPattern: appNames.length
       ? new RegExp(`/lightning/app/(?:\\w+__)?(?:${appNames.map(escapeRegExp).join('|')})(?![\\w])`, 'g')
       : null
