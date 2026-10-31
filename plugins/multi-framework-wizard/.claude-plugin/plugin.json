@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "multi-framework-wizard",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Design, build, embed, review and fix Salesforce Multi-Framework applications the way Polyglot Arcade does - React and Angular UI bundles, Lightning web components and externally hosted apps on one org's data, composed on Lightning pages as microfrontends, with Agentforce where it helps.",
   "author": {
     "name": "Sebastiano Schwarz",
