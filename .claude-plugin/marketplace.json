@@ -20,7 +20,7 @@
       "name": "devops-operator",
       "source": "./plugins/devops-operator",
       "description": "Guided day-to-day work on a Salesforce project in Git and GitHub - branches, retrieves, commits, pull requests and promotions - for every team member.",
-      "version": "0.3.3",
+      "version": "0.3.4",
       "category": "devops",
       "keywords": ["salesforce", "git", "github", "sf-cli", "pull-requests"]
     },
