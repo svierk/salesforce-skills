@@ -19,7 +19,7 @@
     "verify": "npm run prettier:verify && npm run validate && npm test"
   },
   "devDependencies": {
-    "@anthropic-ai/claude-code": "2.1.300",
+    "@anthropic-ai/claude-code": "2.1.310",
     "ajv": "^8.20.0",
     "prettier": "^3.9.9",
     "yaml": "^2.9.1"
