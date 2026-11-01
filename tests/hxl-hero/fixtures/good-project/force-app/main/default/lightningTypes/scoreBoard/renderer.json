@@ -1,0 +1,13 @@
+{
+  "renderer": {
+    "componentOverrides": {
+      "$": {
+        "definition": "@widget/c/scoreBoardWidget",
+        "attributes": {
+          "hasEntries": "{!$attrs.outputValues.hasEntries}",
+          "entries": "{!$attrs.outputValues.entries}"
+        }
+      }
+    }
+  }
+}

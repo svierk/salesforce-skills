@@ -1,0 +1,13 @@
+{
+  "renderer": {
+    "componentOverrides": {
+      "$": {
+        "definition": "@widget/c/leadersWidget",
+        "attributes": {
+          "total": "{!$attrs.total}",
+          "title": "{!$attrs.outputValues.title}"
+        }
+      }
+    }
+  }
+}

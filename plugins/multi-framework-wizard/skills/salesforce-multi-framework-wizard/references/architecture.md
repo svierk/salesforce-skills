@@ -11,6 +11,7 @@ How to decide which framework and surface does what, and how the surfaces connec
 | **External UI bundle** (Experience Cloud) | An Experience Cloud site, for customers and partners                                                | Site users with their licenses                                                    | Portals and self-service apps for people outside the company                                                              | Packaging - check the release; employee workflows                                         |
 | **Externally hosted app**                 | Anywhere on HTTPS, any framework - Vercel, a company's own hosting, LWC OSS on LWR                  | No Salesforce session; it reports results and a host LWC writes them              | Apps that exist already, apps another team owns, apps that must also run outside Salesforce                               | Anything that has to write Salesforce data itself without an authentication of its own    |
 | **Agent**                                 | The Agentforce panel, the Conversation Client in a UI bundle, Slack, MCP clients                    | The agent's actions under its user's permissions                                  | Questions across data, guided tasks, summaries                                                                            | High-frequency or spatial interaction - a game loop, a drag-and-drop board                |
+| **Headless surface** (HXL)                | Claude, ChatGPT, Slackbot - widgets rendered by the client through a custom MCP server              | The signed-in user's permissions through Apex invocable actions in user mode      | Answers worth seeing - a ranking, a card - in a client people already use                                                 | Input, real-time interaction, anything a widget's buttons cannot lead to                  |
 
 Go through these questions for every job the app must do, and stop at the first clear answer:
 
@@ -27,12 +28,13 @@ Use each framework where it fits, never to show it. Polyglot Arcade uses Angular
 
 Polyglot Arcade's ADR 0001 gives every surface one role. The roles carry over to any domain:
 
-| Role            | In the arcade                                 | In general                                                                                                        |
-| --------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **Entry point** | The Angular hub: the only lobby               | The one app users start from. It knows every other surface and launches it, wherever it lives.                    |
-| **Machine**     | The React cabinet: games, no lobby of its own | A specialised app for one job. It is launched from the entry point; opening it directly sends the user there.     |
-| **Floor**       | The Arcade Floor Lightning app                | Where microfrontends are composed: Lightning pages with host LWCs, next to native components on the same records. |
-| **Guest**       | The Snake on Vercel                           | An app outside the org, framed on a page of the floor.                                                            |
+| Role            | In the arcade                                 | In general                                                                                                                  |
+| --------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Entry point** | The Angular hub: the only lobby               | The one app users start from. It knows every other surface and launches it, wherever it lives.                              |
+| **Machine**     | The React cabinet: games, no lobby of its own | A specialised app for one job. It is launched from the entry point; opening it directly sends the user there.               |
+| **Floor**       | The Arcade Floor Lightning app                | Where microfrontends are composed: Lightning pages with host LWCs, next to native components on the same records.           |
+| **Guest**       | The Snake on Vercel                           | An app outside the org, framed on a page of the floor.                                                                      |
+| **Headless**    | The Hall of Fame in Claude                    | A surface without a UI of its own: it answers questions on the shared data in AI clients and links back to the entry point. |
 
 - **One entry point.** Two apps that both look like the start confuse users; ADR 0001 removed the cabinet's lobby for that reason.
 - **Composition happens in Lightning.** `lightning-ui-embedding` is an LWC base component, so a host is always a Lightning web component. At the arcade's release, the platform SDK only implemented the guest side - a UI bundle could not host another bundle by platform means. A hand-built `postMessage` contract between two bundles is possible but not supported: a spike, not an architecture. Check whether the release changed this.
@@ -52,7 +54,7 @@ Polyglot Arcade names four patterns, under the same names in its docs, its runni
 
 Patterns 1 and 2 are one pattern - a native UI bundle - split by framework so the technology shows. In a business architecture, call it "native UI bundle" and name the framework. A bundle can offer patterns 2 and 3 at once: standalone routes and an embed route.
 
-Agent touchpoints come on top - a conversation in a bundle, an agent on the same data, agent output as UI ([agentforce.md](agentforce.md)).
+Agent touchpoints come on top - a conversation in a bundle, an agent on the same data, agent output as UI ([agentforce.md](agentforce.md)). A headless surface is a surface, not a fifth pattern: it frames nothing and writes nothing - Polyglot Arcade's ADR 0003 ([agentforce.md](agentforce.md#a-headless-surface)).
 
 ## Configuration as data
 

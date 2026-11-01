@@ -1,0 +1,17 @@
+{
+  "title": "Score Board Response",
+  "type": "object",
+  "lightning:type": "lightning__objectType",
+  "lightning:tags": ["mcp"],
+  "unevaluatedProperties": false,
+  "properties": {
+    "hasEntries": {
+      "title": "Has Entries",
+      "lightning:type": "lightning__booleanType"
+    },
+    "entries": {
+      "title": "Entries",
+      "lightning:type": "@apexClassType/c__ScoreBoard$Entry"
+    }
+  }
+}

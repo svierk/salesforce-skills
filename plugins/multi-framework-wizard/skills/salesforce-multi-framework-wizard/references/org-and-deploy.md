@@ -15,6 +15,7 @@ Winter '27's state - read the current list in the Multi-Framework guide's setup 
 | Salesforce Edge Network (My Domain > Routing and Policies)                                                                | UI bundles do not open from the App Launcher       | `MyDomainSettings.useEdge`            |
 | English as the default language                                                                                           | Embedded apps stay blank; standalone bundles work  | `Organization.LanguageLocaleKey`      |
 | Digital Experiences and community licenses                                                                                | No external, site-based apps                       | -                                     |
+| The Headless Experience Layer beta and Salesforce Hosted MCP servers, for a headless surface                              | No widgets in AI clients                           | The HXL Hero's preflight              |
 
 ## Preflight
 
@@ -38,7 +39,7 @@ Polyglot Arcade's `config/project-scratch-def.json` sets what the features need,
 }
 ```
 
-An agent in the design needs Agentforce in the definition too - read the features and settings in the Agentforce DX guide for the release. Leave out `webAppOptIn` from older samples: Multi-Framework is on by default, and the setting now fails the settings deploy.
+A headless surface needs `"uiWidgetSettings": { "hxlEnabled": true }` in the settings. An agent in the design needs Agentforce in the definition too - read the features and settings in the Agentforce DX guide for the release. Leave out `webAppOptIn` from older samples: Multi-Framework is on by default, and the setting now fails the settings deploy.
 
 ## One-command setup
 
@@ -46,10 +47,10 @@ A Salesforce DX project with UI bundles needs more than a deploy. Polyglot Arcad
 
 1. **Preflight** - warns about gaps, never blocks.
 2. **Build** - `npm install` and `npm run build` in every bundle, so the build output exists.
-3. **Deploy** - the metadata, including apps, permission sets, trusted sites, reports.
+3. **Deploy** - the metadata, including apps, permission sets, trusted sites, reports. With a headless surface, `Settings:UiWidget` goes first in a deploy of its own.
 4. **Permission set** - assigned to the current user, configured in `scripts/org-setup.config.json`.
 5. **Data** - configuration and showcase records upserted by external ID.
-6. **Connect** - the org-specific bundle URLs stored on the configuration records.
+6. **Connect** - the org-specific bundle URLs stored on the configuration records; with a headless surface also the MCP server activated and its URL and OAuth client ID printed.
 7. **GraphQL** - the org's schema downloaded and the types generated in every bundle.
 
 **The first setup in an org has an order.** The permission set names the app, the app names the bundle, the bundle's build needs the operation types, and the types need a schema in which the user can already read the new fields - which the permission set grants. With the operation types committed, the build needs no org, and one deployment of fields, bundle, app and permission set goes through; then assign the permission set, seed, and fetch the schema for the next change.

@@ -6,19 +6,19 @@ For architects, tech leads and developers who bring React, Angular or an existin
 
 ## What it does
 
-| Mode           | Example requests                                                                                                                               |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Design**     | "We have an Angular team and a React portal - how do they fit with our Lightning record pages?" · "LWC or React for the new planning tool?"    |
-| **Build**      | "Scaffold an Angular UI bundle for our order cockpit and connect it to the Opportunity data" · "Link the React app back to the Lightning app"  |
-| **Embed**      | "Show our React app on the Account page" · "Embed our Vue dashboard hosted on Azure in Lightning" · "Pass the record id into the frame"        |
-| **Agentforce** | "Add the Agentforce chat to our React app" · "Let an agent answer who closed the most deals this week from the same data"                      |
-| **Fix**        | "The embedded app stays blank" · "HEARTBEAT_TIMEOUT on the record page" · "The UI bundle does not open from the App Launcher" · "Deploy fails" |
-| **Review**     | "Review our multi-framework architecture before go-live" · "Is this embedding secure?" · "What breaks when we upgrade to the next release?"    |
+| Mode           | Example requests                                                                                                                                                        |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Design**     | "We have an Angular team and a React portal - how do they fit with our Lightning record pages?" · "LWC or React for the new planning tool?"                             |
+| **Build**      | "Scaffold an Angular UI bundle for our order cockpit and connect it to the Opportunity data" · "Link the React app back to the Lightning app"                           |
+| **Embed**      | "Show our React app on the Account page" · "Embed our Vue dashboard hosted on Azure in Lightning" · "Pass the record id into the frame"                                 |
+| **Agentforce** | "Add the Agentforce chat to our React app" · "Let an agent answer who closed the most deals this week from the same data" · "Should our leaderboard show up in Claude?" |
+| **Fix**        | "The embedded app stays blank" · "HEARTBEAT_TIMEOUT on the record page" · "The UI bundle does not open from the App Launcher" · "Deploy fails"                          |
+| **Review**     | "Review our multi-framework architecture before go-live" · "Is this embedding secure?" · "What breaks when we upgrade to the next release?"                             |
 
 - **Design** chooses a surface per job - LWC, a React or Angular UI bundle, an external app, an agent - gives every surface one role, picks one of Polyglot Arcade's four integration patterns per frame, and writes the result down as Mermaid diagrams and decision records.
 - **Build** scaffolds bundles from Salesforce's templates and wires what the templates leave open: the App Launcher app and permission set, one data client over the Data SDK, framework-free logic, links between the surfaces, and a setup that is safe to run again.
 - **Embed** writes the host LWC and the guest side - the View SDK, or the package-free bridge for LWR and other stacks - with a documented contract, a clear writer for the data, and the trusted sites shown before they are deployed.
-- **Agentforce** places the agent where it helps - the Conversation Client in a UI bundle, an agent on the same records, agent output as UI - on the same data path as the apps.
+- **Agentforce** places the agent where it helps - the Conversation Client in a UI bundle, an agent on the same records, agent output as UI, a headless surface in AI clients - on the same data path as the apps.
 - **Fix** names the class of problem and the side of the frame before changing anything.
 - **Review** runs the X-ray and the preflight and reads the design against a ranked checklist.
 
@@ -64,6 +64,7 @@ node scripts/preflight.mjs --target-org <alias> [--min-api <version>]
 - [🏗️ DevOps Builder](../devops-builder) builds the pipeline - which must build every UI bundle before it deploys; [🧭 DevOps Operator](../devops-operator) takes over for commits and pull requests.
 - [🧪 E2E Automator](../e2e-automator) tests the Lightning pages; each bundle keeps its own Playwright suite.
 - [🎬 Demo Designer](../demo-designer) records the surfaces once they work.
+- [🦸 HXL Hero](../hxl-hero) builds, ships, tries and fixes a headless surface - HXL widgets that Claude, ChatGPT and Slackbot render from the same data; the wizard decides where it fits.
 - Salesforce publishes generator skills for React UI bundles and for agents in [`forcedotcom/afv-library`](https://github.com/forcedotcom/afv-library). They generate one app, feature or agent; the wizard decides how surfaces and frameworks fit together, covers Angular, embedding and external guests, and reviews the whole.
 
 ## Requirements

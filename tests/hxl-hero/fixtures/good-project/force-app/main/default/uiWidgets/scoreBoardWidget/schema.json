@@ -1,0 +1,22 @@
+{
+  "title": "Score Board",
+  "type": "object",
+  "properties": {
+    "attributes": {
+      "lightning:type": "lightning__objectType",
+      "properties": {
+        "hasEntries": {
+          "title": "Has Entries",
+          "lightning:type": "lightning__booleanType"
+        },
+        "entries": {
+          "title": "Entries",
+          "lightning:type": "lightning__listType",
+          "items": {
+            "lightning:type": "@apexClassType/c__ScoreBoard$Entry"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "title": "Leaders",
+  "type": "object",
+  "properties": {
+    "attributes": {
+      "lightning:type": "lightning__objectType",
+      "properties": {
+        "total": {
+          "title": "Total",
+          "lightning:type": "lightning__numberType"
+        },
+        "rows": {
+          "title": "Rows",
+          "lightning:type": "lightning__listType"
+        }
+      }
+    }
+  }
+}

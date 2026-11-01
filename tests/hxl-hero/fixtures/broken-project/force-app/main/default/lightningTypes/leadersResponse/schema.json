@@ -1,0 +1,19 @@
+{
+  "title": "Leaders Response",
+  "type": "object",
+  "lightning:type": "lightning__objectType",
+  "unevaluatedProperties": false,
+  "properties": {
+    "rows": {
+      "title": "Rows",
+      "lightning:type": "lightning__listType",
+      "items": {
+        "lightning:type": "@apexClassType/c__Leaders$Row"
+      }
+    },
+    "rank": {
+      "title": "Rank",
+      "lightning:type": "@apexClassType/c__Leaders$Rank"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "edition": "Developer",
+  "settings": {
+    "uiWidgetSettings": {
+      "hxlEnabled": true
+    }
+  }
+}

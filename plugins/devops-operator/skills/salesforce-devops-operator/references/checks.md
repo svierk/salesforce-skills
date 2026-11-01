@@ -57,6 +57,8 @@ A project on Salesforce Multi-Framework has React or Angular apps under `uiBundl
 
 A validation or deployment that fails with `Expected source files for type 'UIBundle'` is different: the bundle was deployed without its build output. On a pull request that is the pipeline - it must build every bundle before it deploys - so it goes to the pipeline owner or the DevOps Builder, not into the change.
 
+A project with HXL widgets (`uiWidgets/`, `lightningTypes/`, `mcpServerDefinitions/`) fails its validation with `Not available for deploy for this organization` on `UiWidgetBundle` when the Headless Experience Layer is off in the target org - that is org setup for the pipeline owner, not the change. A failing Apex test of an MCP tool class, or a widget whose bindings do not match its type, is app work: if the HXL Hero is installed, offer to switch to it.
+
 ### End-to-end UI tests
 
 A job named like "E2E UI Tests" or running `wdio` opens an org in a browser and clicks through a business process. When it fails:

@@ -33,11 +33,12 @@ Built around the [Awesome LWC Collection](https://github.com/svierk/awesome-lwc-
 
 ### Architecture
 
-Built around [Polyglot Arcade](https://github.com/svierk/polyglot-arcade) - Salesforce Multi-Framework end to end: an Angular hub, a React cabinet and an LWC OSS game that share one org's data and meet on Lightning pages as microfrontends, along four integration patterns and documented decisions.
+Built around [Polyglot Arcade](https://github.com/svierk/polyglot-arcade) - Salesforce Multi-Framework end to end: an Angular hub, a React cabinet and an LWC OSS game that share one org's data and meet on Lightning pages as microfrontends, along four integration patterns and documented decisions - plus a headless surface whose Hall of Fame Claude renders as HXL widgets.
 
-| Plugin                                                      | For                                | Does                                                                                                                                              | Status  |
-| ----------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| [🧙 multi-framework-wizard](plugins/multi-framework-wizard) | Architects, tech leads, developers | Design, build, embed, review and fix apps with React, Angular, LWC and external microfrontends on one org's data - with Agentforce where it helps | Preview |
+| Plugin                                                      | For                                | Does                                                                                                                                                           | Status  |
+| ----------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| [🧙 multi-framework-wizard](plugins/multi-framework-wizard) | Architects, tech leads, developers | Design, build, embed, review and fix apps with React, Angular, LWC and external microfrontends on one org's data - with Agentforce where it helps              | Preview |
+| [🦸 hxl-hero](plugins/hxl-hero)                             | Developers, architects             | Build, ship, try and fix HXL widgets that Claude, ChatGPT and Slackbot render from the org's data - Apex tools, Lightning types, MCP server, sign-in and setup | Planned |
 
 ### Showcase
 
