@@ -2,9 +2,9 @@ name: Validation
 
 # Validates changes to this repository: checks formatting with Prettier,
 # validates the marketplace manifest and every plugin manifest, checks the
-# project configuration examples against their schema, and tests the hooks -
-# so a broken plugin definition, file format or guardrail fails here before
-# merge.
+# project configuration examples against their schema, and tests the hooks
+# and the skills' scripts - so a broken plugin definition, file format,
+# guardrail or checker fails here before merge.
 
 on:
   push:

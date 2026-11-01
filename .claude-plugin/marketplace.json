@@ -5,7 +5,7 @@
     "url": "https://github.com/svierk"
   },
   "metadata": {
-    "description": "Agent skills for Salesforce teams - packaged expert know-how for AI coding agents, from DevOps to development and testing."
+    "description": "Agent skills for Salesforce teams - packaged expert know-how for AI coding agents, from DevOps and testing to development, architecture and demos."
   },
   "plugins": [
     {
@@ -41,14 +41,6 @@
       "keywords": ["salesforce", "lwc", "lightning-web-components", "jest", "slds"]
     },
     {
-      "name": "demo-designer",
-      "source": "./plugins/demo-designer",
-      "description": "Design and record polished demo videos of Salesforce orgs, apps and sites - scripted click paths with cursor, captions, intro and outro cards, transitions and subtitles - for bids and pitches, sprint reviews, release teasers and training.",
-      "version": "0.3.1",
-      "category": "showcase",
-      "keywords": ["salesforce", "demo", "video", "screencast", "presales"]
-    },
-    {
       "name": "multi-framework-wizard",
       "source": "./plugins/multi-framework-wizard",
       "description": "Design, build, embed, review and fix Salesforce Multi-Framework applications the way Polyglot Arcade does - React and Angular UI bundles, Lightning web components and externally hosted apps on one org's data, composed on Lightning pages as microfrontends, with Agentforce where it helps.",
@@ -63,6 +55,14 @@
       "version": "0.1.0",
       "category": "architecture",
       "keywords": ["salesforce", "hxl", "mcp", "widgets", "agentforce"]
+    },
+    {
+      "name": "demo-designer",
+      "source": "./plugins/demo-designer",
+      "description": "Design and record polished demo videos of Salesforce orgs, apps and sites - scripted click paths with cursor, captions, intro and outro cards, transitions and subtitles - for bids and pitches, sprint reviews, release teasers and training.",
+      "version": "0.3.1",
+      "category": "showcase",
+      "keywords": ["salesforce", "demo", "video", "screencast", "presales"]
     }
   ]
 }

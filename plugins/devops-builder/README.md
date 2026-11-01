@@ -2,7 +2,7 @@
 
 Design, set up and maintain a Salesforce CI/CD pipeline on GitHub Actions with the [Salesforce DevOps Starter Kit](https://github.com/svierk/salesforce-devops-starter-kit).
 
-For whoever owns the pipeline - platform owner, tech lead, release manager. Day-to-day work on a single change is the job of the [DevOps Operator](../devops-operator); end-to-end UI tests and their test job are the job of the [E2E Automator](../e2e-automator); React and Angular UI bundles themselves are the job of the [Multi-Framework Wizard](../multi-framework-wizard) - their build before every deploy is set up here.
+For whoever owns the pipeline - platform owner, tech lead, release manager.
 
 ## What it does
 
@@ -18,6 +18,13 @@ For whoever owns the pipeline - platform owner, tech lead, release manager. Day-
 
 The skill reads versions, workflow inputs and blueprint callers from the kit at the current release rather than from its own text, so it does not go stale when the kit moves on.
 
+## Alongside other skills
+
+- [🧭 DevOps Operator](../devops-operator) guides the day-to-day work on a single change inside the pipeline built here - and reads the project configuration the builder writes.
+- [🧪 E2E Automator](../e2e-automator) writes the end-to-end UI tests and their test job; the builder holds that job to the same security rules as every workflow.
+- [🧙 Multi-Framework Wizard](../multi-framework-wizard) owns the React and Angular UI bundles themselves; their build before every deploy is set up here.
+- [🦸 HXL Hero](../hxl-hero) builds HXL widgets, their Lightning types, Apex tools and MCP server; turning HXL on in every target org before the first validation, and the Apex tests of the tools, are set up here.
+
 ## Requirements
 
 - [GitHub CLI](https://cli.github.com/) (`gh`), signed in - for reading the kit and configuring the repository
@@ -32,3 +39,5 @@ Without `gh`, design and file changes still work; the GitHub settings then have 
 /plugin marketplace add svierk/salesforce-skills
 /plugin install devops-builder@salesforce-skills
 ```
+
+In editors without the `/plugin` command, use the CLI: `claude plugin marketplace add svierk/salesforce-skills`, then `claude plugin install devops-builder@salesforce-skills`.

@@ -2,8 +2,6 @@
 
 Guided day-to-day work on a Salesforce project in Git and GitHub - from the org into a branch, through review, on to the next stage. Written for the people who ship changes but do not live in a terminal: admins, low-code builders, consultants. Developers get the same flows, with less explanation.
 
-The pipeline itself is the job of the [DevOps Builder](../devops-builder); end-to-end UI tests are the job of the [E2E Automator](../e2e-automator), Lightning web components with their lint and Jest failures the job of the [LWC Crafter](../lwc-crafter), and React or Angular UI bundles the job of the [Multi-Framework Wizard](../multi-framework-wizard).
-
 ## What it does
 
 | Flow                 | Example requests                                                                   |
@@ -39,6 +37,16 @@ Never put it into a project's shared settings - that would turn the guard off fo
 ## Project configuration
 
 The operator reads [`.github/salesforce-devops.yml`](../../README.md#-project-configuration) in the project repository - blueprint, environment branches, where new work starts, branch naming, work items and commit style - so it follows the team's conventions instead of guessing. The DevOps Builder writes that file when it sets the pipeline up. Without it, the operator infers the conventions from the repository and says what it assumed.
+
+## Alongside other skills
+
+A red check is not always the user's change. The operator names the job, the file and the step that failed, then hands over:
+
+- [🏗️ DevOps Builder](../devops-builder) owns the pipeline itself - workflows, environments, secrets, branch protection, authentication.
+- [🧪 E2E Automator](../e2e-automator) takes over when the failed check is the end-to-end UI test job.
+- [⚡ LWC Crafter](../lwc-crafter) fixes Lightning web components that ESLint or Jest rejects.
+- [🧙 Multi-Framework Wizard](../multi-framework-wizard) fixes lint, tests and build of a React or Angular UI bundle.
+- [🦸 HXL Hero](../hxl-hero) fixes HXL widgets, their Lightning types and Apex tools.
 
 ## Requirements
 
