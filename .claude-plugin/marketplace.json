@@ -44,7 +44,7 @@
       "name": "demo-designer",
       "source": "./plugins/demo-designer",
       "description": "Design and record polished demo videos of Salesforce orgs, apps and sites - scripted click paths with cursor, captions, intro and outro cards, transitions and subtitles - for bids and pitches, sprint reviews, release teasers and training.",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "category": "showcase",
       "keywords": ["salesforce", "demo", "video", "screencast", "presales"]
     },
