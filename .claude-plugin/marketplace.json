@@ -36,7 +36,7 @@
       "name": "lwc-crafter",
       "source": "./plugins/lwc-crafter",
       "description": "Build, fix, review and set up Lightning Web Components with the Awesome LWC Collection's practices - reuse first, platform data, secure by default, tested and accessible - with a guard that checks every component file as it is written.",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "category": "development",
       "keywords": ["salesforce", "lwc", "lightning-web-components", "jest", "slds"]
     },
