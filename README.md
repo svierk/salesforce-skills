@@ -38,7 +38,7 @@ Built around [Polyglot Arcade](https://github.com/svierk/polyglot-arcade) - Sale
 | Plugin                                                      | For                                | Does                                                                                                                                                           | Status  |
 | ----------------------------------------------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | [🧙 multi-framework-wizard](plugins/multi-framework-wizard) | Architects, tech leads, developers | Design, build, embed, review and fix apps with React, Angular, LWC and external microfrontends on one org's data - with Agentforce where it helps              | Preview |
-| [🦸 hxl-hero](plugins/hxl-hero)                             | Developers, architects             | Build, ship, try and fix HXL widgets that Claude, ChatGPT and Slackbot render from the org's data - Apex tools, Lightning types, MCP server, sign-in and setup | Planned |
+| [🦸 hxl-hero](plugins/hxl-hero)                             | Developers, architects             | Build, ship, try and fix HXL widgets that Claude, ChatGPT and Slackbot render from the org's data - Apex tools, Lightning types, MCP server, sign-in and setup | Preview |
 
 ### Showcase
 
@@ -60,6 +60,7 @@ In Claude Code:
 /plugin install lwc-crafter@salesforce-skills
 /plugin install demo-designer@salesforce-skills
 /plugin install multi-framework-wizard@salesforce-skills
+/plugin install hxl-hero@salesforce-skills
 ```
 
 In editors without the `/plugin` command, the CLI does the same: `claude plugin marketplace add svierk/salesforce-skills`, then `claude plugin install <plugin>@salesforce-skills`.
@@ -79,7 +80,8 @@ To give a whole team the skills, add the marketplace and the plugins to the **pr
     "e2e-automator@salesforce-skills": true,
     "lwc-crafter@salesforce-skills": true,
     "demo-designer@salesforce-skills": true,
-    "multi-framework-wizard@salesforce-skills": true
+    "multi-framework-wizard@salesforce-skills": true,
+    "hxl-hero@salesforce-skills": true
   }
 }
 ```
