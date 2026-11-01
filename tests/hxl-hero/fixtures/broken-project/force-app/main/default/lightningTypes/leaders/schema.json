@@ -1,0 +1,19 @@
+{
+  "title": "Leaders",
+  "type": "object",
+  "lightning:type": "lightning__objectType",
+  "properties": {
+    "actionName": {
+      "title": "Action Name",
+      "lightning:type": "lightning__textType"
+    },
+    "isSuccess": {
+      "title": "Is Success",
+      "lightning:type": "lightning__booleanType"
+    },
+    "outputValues": {
+      "title": "Output Values",
+      "lightning:type": "c__leadersResponse"
+    }
+  }
+}

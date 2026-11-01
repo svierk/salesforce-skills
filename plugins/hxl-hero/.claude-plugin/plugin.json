@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "hxl-hero",
+  "version": "0.0.0",
+  "description": "Build, ship, try and fix Salesforce Headless Experience Layer (HXL) widgets the way Polyglot Arcade does - Apex tools on the org's data, rendered as widgets in Claude, ChatGPT and Slackbot through a custom Salesforce Hosted MCP server, with OAuth sign-in and a one-command setup.",
+  "author": {
+    "name": "Sebastiano Schwarz",
+    "url": "https://github.com/svierk"
+  },
+  "homepage": "https://github.com/svierk/salesforce-skills/tree/main/plugins/hxl-hero",
+  "repository": "https://github.com/svierk/salesforce-skills",
+  "license": "MIT",
+  "keywords": ["salesforce", "hxl", "mcp", "widgets", "agentforce"]
+}

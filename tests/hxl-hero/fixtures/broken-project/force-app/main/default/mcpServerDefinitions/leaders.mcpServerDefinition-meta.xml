@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<McpServerDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>Leaders</masterLabel>
+    <tools>
+        <toolName>getLeaders</toolName>
+        <descriptionOverride>The leaders of a game.</descriptionOverride>
+        <uiResource>leaders</uiResource>
+        <apiDefinition>
+            <apiIdentifier>aa:apex-Leaders</apiIdentifier>
+        </apiDefinition>
+    </tools>
+    <tools>
+        <toolName>getOthers</toolName>
+        <descriptionOverride>Call it once for each game.</descriptionOverride>
+        <readOnly>true</readOnly>
+        <uiResource>others</uiResource>
+        <apiDefinition>
+            <apiIdentifier>aa:apex-Others</apiIdentifier>
+        </apiDefinition>
+    </tools>
+    <resources>
+        <resourceName>leaders</resourceName>
+        <resourceUri>ui://widget/lightningType/c__leaders</resourceUri>
+    </resources>
+</McpServerDefinition>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<McpServerDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>Board</masterLabel>
+    <tools>
+        <toolName>getScoreBoard</toolName>
+        <descriptionOverride
+  >Top players of a game. Send exactly one object in inputs.</descriptionOverride>
+        <readOnly>true</readOnly>
+        <uiResource>scoreBoard</uiResource>
+        <apiDefinition>
+            <apiSource>API_CATALOG</apiSource>
+            <apiIdentifier>aa:apex-ScoreBoard</apiIdentifier>
+            <operation>ScoreBoard</operation>
+        </apiDefinition>
+    </tools>
+    <resources>
+        <resourceName>scoreBoard</resourceName>
+        <resourceUri>ui://widget/lightningType/c__scoreBoard</resourceUri>
+    </resources>
+</McpServerDefinition>

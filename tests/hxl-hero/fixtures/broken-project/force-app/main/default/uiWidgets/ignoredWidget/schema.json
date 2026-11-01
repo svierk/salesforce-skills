@@ -1,0 +1,10 @@
+{
+  "title": "Ignored",
+  "type": "object",
+  "properties": {
+    "attributes": {
+      "lightning:type": "lightning__objectType",
+      "properties": {}
+    }
+  }
+}

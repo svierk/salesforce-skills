@@ -1,0 +1,2 @@
+mcp-hints force-app/main/default/mcpServerDefinitions -- the demo server has no hints yet
+widget-files force-app/main/default/uiWidgets/ignoredWidget
