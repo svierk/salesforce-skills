@@ -1,6 +1,6 @@
 # Agentforce
 
-Where an agent plugs into a multi-framework architecture. Polyglot Arcade v1.0.0 has no agent yet - its roadmap names an Agentforce question like "who is this week's champion?" - so this reference applies the arcade's rules to the agent touchpoints Salesforce offers, and points to where their current state lives. Every one of them moves between releases: read the status, framework support and org requirements in the sources before designing with it ([sources.md](sources.md#salesforce-documentation)).
+Where an agent or an AI client plugs into a multi-framework architecture. Polyglot Arcade v1.1.0 answers its roadmap question "who is this week's champion?" with a headless surface - HXL widgets in Claude through a custom MCP server ([A headless surface](#a-headless-surface)); an Agentforce agent is its next step. For the other touchpoints this reference applies the arcade's rules and points to where their current state lives. Every one of them moves between releases: read the status, framework support and org requirements in the sources before designing with it ([sources.md](sources.md#salesforce-documentation)).
 
 ## Agent or UI
 
@@ -50,15 +50,32 @@ The agent answers from and acts on the same records the apps write - "who is thi
 
 ## Agent output as UI
 
-Structured agent output can render as interactive UI instead of text. At Winter '27 that is **Lightning types** - a `LightningTypeBundle` with a `schema.json` bound to the action's output and a `renderer.json` - and **UI widgets** from the Headless Experience Layer (beta), which render the same output in Agentforce, Slack and MCP clients.
+Structured agent output can render as interactive UI instead of text. At Winter '27 that is **Lightning types** - a `LightningTypeBundle` with a `schema.json` bound to the action's output and a `renderer.json` - and **UI widgets** from the Headless Experience Layer (beta), which render the same output for an Agentforce agent in Lightning and, through MCP, in Claude, ChatGPT and Slackbot.
 
 - **Reuse the domain's vocabulary.** The widget for a result shows the same fields, names and colors as the surfaces - a leaderboard row looks like a leaderboard row.
 - **The widget is a surface too:** one role, its data through the action, no hidden calls of its own.
-- Salesforce's `platform-lightning-widgets` skills generate Lightning types and widgets; read the current metadata format there.
+- Salesforce's `platform-lightning-widgets` skills generate Lightning types and widgets; the HXL Hero builds the whole chain around them.
+
+## A headless surface
+
+The apps' data in the AI clients people already use, without a UI to build: Polyglot Arcade's Hall of Fame and player card render in Claude as HXL widgets, served by its custom MCP server `polyglotArcade` on the same `Arcade_Score__c` records ([ADR 0003](https://svierk.github.io/polyglot-arcade/decisions/0003-headless-surface)). What it means for the architecture:
+
+- **A surface, not a fifth integration pattern.** It frames nothing and saves nothing; it reads the score sheet and answers questions. Give it one role, a place in the overview diagram and the navigation back to the entry point - a widget button that opens the app.
+- **The same data path, one documented exception.** MCP tools are Apex invocable actions, which the UI API cannot provide - the named reason for Apex ([data-and-security.md](data-and-security.md#the-data-model-as-contract)). The classes run `with sharing` and query in user mode, as the user who signed in to the client.
+- **Read-only by default.** Results are still written on the other surfaces; a tool that writes is validated like a guest.
+- **Org-wide changes to show first:** turning on the HXL beta, an External Client App for the clients' sign-in, activating the MCP server, the permission set that grants the tool classes.
+
+With the HXL Hero installed, hand the build, the setup and the fixes to it. Without it, these are the facts the arcade verified that the documentation leaves out:
+
+- Deploy `Settings:UiWidget` (`hxlEnabled`) on its own before the deploy with widgets - in the same deploy it comes too late. Scratch orgs: `settings.uiWidgetSettings.hxlEnabled` in the definition.
+- An MCP server is active through a Tooling API record `McpServerAccess`; its URL has `/sandbox/` for sandboxes and scratch orgs.
+- The External Client App deploys as metadata, also into scratch orgs; its scopes are `MCP` and `RefreshToken`.
+- A user without access to the tool's Apex class sees no tools.
+- A widget renders one result: tool descriptions ask for exactly one request per call.
 
 ## Data for other AI clients
 
-Salesforce Hosted MCP Servers expose org capabilities - since Winter '27 also agents as MCP tools - to clients like Claude. The same rules hold: the tool works on the shared data under a named user's permissions, with a task-specific name and description, and the org-wide setup is shown before it is changed.
+Salesforce Hosted MCP Servers expose org capabilities - since Winter '27 also agents as MCP tools - to clients like Claude. The same rules hold: the tool works on the shared data under a named user's permissions, with a task-specific name and description, and the org-wide setup is shown before it is changed. Salesforce's standard servers answer in text; a custom server with HXL widgets - the headless surface above - shows the answer as UI.
 
 ## Building with Agentforce Vibes
 

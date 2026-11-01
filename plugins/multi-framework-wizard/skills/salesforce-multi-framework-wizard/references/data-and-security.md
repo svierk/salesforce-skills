@@ -10,7 +10,7 @@ The data model is the one contract every surface shares - LWC, React, Angular, e
 - **Name where data came from.** A picklist like the arcade's `Source__c` (`Polyglot Arcade`, `Pixel Cabinet`, `Embedded`) tells reports, support and the next architect which surface wrote a record.
 - **Record context is a lookup.** A result produced on an Account page carries the Account (`Account__c`), so the record page, its related lists and its reports show it.
 - **Describe the fields.** Labels and descriptions are read by admins, by codegen consumers and by agents choosing an action ([agentforce.md](agentforce.md#an-agent-on-the-same-data)). Write them for all three.
-- **Apex only for what the UI API cannot do** - a transaction across objects with rules the client must not decide, an external callout, an aggregate GraphQL cannot express. Name the reason. An Apex REST endpoint called through `sdk.fetch` is a public endpoint: `with sharing`, user mode, bind variables, input allowlists - the LWC Crafter's security reference has the full list.
+- **Apex only for what the UI API cannot do** - a transaction across objects with rules the client must not decide, an external callout, an aggregate GraphQL cannot express, a tool for AI clients (MCP tools are invocable actions). Name the reason. An Apex REST endpoint called through `sdk.fetch` is a public endpoint: `with sharing`, user mode, bind variables, input allowlists - the LWC Crafter's security reference has the full list.
 
 ## Configuration records
 

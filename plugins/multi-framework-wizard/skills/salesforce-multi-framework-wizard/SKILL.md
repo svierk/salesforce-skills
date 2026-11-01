@@ -1,6 +1,6 @@
 ---
 name: salesforce-multi-framework-wizard
-description: 'Designs, builds, embeds, reviews and fixes Salesforce Multi-Framework applications the way Polyglot Arcade does - React and Angular UI bundles, Lightning web components and externally hosted apps sharing one org''s data, composed on Lightning pages as microfrontends, with Agentforce where it helps. TRIGGER when: choosing between LWC, a React or Angular UI bundle and an externally hosted app, or deciding how several of them fit together; designing surfaces, roles, navigation, integration patterns or the data contract of a multi-framework app; scaffolding or wiring a UI bundle (UIBundle metadata, Data SDK, App Launcher app, ui-bundle.json); embedding an app in a Lightning or Experience Cloud page with lightning-ui-embedding, the View SDK or the package-free bridge; props and events between a host LWC and an embedded app; checking whether an org is ready for Multi-Framework; adding the Agentforce Conversation Client to a UI bundle or letting an agent work on the same data as the apps; an embedded app stays blank, a UI bundle does not open or its deploy fails; reviewing a multi-framework architecture or writing its decision records. DO NOT TRIGGER when: a Lightning web component that hosts no embedded app - that is the LWC Crafter; authoring or testing the agent itself (Agent Script, topics, actions); UTAM UI tests - the E2E Automator; commits, pull requests and pipelines - the DevOps Operator and DevOps Builder; Visualforce, Aura or backends without a Salesforce UI.'
+description: 'Designs, builds, embeds, reviews and fixes Salesforce Multi-Framework applications the way Polyglot Arcade does - React and Angular UI bundles, Lightning web components and externally hosted apps sharing one org''s data, composed on Lightning pages as microfrontends, with Agentforce where it helps. TRIGGER when: choosing between LWC, a React or Angular UI bundle and an externally hosted app, or deciding how several of them fit together; designing surfaces, roles, navigation, integration patterns or the data contract of a multi-framework app; scaffolding or wiring a UI bundle (UIBundle metadata, Data SDK, App Launcher app, ui-bundle.json); embedding an app in a Lightning or Experience Cloud page with lightning-ui-embedding, the View SDK or the package-free bridge; props and events between a host LWC and an embedded app; checking whether an org is ready for Multi-Framework; adding the Agentforce Conversation Client to a UI bundle or letting an agent work on the same data as the apps; deciding whether a headless surface - widgets that AI clients render from the apps'' data - belongs in the architecture; an embedded app stays blank, a UI bundle does not open or its deploy fails; reviewing a multi-framework architecture or writing its decision records. DO NOT TRIGGER when: a Lightning web component that hosts no embedded app - that is the LWC Crafter; building, shipping or fixing HXL widgets, their Lightning types, a custom MCP server or its sign-in - that is the HXL Hero; authoring or testing the agent itself (Agent Script, topics, actions); UTAM UI tests - the E2E Automator; commits, pull requests and pipelines - the DevOps Operator and DevOps Builder; Visualforce, Aura or backends without a Salesforce UI.'
 license: MIT
 ---
 
@@ -12,14 +12,14 @@ Multi-framework apps rarely fail in one framework. They fail between them: two s
 
 ## Pick the mode first
 
-| Mode           | The user wants to...                                                                                     | Go to                     |
-| -------------- | -------------------------------------------------------------------------------------------------------- | ------------------------- |
-| **Design**     | decide which framework and surface does what, and how they connect - before or instead of code           | [Design](#design)         |
-| **Build**      | scaffold or extend a React or Angular UI bundle and wire it to the org, the data and the other surfaces  | [Build](#build)           |
-| **Embed**      | show an app - a UI bundle or one hosted anywhere - inside a Lightning or Experience Cloud page           | [Embed](#embed)           |
-| **Agentforce** | bring an agent into the architecture: a conversation in a UI bundle, an agent on the same data, agent UI | [Agentforce](#agentforce) |
-| **Fix**        | make a blank frame, a bundle that does not open, a broken link or a failing deploy work again            | [Fix](#fix)               |
-| **Review**     | audit an existing multi-framework project or design before a release, a pull request or an upgrade       | [Review](#review)         |
+| Mode           | The user wants to...                                                                                                                      | Go to                     |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| **Design**     | decide which framework and surface does what, and how they connect - before or instead of code                                            | [Design](#design)         |
+| **Build**      | scaffold or extend a React or Angular UI bundle and wire it to the org, the data and the other surfaces                                   | [Build](#build)           |
+| **Embed**      | show an app - a UI bundle or one hosted anywhere - inside a Lightning or Experience Cloud page                                            | [Embed](#embed)           |
+| **Agentforce** | bring an agent or AI client into the architecture: a conversation in a UI bundle, an agent on the same data, agent UI, a headless surface | [Agentforce](#agentforce) |
+| **Fix**        | make a blank frame, a bundle that does not open, a broken link or a failing deploy work again                                             | [Fix](#fix)               |
+| **Review**     | audit an existing multi-framework project or design before a release, a pull request or an upgrade                                        | [Review](#review)         |
 
 Infer the mode from the repository too: a project without `uiBundles/` gets Design offered before the first bundle, a project with host LWCs but no trusted sites gets Review offered - not forced, the user decides.
 
@@ -109,10 +109,10 @@ Goal: an app framed on a Lightning or Experience Cloud page that loads, receives
 
 Goal: the agent in the place where it helps, on the same data and rules as the apps - not a second backend.
 
-1. **Pick the touchpoint** ([references/agentforce.md](references/agentforce.md)): a conversation inside a UI bundle (Agentforce Conversation Client), an agent that answers from and acts on the apps' records, agent output rendered as UI (Lightning types and widgets), or the apps' data offered to other AI clients. A real-time interaction - a game loop, a drag-and-drop board - stays UI.
+1. **Pick the touchpoint** ([references/agentforce.md](references/agentforce.md)): a conversation inside a UI bundle (Agentforce Conversation Client), an agent that answers from and acts on the apps' records, agent output rendered as UI (Lightning types and widgets), or a headless surface that brings the apps' data to other AI clients - Polyglot Arcade's Hall of Fame in Claude. A real-time interaction - a game loop, a drag-and-drop board - stays UI.
 2. **Check the release:** which of these is generally available or in beta, for which framework, and what the org needs. The Conversation Client needs org-wide session and My Domain changes - rule 10.
 3. **Keep one data path.** The agent's actions read and write the same objects under the same permissions; what an agent changes is validated like what any guest sends.
-4. **Hand over the agent itself.** Authoring, testing and deploying the agent - Agent Script, topics, actions - belongs to an agent skill, such as Salesforce's `agentforce-adlc`; this skill owns where it plugs into the architecture.
+4. **Hand over what is built elsewhere.** Authoring, testing and deploying the agent - Agent Script, topics, actions - belongs to an agent skill, such as Salesforce's `agentforce-adlc`. HXL widgets, their Lightning types, the MCP server and its sign-in belong to the HXL Hero when it is installed - [references/agentforce.md](references/agentforce.md#a-headless-surface) has the essentials when it is not. This skill owns where they plug into the architecture.
 
 ## Fix
 
@@ -141,6 +141,7 @@ This skill does its whole job on its own. When other skills from the same market
 - **DevOps Builder** - the pipeline must install and build every UI bundle before it deploys, and run each bundle's checks in its own job. Name this when handing over.
 - **DevOps Operator** - commits, pull requests, failed checks, promotions.
 - **Demo Designer** - records the surfaces for a demo once they work.
+- **HXL Hero** - builds, ships, tries and fixes a headless surface: HXL widgets that Claude, ChatGPT and Slackbot render through a custom MCP server. This skill decides that it belongs in the architecture and keeps it on the same data contract; the hero owns the chain - Apex tools, Lightning types, widgets, MCP server, sign-in, setup.
 - **`.github/salesforce-devops.yml`** - read it if it exists: `branches` names the work branch. Without it, ask.
 
 Salesforce publishes generator skills for React UI bundles in [`forcedotcom/afv-library`](https://github.com/forcedotcom/afv-library) (`experience-react`), and agent skills (`agentforce-adlc`). They generate one React app, its data access, its deployment or an agent; this skill decides how surfaces and frameworks fit together, covers Angular, embedding and external guests, and reviews the whole. When both are installed, let a generator write a single React feature, and keep the architecture, the seams and the review here.
@@ -152,6 +153,6 @@ Salesforce publishes generator skills for React UI bundles in [`forcedotcom/afv-
 - [references/ui-bundles.md](references/ui-bundles.md) - scaffolding, anatomy, runtime environment, data client, structure, dev loop, build and deploy, tests without an org
 - [references/embedding.md](references/embedding.md) - internal and external guests, the host LWC, the View SDK, the package-free bridge, who saves, trust settings, local development, page fan-out
 - [references/data-and-security.md](references/data-and-security.md) - the data model as contract, configuration records, access, seed data, trust boundaries
-- [references/agentforce.md](references/agentforce.md) - the Conversation Client in a UI bundle, agents on the same data, agent output as UI, data for other AI clients
+- [references/agentforce.md](references/agentforce.md) - the Conversation Client in a UI bundle, agents on the same data, agent output as UI, a headless surface for AI clients
 - [references/org-and-deploy.md](references/org-and-deploy.md) - requirements, preflight, scratch org definition, one-command setup, connect step, upgrades, release acceptance, pipelines
 - [references/review.md](references/review.md) - X-ray rules, review checklist, diagnosing a broken surface

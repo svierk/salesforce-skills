@@ -4,7 +4,7 @@ Where every fact about Salesforce Multi-Framework lives, and how to read it at r
 
 ## Polyglot Arcade
 
-`svierk/polyglot-arcade` is the reference: an Angular UI bundle (the hub), a React UI bundle (the cabinet), a Lightning app with a host LWC and a native leaderboard, and an LWC OSS game hosted on Vercel - one org's data, four integration patterns, decision records with what was verified in a real org. It has releases; read the latest and note its tag, so a later comparison has a fixed point:
+`svierk/polyglot-arcade` is the reference: an Angular UI bundle (the hub), a React UI bundle (the cabinet), a Lightning app with a host LWC and a native leaderboard, and an LWC OSS game hosted on Vercel - one org's data, four integration patterns, decision records with what was verified in a real org. From v1.1.0 a headless surface shows its Hall of Fame in Claude as HXL widgets. It has releases; read the latest and note its tag, so a later comparison has a fixed point:
 
 ```bash
 gh release view --repo svierk/polyglot-arcade --json tagName,publishedAt
@@ -26,31 +26,32 @@ curl -s https://svierk.github.io/polyglot-arcade/architecture/patterns.md       
 curl -s https://svierk.github.io/polyglot-arcade/llms-full.txt                    # every page in one file
 ```
 
-| Need                                                                   | Where                                                                                                            |
-| ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Multi-Framework in a nutshell, which framework is used where and why   | `docs/concepts.md`                                                                                               |
-| Surfaces, roles, navigation between them, the platform facts behind it | `docs/architecture/index.md`, `docs/decisions/0001-surface-roles.md`                                             |
-| The four integration patterns and the record fields that select one    | `docs/architecture/patterns.md`, `force-app/main/default/uiBundles/polyglotArcade/src/app/xray.ts`               |
-| Channels, sequences of an embedded round, the package-free bridge      | `docs/architecture/communication.md`                                                                             |
-| Data model, configuration record, permission set, reports              | `docs/architecture/data-model.md`, `force-app/main/default/objects/`, `.../permissionsets/`                      |
-| Decision record format and the decisions taken                         | `docs/decisions/`                                                                                                |
-| Host LWC: frame, props, events, host saves, errors                     | `force-app/main/default/lwc/arcadeGameHost/` with its `__tests__`                                                |
-| Page fan-out with Lightning Message Service                            | `force-app/main/default/lwc/arcadeLeaderboard/`, `.../messageChannels/`                                          |
-| React guest: View SDK props and events, chromeless embed route         | `uiBundles/pixelCabinet/src/embedding/hostBridge.ts`, `src/cabinet/EmbedLayout.tsx`, `src/cabinet/GameStage.tsx` |
-| Data client and domain API, React and Angular                          | `uiBundles/pixelCabinet/src/api/`, `uiBundles/polyglotArcade/src/app/api/`                                       |
-| Links between bundles and into Lightning                               | `uiBundles/pixelCabinet/src/cabinet/hub.ts`, `uiBundles/polyglotArcade/src/app/arcade-floor.ts`                  |
-| Bundle build: Vite plugin, Angular esbuild plugins and dev middleware  | `uiBundles/pixelCabinet/vite.config.ts`; `uiBundles/polyglotArcade/angular.json`, `esbuild/`, `middleware/`      |
-| Bundle metadata and its App Launcher app                               | `uiBundles/*/*.uibundle-meta.xml`, `uiBundles/*/ui-bundle.json`, `force-app/main/default/applications/`          |
-| GraphQL schema, codegen and operation linting                          | `uiBundles/*/codegen.yml`, `.graphqlrc.yml`, `scripts/get-graphql-schema.mjs`, `eslint.config.js`                |
-| Trusted sites for production and for local development only            | `force-app/main/default/cspTrustedSites/`, `dev/main/default/cspTrustedSites/`                                   |
-| Jest stub for `lightning-ui-embedding`                                 | `jest-mocks/lightning/uiEmbedding/`, `jest.config.js`                                                            |
-| Org preflight, one-command setup, connect step                         | `scripts/preflight.mjs`, `scripts/org-setup.mjs`, `scripts/org-setup.config.json`, `scripts/connect.mjs`         |
-| Scratch org definition                                                 | `config/project-scratch-def.json`                                                                                |
-| CI without an org; release acceptance in a scratch org                 | `.github/workflows/ci.yml`; `.github/workflows/scratch-org.yml`                                                  |
-| Adding a feature to each home - hub, cabinet, external guest           | `docs/build-your-own-game.md`                                                                                    |
-| Dev servers, embedding a local app, tests and checks                   | `docs/development.md`                                                                                            |
-| Symptoms and fixes; upgrades and leftovers                             | `docs/deploy/troubleshooting.md`; `docs/deploy/upgrade.md`                                                       |
-| What the project took from Salesforce's templates                      | `THIRD_PARTY_NOTICES.md`                                                                                         |
+| Need                                                                     | Where                                                                                                            |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| Multi-Framework in a nutshell, which framework is used where and why     | `docs/concepts.md`                                                                                               |
+| Surfaces, roles, navigation between them, the platform facts behind it   | `docs/architecture/index.md`, `docs/decisions/0001-surface-roles.md`                                             |
+| The four integration patterns and the record fields that select one      | `docs/architecture/patterns.md`, `force-app/main/default/uiBundles/polyglotArcade/src/app/xray.ts`               |
+| Channels, sequences of an embedded round, the package-free bridge        | `docs/architecture/communication.md`                                                                             |
+| The headless surface: HXL widgets in AI clients, why it is not a pattern | `docs/architecture/headless.md`, `docs/decisions/0003-headless-surface.md`                                       |
+| Data model, configuration record, permission set, reports                | `docs/architecture/data-model.md`, `force-app/main/default/objects/`, `.../permissionsets/`                      |
+| Decision record format and the decisions taken                           | `docs/decisions/`                                                                                                |
+| Host LWC: frame, props, events, host saves, errors                       | `force-app/main/default/lwc/arcadeGameHost/` with its `__tests__`                                                |
+| Page fan-out with Lightning Message Service                              | `force-app/main/default/lwc/arcadeLeaderboard/`, `.../messageChannels/`                                          |
+| React guest: View SDK props and events, chromeless embed route           | `uiBundles/pixelCabinet/src/embedding/hostBridge.ts`, `src/cabinet/EmbedLayout.tsx`, `src/cabinet/GameStage.tsx` |
+| Data client and domain API, React and Angular                            | `uiBundles/pixelCabinet/src/api/`, `uiBundles/polyglotArcade/src/app/api/`                                       |
+| Links between bundles and into Lightning                                 | `uiBundles/pixelCabinet/src/cabinet/hub.ts`, `uiBundles/polyglotArcade/src/app/arcade-floor.ts`                  |
+| Bundle build: Vite plugin, Angular esbuild plugins and dev middleware    | `uiBundles/pixelCabinet/vite.config.ts`; `uiBundles/polyglotArcade/angular.json`, `esbuild/`, `middleware/`      |
+| Bundle metadata and its App Launcher app                                 | `uiBundles/*/*.uibundle-meta.xml`, `uiBundles/*/ui-bundle.json`, `force-app/main/default/applications/`          |
+| GraphQL schema, codegen and operation linting                            | `uiBundles/*/codegen.yml`, `.graphqlrc.yml`, `scripts/get-graphql-schema.mjs`, `eslint.config.js`                |
+| Trusted sites for production and for local development only              | `force-app/main/default/cspTrustedSites/`, `dev/main/default/cspTrustedSites/`                                   |
+| Jest stub for `lightning-ui-embedding`                                   | `jest-mocks/lightning/uiEmbedding/`, `jest.config.js`                                                            |
+| Org preflight, one-command setup, connect step                           | `scripts/preflight.mjs`, `scripts/org-setup.mjs`, `scripts/org-setup.config.json`, `scripts/connect.mjs`         |
+| Scratch org definition                                                   | `config/project-scratch-def.json`                                                                                |
+| CI without an org; release acceptance in a scratch org                   | `.github/workflows/ci.yml`; `.github/workflows/scratch-org.yml`                                                  |
+| Adding a feature to each home - hub, cabinet, external guest             | `docs/build-your-own-game.md`                                                                                    |
+| Dev servers, embedding a local app, tests and checks                     | `docs/development.md`                                                                                            |
+| Symptoms and fixes; upgrades and leftovers                               | `docs/deploy/troubleshooting.md`; `docs/deploy/upgrade.md`                                                       |
+| What the project took from Salesforce's templates                        | `THIRD_PARTY_NOTICES.md`                                                                                         |
 
 Polyglot Arcade is a demo: games, a lobby, scores. Translate its roles into the user's domain - the hub is the app users start from, the cabinet is a specialised app, the score is whatever record a guest produces - rather than copying the theme.
 
