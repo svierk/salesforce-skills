@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "devops-operator",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Guided day-to-day work on a Salesforce project in Git and GitHub - branches, retrieves, commits, pull requests and promotions - for every team member.",
   "author": {
     "name": "Sebastiano Schwarz",
