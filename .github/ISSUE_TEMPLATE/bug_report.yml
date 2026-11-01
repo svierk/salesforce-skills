@@ -17,6 +17,7 @@ body:
         - lwc-crafter
         - demo-designer
         - multi-framework-wizard
+        - hxl-hero
     validations:
       required: true
   - type: input
