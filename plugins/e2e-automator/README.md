@@ -35,6 +35,15 @@ It complements the [UTAM Chrome extension](https://developer.salesforce.com/docs
 - A failing assertion is information, not an obstacle. The skill never relaxes an expected value to make a test pass; when behaviour changed on purpose, it asks first.
 - The login URL in `.env` is a live session. The skill keeps it out of the conversation and out of Git.
 
+## Alongside other skills
+
+- [🏗️ DevOps Builder](../devops-builder) owns the pipeline around the UI test job - environments, secrets, branch protection; the test job itself and its place in the schedule are set up here.
+- [🧭 DevOps Operator](../devops-operator) hands over when a pull request's UI test job fails, with the job, the test and the step already named.
+- [⚡ LWC Crafter](../lwc-crafter) builds the components the tests click through, and their Jest tests; it names a page object its markup change may break.
+- [🧙 Multi-Framework Wizard](../multi-framework-wizard) owns React and Angular UI bundles and embedded apps. UTAM covers the Lightning page and the host component around a frame; what happens inside the frame is tested by the app's own suite.
+- [🦸 HXL Hero](../hxl-hero) owns HXL widgets, which render in AI clients, not in Lightning Experience.
+- [🎬 Demo Designer](../demo-designer) records demo videos - a demo script is not a test, and does not become one.
+
 ## Requirements
 
 - Node.js and npm in the version the project's `package.json` asks for
