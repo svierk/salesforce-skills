@@ -15,9 +15,9 @@ body:
         - devops-operator
         - e2e-automator
         - lwc-crafter
-        - demo-designer
         - multi-framework-wizard
         - hxl-hero
+        - demo-designer
     validations:
       required: true
   - type: input

@@ -48,6 +48,14 @@ await render(scenes, 'out/quote-demo.mp4'); // plus quote-demo.srt and chapter m
 - Everything on screen is checked before hand-over: real names, emails, the logged-in user's photo and org banners are hidden or blurred, and every claim in a caption is taken from a source, not from memory.
 - Seeding demo data or click paths that change records happen only after you say yes; personalised bid videos stay private.
 
+## Alongside other skills
+
+- [⚡ LWC Crafter](../lwc-crafter) builds and fixes the component a demo shows; a bug found while recording goes back there, not into a workaround in the click path.
+- [🧙 Multi-Framework Wizard](../multi-framework-wizard) builds and fixes the React and Angular UI bundles and embedded apps a demo shows.
+- [🦸 HXL Hero](../hxl-hero) builds and fixes the widgets that Claude, ChatGPT or Slackbot render; the demo records them in the client.
+- [🧪 E2E Automator](../e2e-automator) owns automated UI tests - a demo script is not a test, and does not become one.
+- [🧭 DevOps Operator](../devops-operator) deploys to the demo org and commits the storyboard script, if the team keeps it in Git.
+
 ## Requirements
 
 - Node.js and npm

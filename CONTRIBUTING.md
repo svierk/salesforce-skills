@@ -14,6 +14,7 @@ plugins/
       SKILL.md                        # when to use the skill, and the procedure
       references/                     # detail loaded only when a step needs it
       scripts/                        # deterministic checks and helpers (optional)
+      assets/                         # templates and files the scripts work with (optional)
     hooks/hooks.json                  # guardrails that must not depend on instructions (optional)
 schemas/                              # formats of files that skills write into user repositories
   examples/                           # one valid example per case, checked in CI
@@ -22,7 +23,7 @@ tests/<plugin>/                       # tests for hooks and scripts, run with np
 tests/schemas/                        # checks that every plugin's reference covers its schema
 ```
 
-One plugin per skill, so teams can install exactly what they need. Plugins of the same area share a name prefix (`devops-*`).
+One plugin per skill, so teams can install exactly what they need. A plugin is named for the role it takes (`devops-builder`, `lwc-crafter`); its area is the `category` in `marketplace.json` and the section it is listed under in the README. Keep the plugin order the same in the marketplace, the README and the bug report template - area by area, in the README's order.
 
 A plugin is installed on its own, so a skill can only read files inside its plugin folder. Knowledge that several plugins need - such as the project configuration format - lives in a reference file in each of them; the schema under `schemas/` is the canonical definition they follow.
 

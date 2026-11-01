@@ -1,7 +1,7 @@
 # Dependabot keeps this repository's dependencies current on its own:
 #
-#   * npm            - Prettier, the schema validator and the CLI that
-#                      validates the plugin manifests
+#   * npm            - Prettier, the schema validator with its YAML parser,
+#                      and the CLI that validates the plugin manifests
 #   * github-actions - every action pinned in .github/workflows, each to an
 #                      exact release tag, so an update is always an explicit,
 #                      reviewable change of that pin

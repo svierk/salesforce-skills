@@ -35,7 +35,7 @@ Drawn from Polyglot Arcade, Salesforce's Multi-Framework and UI Embedding guides
 
 ## The X-ray
 
-Named after Polyglot Arcade's Tech X-ray, the skill's checker maps a project and checks the seams between its surfaces - 20 rules over UI bundle code, LWC hosts, seed data, apps, permission sets and trusted sites:
+Named after Polyglot Arcade's Tech X-ray, the skill's checker maps a project and checks the seams between its surfaces - 22 rules over UI bundle code, LWC hosts, seed data, apps, permission sets and trusted sites:
 
 ```bash
 node scripts/xray.mjs                     # map and findings of the project
