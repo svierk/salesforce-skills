@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "devops-builder",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Design, set up and maintain a Salesforce CI/CD pipeline on GitHub Actions with the Salesforce DevOps Starter Kit.",
   "author": {
     "name": "Sebastiano Schwarz",
