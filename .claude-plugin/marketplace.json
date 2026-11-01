@@ -28,7 +28,7 @@
       "name": "e2e-automator",
       "source": "./plugins/e2e-automator",
       "description": "Write, run and maintain end-to-end UI tests for Salesforce Lightning with UTAM - from a user story to a green, stable test, and through every Salesforce release.",
-      "version": "0.1.3",
+      "version": "0.1.4",
       "category": "testing",
       "keywords": ["salesforce", "utam", "e2e-tests", "webdriverio", "test-automation"]
     },
