@@ -47,7 +47,7 @@ The agent answers from and acts on the same records the apps write - "who is thi
 - **The data contract is the agent's contract.** Object and field labels and descriptions are what the agent reasons over - write them so a planner picks the right action, and keep the vocabulary the same as in the apps.
 - **A dedicated permission set** for what the agent may read and do, smaller than a user's. An agent that changes data is validated like a host-saves guest: known fields, checked types, attributed to what the context says.
 - **The agent is optional.** An org without Agentforce still runs the apps, so keep the agent out of the main deploy and let the setup skip it with a message. The Arcade Host's source sits in `agent/`, and the org needs the feature when it is created.
-- **Hand over the agent itself.** Agent Script, topics, actions, tests and deployment belong to an agent skill - Salesforce's `agentforce-adlc` plugin. Agents are `AiAgentDefinition` metadata from API 68.0; retrieve them with their dependencies before reviewing.
+- **Hand over the agent itself.** Agent Script, topics, actions and test cases belong to an agent skill - Salesforce's `agentforce-adlc` plugin. Publishing the agent and running its tests in a pipeline belong to the DevOps Builder. Agents are `AiAgentDefinition` metadata from API 68.0; retrieve them with their dependencies before reviewing.
 
 ## Agent output as UI
 
