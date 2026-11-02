@@ -27,7 +27,8 @@ What the checker of this skill reports, and what a person still has to read.
 | `renderer-location`     | warning         | A widget renderer in the response type instead of the envelope type                                                            |
 | `mcp-ui-resource`       | error           | A tool whose `uiResource` matches no `resourceName`                                                                            |
 | `mcp-resource-uri`      | error           | A resource URI that is not `ui://widget/lightningType/c__<envelope>` of an existing type with a renderer                       |
-| `mcp-one-request`       | warning         | A tool description that does not ask for exactly one request per call                                                          |
+| `mcp-no-widget`         | info            | A tool without `uiResource` - valid for a tool that answers without a widget                                                   |
+| `mcp-one-request`       | warning         | A widget tool's description that does not ask for exactly one request per call                                                 |
 | `mcp-tool-class`        | warning / info  | A tool whose Apex class is not in the project, or that is not an Apex action                                                   |
 | `mcp-hints`             | info            | A tool without a `readOnly` hint                                                                                               |
 | `apex-sharing`          | warning         | A tool class that is not `with sharing`                                                                                        |
