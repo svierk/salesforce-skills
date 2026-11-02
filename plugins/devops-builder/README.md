@@ -24,6 +24,7 @@ The skill reads versions, workflow inputs and blueprint callers from the kit at 
 - [🧪 E2E Automator](../e2e-automator) writes the end-to-end UI tests and their test job; the builder holds that job to the same security rules as every workflow.
 - [🧙 Multi-Framework Wizard](../multi-framework-wizard) owns the React and Angular UI bundles themselves; their build before every deploy is set up here.
 - [🦸 HXL Hero](../hxl-hero) builds HXL widgets, their Lightning types, Apex tools and MCP server; turning HXL on in every target org before the first validation, and the Apex tests of the tools, are set up here.
+- Agentforce agents are authored elsewhere, for example with Salesforce's `agentforce-adlc` plugin; publishing them and running their tests in the pipeline is set up here.
 
 ## Requirements
 
