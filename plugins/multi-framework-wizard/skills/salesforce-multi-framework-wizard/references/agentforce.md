@@ -55,7 +55,7 @@ Structured agent output can render as interactive UI instead of text. At Winter 
 
 - **Reuse the domain's vocabulary.** The widget for a result shows the same fields, names and colors as the surfaces - a leaderboard row looks like a leaderboard row.
 - **The widget is a surface too:** one role, its data through the action, no hidden calls of its own.
-- **One card, two channels.** The Arcade Host shows the same widget file as Claude. Agentforce renders a type on one output and MCP tools return their fields one by one, so the agent gets thin wrapper actions and the tools stay untouched ([ADR 0004](https://svierk.github.io/polyglot-arcade/decisions/0004-arcade-host-agent)). Clients draw heading levels differently, so check the widget in every channel.
+- **One card, two channels.** The Arcade Host shows the same widget file as Claude. Agentforce ties a type to one output that holds the whole card and MCP tools return their fields one by one, so the agent gets thin wrapper actions and the tools stay untouched ([ADR 0004](https://svierk.github.io/polyglot-arcade/decisions/0004-arcade-host-agent)). Clients draw heading levels differently, so check the widget in every channel.
 - Salesforce's `platform-lightning-widgets` skills generate Lightning types and widgets; the HXL Hero builds the whole chain around them, for both channels.
 
 ## A headless surface

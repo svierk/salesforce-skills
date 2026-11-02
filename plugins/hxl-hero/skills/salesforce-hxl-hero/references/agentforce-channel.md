@@ -12,7 +12,7 @@ The widget stays the same file. The wiring around it does not.
 | Lightning types  | Object-based: envelope and response                   | One Apex-backed type                                                         |
 | Links the widget | `uiResource` of the tool in the MCP server definition | The output in Agent Script: `complex_data_type_name`, `is_displayable: True` |
 | User             | OAuth through the External Client App                 | The Lightning session                                                        |
-| Access           | The permission set that grants the tool class         | A licence, a standard permission set and `agentAccesses`                     |
+| Access           | The permission set that grants the tool class         | A permission set with `agentAccesses`                                        |
 
 ## The org
 
@@ -32,7 +32,7 @@ Only scratch orgs are verified. In a Developer Edition or a sandbox, check it be
 
 ## One output
 
-Agentforce renders a Lightning type on one output, and an MCP tool returns its fields one by one. Do not reshape a working tool: wrap it. The logic stays in one place and the MCP chain stays untouched.
+Agentforce ties a Lightning type to one output, which has to hold the whole card. Other outputs can sit next to it: in Salesforce's [Pronto sample](https://github.com/trailheadapps/pronto), `GetCustomerReviewsAction` returns `isSuccess`, `message` and `reviews`, and the panel renders the widget on `reviews`. An MCP tool that returns its fields one by one has no such output. Do not reshape a working tool: wrap it. The logic stays in one place and the MCP chain stays untouched.
 
 ```apex
 global with sharing class ArcadeHallOfFameAgent {
@@ -54,7 +54,7 @@ global with sharing class ArcadeHallOfFameAgent {
 }
 ```
 
-Without an MCP tool to keep, a new action can return one object directly.
+Without an MCP tool to keep, a new action can return one object directly. Pronto uses that action for both channels, and its MCP renderer binds through the object: `{!$attrs.outputValues.reviews.items}`. That binding is read from its source, not tried.
 
 ## The Apex-backed type
 
@@ -99,18 +99,22 @@ actions:
                 is_displayable: True
 ```
 
-Without further instruction the model repeats the card in words. Ask in the subagent's reasoning instructions for at most one short sentence next to the card.
+The model can repeat the card in words, so Polyglot Arcade asks in the subagent's reasoning instructions for at most one short sentence next to the card. Pronto has no such sentence, and its model did not repeat the card in five tries. Check it in the panel.
+
+An instruction such as "if `hasRounds` is false, show the message" can replace the card: for a player without rounds, Polyglot Arcade's agent answered once with text only and once with the card.
 
 ## Access
 
-A user needs the permission set licence `EinsteinGPTCopilotPsl`, the permission set `CopilotSalesforceUser` and a permission set of the project with `agentAccesses` for the agent and `classAccesses` for the wrappers. The tool classes come with the permission set the MCP channel already needs. Without the project's permission set there is no Agentforce icon and no error, so this is the first thing to check when the panel does not show up. A scratch org has three of these licences.
+A user needs a permission set of the project with `agentAccesses` for the agent and `classAccesses` for the wrappers. The tool classes come with the permission set the MCP channel already needs. Without the project's permission set there is no Agentforce icon and no error, so this is the first thing to check when the panel does not show up.
+
+The licence `EinsteinGPTCopilotPsl` (_Agentforce (Default)_) and the permission set `CopilotSalesforceUser` are not needed in a scratch org. The licence carries the name of Salesforce's older default agent, which Salesforce no longer develops further. Other org types are not verified, so check there whether your users need a licence.
 
 ## Shipping it
 
 `sf agent publish authoring-bundle` and `sf agent activate` need no clicks in Setup. A setup step that is safe to run again has to handle a few things:
 
-- **Keep the agent out of the main deploy.** An org without Agentforce cannot deploy it, and a permission set with `agentAccesses` fails until the agent is published. Polyglot Arcade keeps both in `agent/`, which is not a package directory, and skips an org without the licence with a message.
-- **Work in a temporary project.** `sf agent publish` retrieves generated `aiAgents/` and `aiAgentDefinitionVersions/` and the action classes, with whitespace changes, into the project it runs in. A deploy from that project needs `--ignore-conflicts` in a scratch org.
+- **Keep the agent out of the main deploy.** An org without Agentforce cannot deploy it, and a permission set with `agentAccesses` fails until the agent is published. Polyglot Arcade keeps both in `agent/`, which is not a package directory, and skips an org that does not list the metadata type `AiAuthoringBundle` with a message.
+- **Work in a temporary project.** `sf agent publish` retrieves generated `aiAgents/` and `aiAgentDefinitionVersions/` and the action classes, with whitespace changes, into the project it runs in. A deploy from that project needs `--ignore-conflicts` in a scratch org. Publishing inside the project has two costs: classes in subfolders come back as flat copies in `classes/`, and the next deploy of that folder fails with `Can't edit an active bot version`, unless `.forceignore` lists `**/aiAgents/**` and `**/aiAgentDefinitionVersions/**`.
 - **Publish only what changed.** Every publish adds a version. The org lists them as `AiAuthoringBundle` `<Agent>_<N>`; retrieve the highest and compare its `.agent` file.
 - **Always name the version.** See [verified.md](verified.md#agentforce-in-lightning): without `--version`, `sf agent activate --json` can move the agent back. Read `BotVersion` and activate only when the latest is not active.
 - **Tolerate a duplicate assignment.** `sf org assign permset` exits with an error when the permission set is already assigned.

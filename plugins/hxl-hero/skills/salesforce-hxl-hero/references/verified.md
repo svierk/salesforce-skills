@@ -1,6 +1,6 @@
 # Verified in an org
 
-What Polyglot Arcade v1.1.0 and v1.2.0 verified in scratch orgs on Winter '27 (API 68.0, with metadata at 67.0 and 68.0), October and November 2026, and what the official documentation of that release did not say. Every line is a fixed point, not the current truth - check it again when a step fails on a later release, and update the project's docs with what you find.
+What Polyglot Arcade v1.1.0 to v1.2.1, and where it says so Salesforce's Pronto sample, verified in scratch orgs on Winter '27 (API 68.0, with metadata at 67.0 and 68.0), October and November 2026, and what the official documentation of that release did not say. Every line is a fixed point, not the current truth - check it again when a step fails on a later release, and update the project's docs with what you find.
 
 ## Turning HXL on
 
@@ -34,8 +34,11 @@ What Polyglot Arcade v1.1.0 and v1.2.0 verified in scratch orgs on Winter '27 (A
 - An `@InvocableVariable` of a global inner class of another class works as the output: `global ArcadeHallOfFame.Response hallOfFame`, with the response's own fields annotated `@InvocableVariable`.
 - `sf agent activate --json` without `--version` picks the latest version that is **not active**, although its help says "latest". When the latest is already active, it activates the one before, without an error. `BotVersion` (`VersionNumber`, `Status`, filtered by `BotDefinition.DeveloperName`) tells which is active.
 - `sf agent preview --authoring-bundle` crashed for an employee agent at CLI 2.155.7: it reads `defaultAgentUser`, which such an agent does not have. `--api-name` on the published agent works.
-- `sf agent publish` writes into the project it runs in: `aiAgents/`, `aiAgentDefinitionVersions/` and the action classes, without a trailing newline and with a changed XML header.
-- Without the permission set with `agentAccesses`, a user sees no Agentforce icon and no error. Not tried: with it, but without `CopilotSalesforceUser`.
+- `sf agent publish` writes into the project it runs in: `aiAgents/`, `aiAgentDefinitionVersions/` and the action classes, without a trailing newline and with a changed XML header. Pronto, whose classes live in subfolders, got flat copies next to them. Deploying the source folder again then failed with `Can't edit an active bot version` on `AiAgentDefinitionVersion`.
+- Without the permission set with `agentAccesses`, a user sees no Agentforce icon and no error.
+- With it, a user needs neither the licence `EinsteinGPTCopilotPsl` nor `CopilotSalesforceUser`. Both widgets rendered for a Standard Platform User in Polyglot Arcade, and Pronto's widget for a Standard User and an admin.
+- A scratch org without the Agentforce settings has no `EinsteinGPTCopilotPsl`, no sObject `BotDefinition` and no metadata type `AiAuthoringBundle`. With them it has all three.
+- An action can have more outputs next to the one with the Lightning type (Pronto: `isSuccess`, `message`, `reviews`).
 - A Standard User and a Standard Platform User each get the panel and their own results. The agent runs as the signed-in user.
 - `h1` and `h2` render far larger in the panel than in Claude, and `FORMATNUMBER` prints thousands separators in the user's locale there (`4.200`, `5,100`), unlike the MCP renderer.
 - `sf org list limits` shows no limit for agent requests; `DailyDataCloudFlexCredits` is at its maximum in a scratch org. Not load-tested: about 20 requests went through.
