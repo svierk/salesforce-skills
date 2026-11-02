@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<McpServerDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <masterLabel>Orders</masterLabel>
+    <tools>
+        <toolName>cancelOrder</toolName>
+        <descriptionOverride>Cancels an order.</descriptionOverride>
+        <readOnly>false</readOnly>
+        <apiDefinition>
+            <apiSource>API_CATALOG</apiSource>
+            <apiIdentifier>aa:apex-CancelOrder</apiIdentifier>
+            <operation>CancelOrder</operation>
+        </apiDefinition>
+    </tools>
+</McpServerDefinition>

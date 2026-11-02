@@ -72,6 +72,25 @@ describe('a complete chain', () => {
   });
 });
 
+describe('a tool without a widget', () => {
+  const root = findRoot(join(fixtures, 'no-widget-project'));
+  const findings = check(discover(root));
+
+  test('is valid: an info, not a broken chain', () => {
+    assert.deepEqual(
+      findings.map(({ severity, rule }) => ({ severity, rule })),
+      [
+        { severity: 'info', rule: 'mcp-no-widget' },
+        { severity: 'info', rule: 'eca-missing' }
+      ]
+    );
+  });
+
+  test('needs no request limit in its description', () => {
+    assert.equal(rulesOf(findings).has('mcp-one-request'), false);
+  });
+});
+
 describe('a broken chain', () => {
   const findings = findingsOf('broken-project');
   const rules = rulesOf(findings);

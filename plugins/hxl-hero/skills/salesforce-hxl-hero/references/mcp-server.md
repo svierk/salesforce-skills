@@ -35,7 +35,7 @@ Setup can create a server, but it cannot add widget resources - write the file i
 </McpServerDefinition>
 ```
 
-- **`uiResource`** equals the `resourceName` of a `resources` entry - exactly, or the widget does not render.
+- **`uiResource`** equals the `resourceName` of a `resources` entry - exactly, or the widget does not render. A tool that answers without a widget leaves it out.
 - **`resourceUri`** is `ui://widget/lightningType/c__<envelope type>` - the type with the renderer, not the response type and not the widget.
 - **`apiIdentifier`** for an Apex action is `aa:apex-<Class>`, `operation` the class name.
 - **Hints:** `readOnly`, `destructive`, `idempotent`, `openWorld` tell clients how careful to be; set them truthfully.

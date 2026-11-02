@@ -507,12 +507,14 @@ function chainFindings(chain, map) {
   const tool = server.tools.find((t) => t.name === chain.tool);
   const at = `Tool ${chain.tool}`;
 
-  if (!chain.resource) {
+  if (!tool.uiResource) {
+    add(server.file, 'info', 'mcp-no-widget', `${at}: no uiResource - it answers without a widget`);
+  } else if (!chain.resource) {
     add(
       server.file,
       'error',
       'mcp-ui-resource',
-      `${at}: uiResource "${tool.uiResource ?? ''}" matches no resourceName - the widget does not render`
+      `${at}: uiResource "${tool.uiResource}" matches no resourceName - the widget does not render`
     );
   } else if (!chain.envelope) {
     add(
@@ -537,7 +539,7 @@ function chainFindings(chain, map) {
     );
   }
 
-  if (!ONE_REQUEST.test(tool.description)) {
+  if (tool.uiResource && !ONE_REQUEST.test(tool.description)) {
     add(
       server.file,
       'warning',
@@ -702,8 +704,11 @@ function printMap(map) {
   if (map.chains.length) {
     console.log('Tools');
     for (const c of map.chains) {
+      const tool = map.servers.find((s) => s.name === c.server).tools.find((t) => t.name === c.tool);
       console.log(
-        `  ${c.server}/${c.tool}  →  ${c.apexClass ?? '?'}  →  ${c.envelope ?? '?'} (${c.response ?? '?'})  →  ${c.widget ?? '?'}`
+        tool.uiResource
+          ? `  ${c.server}/${c.tool}  →  ${c.apexClass ?? '?'}  →  ${c.envelope ?? '?'} (${c.response ?? '?'})  →  ${c.widget ?? '?'}`
+          : `  ${c.server}/${c.tool}  →  ${c.apexClass ?? tool.apiIdentifier ?? '?'}  →  no widget`
       );
     }
     console.log('');
