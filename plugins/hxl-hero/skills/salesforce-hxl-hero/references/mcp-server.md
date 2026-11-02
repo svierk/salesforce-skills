@@ -37,7 +37,7 @@ Setup can create a server, but it cannot add widget resources - write the file i
 
 - **`uiResource`** equals the `resourceName` of a `resources` entry - exactly, or the widget does not render. A tool that answers without a widget leaves it out.
 - **`resourceUri`** is `ui://widget/lightningType/c__<envelope type>` - the type with the renderer, not the response type and not the widget.
-- **`apiIdentifier`** for an Apex action is `aa:apex-<Class>`, `operation` the class name.
+- **`apiIdentifier`** for an Apex action is `aa:apex-<Class>`, `operation` the class name. Pronto also uses `ar:<Class>` for an Apex REST operation and `ag:<Agent>` with `operation` `invoke` for an agent. Those two are read from its source, not tried.
 - **Hints:** `readOnly`, `destructive`, `idempotent`, `openWorld` tell clients how careful to be; set them truthfully.
 - Deploy the widget and its types first or in the same deploy, then the definition.
 

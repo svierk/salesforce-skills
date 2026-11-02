@@ -2,6 +2,10 @@
 
 Where every fact about HXL lives, and how to read it at run time. HXL is a beta: the component palette, the metadata formats, the channels and the setup change between releases. Read them here instead of relying on what this skill - or your memory - says, and name the release a fact belongs to when you state it.
 
+## Pronto
+
+[`trailheadapps/pronto`](https://github.com/trailheadapps/pronto) is Salesforce's sample for the Headless Toolkit: an order status card and customer reviews, one MCP server with Apex, Apex REST and agent tools, and employee and service agents. Read it for a second way to build the same chain. Polyglot Arcade remains the reference for the sign-in and a setup that is safe to run again, which Pronto's README leaves out.
+
 ## Polyglot Arcade
 
 `svierk/polyglot-arcade` is the reference. From v1.1.0 its **headless surface** shows a Hall of Fame and a player card in Claude (from v1.2.0 also in the Agentforce panel), served by the custom MCP server `polyglotArcade` on the same `Arcade_Score__c` records as its Angular hub, its React cabinet and its Lightning pages - verified end to end in scratch orgs and in Claude. Read the latest release and note its tag:
