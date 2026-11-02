@@ -75,6 +75,9 @@ grep -rnE 'github\.(repository|repository_owner) *[!=]=' .github/workflows
 # Badges and workflow links that point to another repository
 grep -noE 'github\.com/[^/ )]+/[^/ )]+/(actions|workflows)' README.md | grep -v "$(gh repo view --json nameWithOwner -q .nameWithOwner)"
 
+# Hand-built agent steps - review each hit against the agent checks below
+grep -rnE 'sf agent (test run|publish|activate)' .github/workflows
+
 # Auto-merge - only safe when the target branch has required status checks
 grep -rln 'merge --auto' .github/workflows && gh api "repos/{owner}/{repo}/rules/branches/main" --jq '[.[].type]'
 ```
@@ -83,20 +86,23 @@ grep -rln 'merge --auto' .github/workflows && gh api "repos/{owner}/{repo}/rules
 
 Then, per finding class:
 
-| Severity | Check                                                                                             |
-| -------- | ------------------------------------------------------------------------------------------------- |
-| High     | `pull_request_target` combined with checkout of the PR head or with secrets                       |
-| High     | `${{ secrets.* }}` or attacker-controlled `${{ github.event.* }}` inside a `run:` script          |
-| High     | Production deployment without an environment, or an environment without required reviewers        |
-| High     | Mutable refs (`@main`, `@v1`) on any action that sees org credentials                             |
-| High     | `gh pr merge --auto` on a branch without required status checks - it merges at once, red or green |
-| Medium   | No `permissions:` block, or broader permissions than the workflow needs                           |
-| Medium   | Validation not a required status check; force pushes or deletions allowed on long-lived branches  |
-| Medium   | One repository-wide secret set used for several orgs                                              |
-| Medium   | Pins more than one minor version behind the latest release, or no Dependabot for `github-actions` |
-| Medium   | A condition on a repository name or owner that is not this repository - the job never runs        |
-| Low      | `persist-credentials` not set to `false`; test level left implicit                                |
-| Low      | Delta-only deployments without a periodic full validation                                         |
-| Low      | Badges or links to the workflows of another repository - they show someone else's status          |
+| Severity | Check                                                                                                                                   |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| High     | `pull_request_target` combined with checkout of the PR head or with secrets                                                             |
+| High     | `${{ secrets.* }}` or attacker-controlled `${{ github.event.* }}` inside a `run:` script                                                |
+| High     | Production deployment without an environment, or an environment without required reviewers                                              |
+| High     | Mutable refs (`@main`, `@v1`) on any action that sees org credentials                                                                   |
+| High     | `gh pr merge --auto` on a branch without required status checks - it merges at once, red or green                                       |
+| Medium   | No `permissions:` block, or broader permissions than the workflow needs                                                                 |
+| High     | `sf agent test run` judged by its exit code - it exits with `0` when expectations fail, so failed tests stay green                      |
+| Medium   | Validation not a required status check; force pushes or deletions allowed on long-lived branches                                        |
+| Medium   | One repository-wide secret set used for several orgs                                                                                    |
+| Medium   | Pins more than one minor version behind the latest release, or no Dependabot for `github-actions`                                       |
+| Medium   | A condition on a repository name or owner that is not this repository - the job never runs                                              |
+| Medium   | `sf agent publish` on every run without comparing the script - every publish creates a new version                                      |
+| Medium   | Agent tests or active agent versions in a plain deployment - it fails with `BotVersion not found` or `Can't edit an active bot version` |
+| Low      | `persist-credentials` not set to `false`; test level left implicit                                                                      |
+| Low      | Delta-only deployments without a periodic full validation                                                                               |
+| Low      | Badges or links to the workflows of another repository - they show someone else's status                                                |
 
 End the audit with what is already in good shape, so the user knows what not to touch.

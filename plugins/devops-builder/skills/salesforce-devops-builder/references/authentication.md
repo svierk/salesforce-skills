@@ -24,7 +24,7 @@ openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 \
 
 ## 3. App in the org
 
-Create an app with OAuth enabled, upload `server.crt`, enable the JWT bearer flow, set "admin approved users are pre-authorized", and assign it to the integration user through the permission set.
+Create an app with OAuth enabled and the scopes `api` and `refresh_token`, upload `server.crt`, enable the JWT bearer flow, set "admin approved users are pre-authorized", and assign it to the integration user through the permission set. A project with Agentforce agents needs the scope `web` as well: without it, validating, publishing and activating an agent fail with `invalid or missing access token`, even though the login and the deployment work. Agent tests run without it.
 
 Salesforce steers new setups from **connected apps** toward **external client apps**, and newer orgs may not allow creating connected apps by default. Both support the JWT bearer flow. Ask which one the org allows rather than assuming, and follow Salesforce's current guide for that app type.
 
@@ -42,7 +42,7 @@ sf org login jwt \
 sf org display --target-org ci-uat
 ```
 
-Use `https://login.salesforce.com` for production, `https://test.salesforce.com` for sandboxes, or the org's My Domain URL. A failure here is far easier to debug than the same failure in a CI log.
+Use `https://login.salesforce.com` for production, `https://test.salesforce.com` for sandboxes, or the org's My Domain URL. A failure here is far easier to debug than the same failure in a CI log. A new external client app can take a few minutes to become active: until then the login fails with `client identifier invalid`, so wait and try again before looking for a mistake.
 
 ## 5. Store as secrets
 

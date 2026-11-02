@@ -43,6 +43,7 @@ Without the GitHub CLI, the same file is at `https://raw.githubusercontent.com/s
 | Inputs, secrets and outputs of a reusable workflow  | `.github/workflows/<name>.yml` (the `on.workflow_call` block)                 |
 | A complete caller per reusable workflow             | `examples/<name>.yml`                                                         |
 | JWT and Auth URL setup                              | `docs/authentication.md`                                                      |
+| Agents and agent tests in a pipeline                | `docs/agentforce.md`                                                          |
 | Security and pinning rules                          | `README.md`, section "Security & versioning"                                  |
 
 Reusable workflows: `pr-validation.yml`, `deployment.yml`, `scratch-org-ci.yml`, `create-scratch-org.yml`, `promote.yml`. List the current set with:
@@ -63,7 +64,8 @@ Some files in that folder are the kit's own CI (`ci.yml`, `docs.yml`, `dependabo
 | `svierk/sfdx-create-scratch-org`   | Create a scratch org                                 |
 | `svierk/sfdx-delete-scratch-org`   | Delete a scratch org                                 |
 | `svierk/sfdx-deploy`               | Deploy, with delta and dry-run modes                 |
-| `svierk/sfdx-run-tests`            | Apex, LWC (Jest) and Flow tests with coverage        |
+| `svierk/sfdx-agent-deploy`         | Publish, activate and validate Agentforce agents     |
+| `svierk/sfdx-run-tests`            | Apex, LWC (Jest), Flow and agent tests               |
 | `svierk/sfdx-code-review`          | Code Analyzer, Prettier and ESLint as a quality gate |
 | `svierk/sfdx-package-installation` | Install managed or unlocked packages                 |
 | `svierk/sfdx-data-import`          | Import records via Bulk API 2.0 or sObject Tree      |
