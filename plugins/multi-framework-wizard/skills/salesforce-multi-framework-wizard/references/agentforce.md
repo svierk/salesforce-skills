@@ -1,6 +1,6 @@
 # Agentforce
 
-Where an agent or an AI client plugs into a multi-framework architecture. Polyglot Arcade v1.1.0 answers its roadmap question "who is this week's champion?" with a headless surface - HXL widgets in Claude through a custom MCP server ([A headless surface](#a-headless-surface)); an Agentforce agent is its next step. For the other touchpoints this reference applies the arcade's rules and points to where their current state lives. Every one of them moves between releases: read the status, framework support and org requirements in the sources before designing with it ([sources.md](sources.md#salesforce-documentation)).
+Where an agent or an AI client plugs into a multi-framework architecture. Polyglot Arcade answers its roadmap question "who is this week's champion?" with a headless surface - HXL widgets in Claude through a custom MCP server since v1.1.0 ([A headless surface](#a-headless-surface)), and in Lightning through the Agentforce agent Arcade Host since v1.2.0 ([Agent output as UI](#agent-output-as-ui)). For the other touchpoints this reference applies the arcade's rules and points to where their current state lives. Every one of them moves between releases: read the status, framework support and org requirements in the sources before designing with it ([sources.md](sources.md#salesforce-documentation)).
 
 ## Agent or UI
 
@@ -46,6 +46,7 @@ The agent answers from and acts on the same records the apps write - "who is thi
 - **No second data path.** Agent actions - a flow, an Apex action, a prompt template - read and write the same objects under the agent user's permissions. If an action needs Apex, it follows the same rules as any Apex endpoint ([data-and-security.md](data-and-security.md#the-data-model-as-contract)).
 - **The data contract is the agent's contract.** Object and field labels and descriptions are what the agent reasons over - write them so a planner picks the right action, and keep the vocabulary the same as in the apps.
 - **A dedicated permission set** for what the agent may read and do, smaller than a user's. An agent that changes data is validated like a host-saves guest: known fields, checked types, attributed to what the context says.
+- **The agent is optional.** An org without Agentforce still runs the apps, so keep the agent out of the main deploy and let the setup skip it with a message. The Arcade Host's source sits in `agent/`, and the org needs the feature when it is created.
 - **Hand over the agent itself.** Agent Script, topics, actions, tests and deployment belong to an agent skill - Salesforce's `agentforce-adlc` plugin. Agents are `AiAgentDefinition` metadata from API 68.0; retrieve them with their dependencies before reviewing.
 
 ## Agent output as UI
@@ -54,7 +55,8 @@ Structured agent output can render as interactive UI instead of text. At Winter 
 
 - **Reuse the domain's vocabulary.** The widget for a result shows the same fields, names and colors as the surfaces - a leaderboard row looks like a leaderboard row.
 - **The widget is a surface too:** one role, its data through the action, no hidden calls of its own.
-- Salesforce's `platform-lightning-widgets` skills generate Lightning types and widgets; the HXL Hero builds the whole chain around them.
+- **One card, two channels.** The Arcade Host shows the same widget file as Claude. Agentforce renders a type on one output and MCP tools return their fields one by one, so the agent gets thin wrapper actions and the tools stay untouched ([ADR 0004](https://svierk.github.io/polyglot-arcade/decisions/0004-arcade-host-agent)). Clients draw heading levels differently, so check the widget in every channel.
+- Salesforce's `platform-lightning-widgets` skills generate Lightning types and widgets; the HXL Hero builds the whole chain around them, for both channels.
 
 ## A headless surface
 

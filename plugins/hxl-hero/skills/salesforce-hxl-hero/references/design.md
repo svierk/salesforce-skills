@@ -15,12 +15,12 @@ A widget is a view of one tool result. It shows data and offers buttons; buttons
 
 ## Channels
 
-| Channel                                | Wiring                                                                                                                   | Status to check                                                                         |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| Claude, ChatGPT, Slackbot through MCP  | A custom MCP server, an External Client App for OAuth, two object-based Lightning types per tool (envelope and response) | HXL guide `hxl-mcp-channels`; Slackbot with Block Kit renders no widgets                |
-| Agentforce employee agent in Lightning | An agent action backed by the Apex action, one Apex-based Lightning type with a renderer for the Lightning channel       | HXL guide `hxl-rich-ui`; Salesforce's `platform-lightning-type-widget-coordinate` skill |
+| Channel                                | Wiring                                                                                                                     | Status to check                                                                                      |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Claude, ChatGPT, Slackbot through MCP  | A custom MCP server, an External Client App for OAuth, two object-based Lightning types per tool (envelope and response)   | HXL guide `hxl-mcp-channels`; Slackbot with Block Kit renders no widgets                             |
+| Agentforce employee agent in Lightning | An action with one output, one Apex-backed Lightning type with a renderer ([agentforce-channel.md](agentforce-channel.md)) | HXL guide `agentforce-action-output`; Salesforce's `platform-lightning-type-widget-coordinate` skill |
 
-The widget is the same in both; the types and the wiring differ. Start with one channel and verify it end to end before adding the next. Polyglot Arcade v1.1.0 verified the MCP channel with Claude; treat the Lightning channel as unverified until you have checked it in an org ([verified.md](verified.md)).
+The widget is the same in both; the types and the wiring differ. Start with one channel and verify it end to end before adding the next. Polyglot Arcade verified the MCP channel with Claude in v1.1.0 and the Lightning channel in scratch orgs in v1.2.0 ([verified.md](verified.md)).
 
 ## Tools from questions
 

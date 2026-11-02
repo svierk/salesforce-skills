@@ -6,14 +6,14 @@ For developers and architects who want an org's data in the AI clients people al
 
 ## What it does
 
-| Mode       | Example requests                                                                                                                                 |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Design** | "Which questions should our sales leaderboard answer in Claude?" · "HXL widget or Agentforce action?"                                            |
-| **Build**  | "Turn this Apex class into an MCP tool with a widget" · "Add a player card widget" · "Generate the Lightning types from the action"              |
-| **Ship**   | "Turn on HXL and activate the MCP server in my scratch org" · "Fold the MCP setup into our setup script" · "Connect Claude to the org"           |
-| **Try**    | "Show me the widget without opening Claude" · "Call the tool as a user without admin rights"                                                     |
-| **Fix**    | "Claude says Couldn't render a rich UI" · "The connector shows no tools" · "Sign-in lands in the wrong org" · "Deploy: not available for deploy" |
-| **Review** | "Review our HXL project before the release" · "What can this tool read, and for whom?"                                                           |
+| Mode       | Example requests                                                                                                                                     |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Design** | "Which questions should our sales leaderboard answer in Claude?" · "HXL widget or Agentforce action?" · "Show our widget in an Agentforce agent too" |
+| **Build**  | "Turn this Apex class into an MCP tool with a widget" · "Add a player card widget" · "Generate the Lightning types from the action"                  |
+| **Ship**   | "Turn on HXL and activate the MCP server in my scratch org" · "Fold the MCP setup into our setup script" · "Connect Claude to the org"               |
+| **Try**    | "Show me the widget without opening Claude" · "Call the tool as a user without admin rights"                                                         |
+| **Fix**    | "Claude says Couldn't render a rich UI" · "The connector shows no tools" · "Sign-in lands in the wrong org" · "Deploy: not available for deploy"     |
+| **Review** | "Review our HXL project before the release" · "What can this tool read, and for whom?"                                                               |
 
 - **Design** collects the questions people ask, cuts one tool per kind of question with few, forgiving inputs, and sketches the widget from the palette the org offers.
 - **Build** goes in the order the platform needs: the Apex invocable action, its describe, the response and envelope Lightning types generated from it, the widget, the renderer, the MCP server definition and the permission set.
@@ -24,11 +24,12 @@ For developers and architects who want an org's data in the AI clients people al
 
 ## Practices it applies
 
-Drawn from Polyglot Arcade v1.1.0, Salesforce's HXL and Hosted MCP guides, and what was verified in a real org:
+Drawn from Polyglot Arcade v1.2.0, Salesforce's HXL and Hosted MCP guides, and what was verified in a real org:
 
 - **Same data, same rules** - a tool reads the records the apps use, as the user who asks: `with sharing`, user mode, OAuth per user, read-only by default.
 - **The describe is the source of truth** - the response type has exactly the action's outputs, generated from the org, not from memory.
 - **One request, one widget** - every tool description asks for one request per call, because a bundled call renders as text only.
+- **One widget, two channels** - an Agentforce agent in Lightning shows the same widget through a thin wrapper and an Apex-backed type, and the tools stay as they are.
 - **Org-wide changes are shown first** - turning on the beta, the External Client App, activating the server, permission sets.
 - **Facts from the source** - HXL is a beta; the skill reads the palette, the formats and the status from the org and the guides at run time, and keeps a list of what was verified beyond the documentation.
 

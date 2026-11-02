@@ -7,7 +7,7 @@
 //   node preflight.mjs [--target-org <alias>] [--json]
 //
 //   Org type      production orgs are named - the skill does not deploy there
-//   API version   67.0 or later (Winter '27 brought HXL and hosted MCP servers)
+//   API version   67.0 or later (verified on Winter '27, API 68.0)
 //   HXL setting   the org has Settings:UiWidget, and whether hxlEnabled is on
 //   Widgets       the org lists UiWidgetBundle - only once HXL is on
 //   MCP servers   the org knows McpServerDefinition

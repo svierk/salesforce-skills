@@ -4,7 +4,7 @@ How an org gets from nothing to a connected client - once by hand, and as a setu
 
 ## Requirements
 
-- An org on a release with HXL and Salesforce Hosted MCP servers (API 67.0 and later at Winter '27) - a scratch org, a sandbox or a Developer Edition. Production gets HXL through the team's pipeline.
+- An org on a release with HXL and Salesforce Hosted MCP servers (verified on Winter '27, API 68.0; 67.0 is Summer '26) - a scratch org, a sandbox or a Developer Edition. Production gets HXL through the team's pipeline.
 - The Salesforce CLI, and for trying the chain without a client: Node.js, `playwright-core` and Google Chrome in a workspace ([testing.md](testing.md#workspace)).
 
 The preflight of this skill checks the org read-only:

@@ -1,6 +1,6 @@
 # Verified in an org
 
-What Polyglot Arcade v1.1.0 verified in scratch orgs on Winter '27 (API 67.0 and 68.0), October 2026, and what the official documentation of that release did not say. Every line is a fixed point, not the current truth - check it again when a step fails on a later release, and update the project's docs with what you find.
+What Polyglot Arcade v1.1.0 and v1.2.0 verified in scratch orgs on Winter '27 (API 68.0, with metadata at 67.0 and 68.0), October and November 2026, and what the official documentation of that release did not say. Every line is a fixed point, not the current truth - check it again when a step fails on a later release, and update the project's docs with what you find.
 
 ## Turning HXL on
 
@@ -25,6 +25,20 @@ What Polyglot Arcade v1.1.0 verified in scratch orgs on Winter '27 (API 67.0 and
 - A changed tool description reached `tools/list` of the hosted server after about two minutes.
 - A user without access to the tool's Apex class gets an empty `tools/list`, and a call fails with `You don't have access to the Apex class`. `classAccesses` in the users' permission set fixes it.
 - The `ui://` resource is an MCP App of about one megabyte - Salesforce's widget renderer - with a CSP for the org's domain. The tool result carries `structuredContent` and `_meta["salesforce/uiMetadata"]` with the resolved widget tree.
+
+## Agentforce in Lightning
+
+- The same widget JSON renders in the panel and in Claude, including `action/sendMessage`, `action/openLink`, `meta.if` and `forEach`. A `renderer.json` at the root of the type is enough; `lightningDesktopGenAi` is not needed.
+- A scratch org definition with `Einstein1AIPlatform`, `einsteinGptSettings.enableEinsteinGptPlatform` and `agentPlatformSettings.enableAgentPlatform` gives the licences _Agentforce (Default)_ (3), _Agent platform builder_ and _Einstein Prompt Templates_. No Data Cloud.
+- `sf agent publish authoring-bundle` and `sf agent activate` work without turning Agentforce on in Setup. The Agent Script output needs no `genAiFunction` and no `source`.
+- An `@InvocableVariable` of a global inner class of another class works as the output: `global ArcadeHallOfFame.Response hallOfFame`, with the response's own fields annotated `@InvocableVariable`.
+- `sf agent activate --json` without `--version` picks the latest version that is **not active**, although its help says "latest". When the latest is already active, it activates the one before, without an error. `BotVersion` (`VersionNumber`, `Status`, filtered by `BotDefinition.DeveloperName`) tells which is active.
+- `sf agent preview --authoring-bundle` crashed for an employee agent at CLI 2.155.7: it reads `defaultAgentUser`, which such an agent does not have. `--api-name` on the published agent works.
+- `sf agent publish` writes into the project it runs in: `aiAgents/`, `aiAgentDefinitionVersions/` and the action classes, without a trailing newline and with a changed XML header.
+- Without the permission set with `agentAccesses`, a user sees no Agentforce icon and no error. Not tried: with it, but without `CopilotSalesforceUser`.
+- A Standard User and a Standard Platform User each get the panel and their own results. The agent runs as the signed-in user.
+- `h1` and `h2` render far larger in the panel than in Claude, and `FORMATNUMBER` prints thousands separators in the user's locale there (`4.200`, `5,100`), unlike the MCP renderer.
+- `sf org list limits` shows no limit for agent requests; `DailyDataCloudFlexCredits` is at its maximum in a scratch org. Not load-tested: about 20 requests went through.
 
 ## Sign-in
 
