@@ -4,7 +4,7 @@ Where every fact about HXL lives, and how to read it at run time. HXL is a beta:
 
 ## Polyglot Arcade
 
-`svierk/polyglot-arcade` is the reference. From v1.1.0 its **headless surface** shows a Hall of Fame and a player card in Claude, served by the custom MCP server `polyglotArcade` on the same `Arcade_Score__c` records as its Angular hub, its React cabinet and its Lightning pages - verified end to end in scratch orgs and in Claude. Read the latest release and note its tag:
+`svierk/polyglot-arcade` is the reference. From v1.1.0 its **headless surface** shows a Hall of Fame and a player card in Claude (from v1.2.0 also in the Agentforce panel), served by the custom MCP server `polyglotArcade` on the same `Arcade_Score__c` records as its Angular hub, its React cabinet and its Lightning pages - verified end to end in scratch orgs and in Claude. Read the latest release and note its tag:
 
 ```bash
 gh release view --repo svierk/polyglot-arcade --json tagName,publishedAt
@@ -13,18 +13,19 @@ gh api -H "Accept: application/vnd.github.raw+json" "repos/svierk/polyglot-arcad
 
 Without the GitHub CLI: `https://raw.githubusercontent.com/svierk/polyglot-arcade/<tag>/<path>`. The documentation site serves Markdown for agents: `https://svierk.github.io/polyglot-arcade/llms.txt`, and `<page>.md` for every page.
 
-| Need                                                             | Where                                                                                                                         |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| The headless surface: tools, widgets, building blocks, limits    | `docs/architecture/headless.md`                                                                                               |
-| Why a surface and not an integration pattern; what was verified  | `docs/decisions/0003-headless-surface.md`                                                                                     |
-| MCP and widget buttons as a channel, with a sequence             | `docs/architecture/communication.md` (section "MCP and HXL widgets")                                                          |
-| Connect Claude; troubleshooting                                  | `docs/deploy/index.md` (section "Connect Claude"), `docs/deploy/troubleshooting.md`                                           |
-| Apex tools and their tests                                       | `force-app/main/default/classes/ArcadeHallOfFame.cls`, `ArcadePlayerCard.cls`, `ArcadeScoreStats.cls`, `ArcadeToolsTest.cls`  |
-| Widgets                                                          | `force-app/main/default/uiWidgets/arcadeHallOfFameWidget/`, `arcadePlayerCardWidget/`                                         |
-| Response and envelope types, renderers                           | `force-app/main/default/lightningTypes/`                                                                                      |
-| MCP server definition, External Client App, HXL setting          | `force-app/main/default/mcpServerDefinitions/`, `externalClientApps/`, `extlClntApp*/`, `settings/UiWidget.settings-meta.xml` |
-| Setup: HXL before the deploy, activation and printout, preflight | `scripts/org-setup.mjs` (deploy step), `scripts/connect.mjs`, `scripts/preflight.mjs`                                         |
-| Release acceptance in CI                                         | `.github/workflows/scratch-org.yml`                                                                                           |
+| Need                                                                        | Where                                                                                                                         |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| The headless surface: tools, widgets, building blocks, limits               | `docs/architecture/headless.md`                                                                                               |
+| Why a surface and not an integration pattern; what was verified             | `docs/decisions/0003-headless-surface.md`                                                                                     |
+| The Agentforce channel: why wrappers, what was verified, the agent's source | `docs/decisions/0004-arcade-host-agent.md`, `agent/`, `scripts/agent.mjs`                                                     |
+| MCP and widget buttons as a channel, with a sequence                        | `docs/architecture/communication.md` (section "MCP and HXL widgets")                                                          |
+| Connect Claude; troubleshooting                                             | `docs/deploy/index.md` (section "Connect Claude"), `docs/deploy/troubleshooting.md`                                           |
+| Apex tools and their tests                                                  | `force-app/main/default/classes/ArcadeHallOfFame.cls`, `ArcadePlayerCard.cls`, `ArcadeScoreStats.cls`, `ArcadeToolsTest.cls`  |
+| Widgets                                                                     | `force-app/main/default/uiWidgets/arcadeHallOfFameWidget/`, `arcadePlayerCardWidget/`                                         |
+| Response and envelope types, renderers                                      | `force-app/main/default/lightningTypes/`                                                                                      |
+| MCP server definition, External Client App, HXL setting                     | `force-app/main/default/mcpServerDefinitions/`, `externalClientApps/`, `extlClntApp*/`, `settings/UiWidget.settings-meta.xml` |
+| Setup: HXL before the deploy, activation and printout, preflight            | `scripts/org-setup.mjs` (deploy step), `scripts/connect.mjs`, `scripts/preflight.mjs`                                         |
+| Release acceptance in CI                                                    | `.github/workflows/scratch-org.yml`                                                                                           |
 
 ## Salesforce documentation
 
@@ -73,6 +74,8 @@ sf org list metadata --metadata-type Settings -o <alias> --json
 | `platform-widget-generate`                  | A widget bundle; its references cover formulas, `meta` directives, actions, labels and styling |
 | `platform-custom-lightning-type-generate`   | A custom Lightning type, including the widget rendition                                        |
 | `platform-lightning-type-widget-coordinate` | An Apex-backed type and widget for an Agentforce agent action (the Lightning channel)          |
+
+Agent Script with a custom Lightning type has a recipe in [`trailheadapps/agent-script-recipes`](https://github.com/trailheadapps/agent-script-recipes) (`customLightningTypes`); the HXL guide's page `agentforce-action-output` shows the same link through Setup.
 
 They do not cover turning HXL on, sign-in, activating the server, permission sets, connecting a client or testing the chain - that is this skill.
 

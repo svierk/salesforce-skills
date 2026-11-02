@@ -63,6 +63,10 @@ Calls the tool, reads its `ui://` resource - Salesforce's widget renderer, the s
 
 Render every widget with real data and in the empty state, light and dark - and once with a bundled call (two entries in `inputs`) to see the text-only fallback. The screenshot shows the widget as the renderer draws it; in the client it takes the client's theme. Say so when using such a screenshot in documentation.
 
+## In an Agentforce agent
+
+Preview the published agent and assert its structured output, then look at the panel: [agentforce-channel.md](agentforce-channel.md#trying-it).
+
 ## In the client
 
 The user connects and asks; their screenshot is the final proof. Ask for the client's request and response view (Claude: the `</>` icon on the tool block) when something looks wrong - it shows the arguments the model sent.

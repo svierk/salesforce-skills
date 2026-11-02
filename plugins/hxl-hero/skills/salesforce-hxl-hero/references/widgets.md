@@ -57,7 +57,8 @@ A `tile/button` without an action renders disabled. Two actions exist:
 ## Style
 
 - Semantic variants, not colours or pixels: `variant`, `size`, `color` from the component's enum.
-- One `h1`, at most one `primary` button per group; icons from the documented icon names (Lucide).
+- At most one `primary` button per group; icons from the documented icon names (Lucide).
+- Heading levels mean something different in every client, and a widget has no sizes per channel. `h1` looks right in Claude and takes over the narrow Agentforce panel. For a widget in both channels, Polyglot Arcade uses `h3` for the title, `h4` for sections and `h5` or `h6` for numbers. Look at it in every channel it serves.
 - Empty and error states as a `tile/callout` with the result's message, behind `meta.if`.
 - A button that stands alone stretches in a column - wrap it in a `tile/row` to keep its width.
 - The client renders in its own theme, light or dark; do not assume a background.

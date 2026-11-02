@@ -1,6 +1,6 @@
 # Lightning types
 
-For the MCP channel, two object-based custom Lightning types per tool connect the tool's result to the widget. They are `LightningTypeBundle` metadata in `lightningTypes/<name>/`, without a meta file. Salesforce's `platform-mcp-tool-widget-coordinate` skill describes the same model in more detail; this page is what a working chain needs.
+For the MCP channel, two object-based custom Lightning types per tool connect the tool's result to the widget (the Agentforce channel needs one Apex-backed type instead: [agentforce-channel.md](agentforce-channel.md)). They are `LightningTypeBundle` metadata in `lightningTypes/<name>/`, without a meta file. Salesforce's `platform-mcp-tool-widget-coordinate` skill describes the same model in more detail; this page is what a working chain needs.
 
 | Type          | Name (convention)       | Models                                                     | Files                          |
 | ------------- | ----------------------- | ---------------------------------------------------------- | ------------------------------ |
