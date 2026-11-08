@@ -71,7 +71,8 @@ describe('a component with anti-patterns', () => {
       'riskyWidget.js:26 hardcoded-url',
       'riskyWidget.js:26 navigation',
       'riskyWidget.js:31 native-dialog',
-      'riskyWidget.js:31 no-console'
+      'riskyWidget.js:31 no-console',
+      'riskyWidget.js:35 event-native-name'
     ]) {
       assert.ok(all.includes(expected), `missing ${expected}`);
     }
@@ -91,6 +92,7 @@ describe('a component with anti-patterns', () => {
       'riskyWidget.js-meta.xml:1 meta-api-version',
       'riskyWidget.js-meta.xml:1 meta-targets',
       'riskyWidget.js-meta.xml:1 meta-label',
+      'riskyWidget.js-meta.xml:6 meta-page-property',
       'riskyWidget:0 bundle-test'
     ]) {
       assert.ok(all.includes(expected), `missing ${expected}`);

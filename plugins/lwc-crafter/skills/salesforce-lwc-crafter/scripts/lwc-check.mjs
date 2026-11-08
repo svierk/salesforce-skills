@@ -37,6 +37,37 @@ const SKIPPED_FOLDERS = new Set([
   'coverage'
 ]);
 const SEVERITY_ORDER = { error: 0, warning: 1, info: 2 };
+// Native events that leave a shadow tree, so they reach a parent's on<name> handler. change and select stay inside it;
+// focus and blur are left out because components mirror them on purpose, as the base components do.
+const NATIVE_EVENTS_CROSSING_SHADOW = new Set([
+  'auxclick',
+  'beforeinput',
+  'click',
+  'contextmenu',
+  'dblclick',
+  'drag',
+  'dragend',
+  'dragenter',
+  'dragleave',
+  'dragover',
+  'dragstart',
+  'drop',
+  'focusin',
+  'focusout',
+  'input',
+  'keydown',
+  'keyup',
+  'mousedown',
+  'mousemove',
+  'mouseup',
+  'pointerdown',
+  'pointermove',
+  'pointerup',
+  'touchend',
+  'touchmove',
+  'touchstart',
+  'wheel'
+]);
 
 // ---------------------------------------------------------------- source prep
 
@@ -227,6 +258,17 @@ const rules = [
     check: ({ code }) =>
       matchLines(code, /\bnew\s+CustomEvent\s*\(\s*['"`]([^'"`]+)['"`]/g).filter(
         ({ match }) => !/^[a-z][a-z0-9_]*$/.test(match[1]) || /^on/.test(match[1])
+      )
+  },
+  {
+    id: 'event-native-name',
+    kind: 'js',
+    severity: 'warning',
+    message:
+      "This is also the name of a native event that crosses shadow boundaries - the browser's own event reaches the parent's handler too, without your detail. Name it for what happened, such as itemdrop.",
+    check: ({ code }) =>
+      matchLines(code, /\bnew\s+CustomEvent\s*\(\s*['"`]([^'"`]+)['"`]/g).filter(({ match }) =>
+        NATIVE_EVENTS_CROSSING_SHADOW.has(match[1])
       )
   },
   {
@@ -451,6 +493,20 @@ const rules = [
       /<isExposed>\s*true\s*<\/isExposed>/.test(code) && !(/<masterLabel\b/.test(code) && /<description\b/.test(code))
         ? [{ line: 1 }]
         : []
+  },
+  {
+    id: 'meta-page-property',
+    kind: 'meta',
+    severity: 'warning',
+    message:
+      'Record pages set recordId and objectApiName themselves and overwrite what the builder stored. Name the property for its purpose, such as tableObjectApiName.',
+    check: ({ code }) =>
+      [...code.matchAll(/<targetConfig\b[^>]*\blightning__RecordPage\b[^>]*>[\s\S]*?<\/targetConfig>/g)].flatMap(
+        (config) =>
+          [...config[0].matchAll(/<property\b[^>]*\bname="(?:recordId|objectApiName)"/g)].map((property) => ({
+            line: lineOf(code, config.index + property.index)
+          }))
+      )
   },
   {
     id: 'test-focused',

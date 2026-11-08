@@ -16,6 +16,18 @@ Go down the list and stop at the first step that covers the need:
 
 **Prefer the GraphQL variant.** Where the collection offers a component in a GraphQL version next to one with its own data layer - `graphqlDatatable` and `customDatatable`, `graphqlMapView` and `customMapView` - copy the GraphQL one: no Apex class, test class or class access to bring along and maintain ([data.md](data.md#graphql-before-apex)). Take the other only for what GraphQL cannot do, such as columns from a field set, and say so.
 
+## What kind of component
+
+Decide this before the contract. The collection states it in the `**Type:**` line of every README:
+
+| Type             | What it is                                                                    |
+| ---------------- | ----------------------------------------------------------------------------- |
+| `Component`      | Ready to place on pages or in flows and configured through builder properties |
+| `Building Block` | Embedded in your own components and controlled through `@api` and events      |
+| `Utility`        | A small helper with exactly one purpose                                       |
+
+**A complete `Component`** is exposed and has at least one builder property. It takes every business value through `@api` - as a builder property too - has no hard-wired data or URLs, and passes its result on through an event or a Flow output. A component that only works with the data of one project is a demo.
+
 ## Boundaries
 
 - **One job per component.** A container gets the data, holds the state and handles saves; presentational children get properties and send events. That split is what makes children reusable and easy to test.
@@ -53,6 +65,7 @@ Public properties and methods are a contract - with parent components, with admi
 Event rules:
 
 - **Names** in lowercase letters, digits and underscores, without an `on` prefix: `statuschange`, `row_selected`.
+- **Not the name of a native event that crosses shadow boundaries** - `drop`, `click`, `input`, `keydown`, `dragstart`. The browser's own event reaches the parent's `on<name>` handler too, so the handler runs twice, once without your `detail`. Name it for what happened: the collection's `dragAndDrop` fires `itemdrop`. `change` and `select` are safe, as those native events stay inside the shadow tree.
 - **`detail`** carries a plain, copied value - never an internal object the listener could change. Primitive values or a small object built for the event.
 - **Default propagation.** No `bubbles`, no `composed`, unless a grandparent in the same template needs it (`bubbles: true`). `composed: true` makes the event part of every ancestor's API across shadow boundaries; use it only when that is the point.
 - **Document every event** - name, `detail`, when it fires - in JSDoc and in the README.
@@ -64,7 +77,7 @@ Lightning Message Service: subscribe in `connectedCallback`, unsubscribe in `dis
 `js-meta.xml` decides where admins can place the component. Read the target names and their options in "XML Configuration File Elements" ([sources.md](sources.md#documentation)) before writing them.
 
 - **Targets** only for places the component really works in. A component that needs `recordId` does not belong on a home page.
-- **Record pages** set `@api recordId` and `@api objectApiName` themselves.
+- **Record pages** set `@api recordId` and `@api objectApiName` themselves, on every placement and over whatever the builder stored. A builder property with one of these names is overwritten without a warning, so a table configured for Contacts shows Accounts on an Account page. Name it for its purpose: the collection's datatables use `tableObjectApiName`.
 - **`targetConfigs`** expose properties to the builder, each with `label`, `description` and a `default` that matches the JavaScript. Types follow the JavaScript (`String`, `Integer`, `Boolean`). `datasource` turns a `String` property into a picklist of allowed values; `supportedFormFactors` limits a target to desktop or phone.
 - **Flow screens** - properties with `role="inputOnly"` or `role="outputOnly"` where only one direction makes sense; tell Flow about output changes with `FlowAttributeChangeEvent`; an `@api validate()` method returning `{ isValid, errorMessage }` lets Flow block navigation.
 - **Quick actions** - `lightning__RecordAction` with `actionType` `ScreenAction` (a modal with your component) or `Action` (headless, `@api invoke()`).

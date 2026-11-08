@@ -65,7 +65,8 @@ disconnectedCallback() {
 - **Parallel calls** with `Promise.all` when they do not depend on each other.
 - **Debounce input** that triggers a server call, and clear the pending timer in `disconnectedCallback`.
 - **No `setTimeout` to wait for rendering.** Use `renderedCallback`, or `await Promise.resolve()` after a state change when the next step needs the new DOM.
-- **Tell the user.** A spinner while loading, a toast (`ShowToastEvent`) or an inline message when something fails - not a line in the console.
+- **Tell the user.** A spinner while loading and a visible error when something fails - not a line in the console. Inline, in place of the content, if the error makes the component unusable; a toast (`ShowToastEvent`) if one action failed and the rest still works.
+- **Read the message from every shape of error.** Apex and LDS put it in `error.body`, GraphQL returns an array, and a browser error such as the `DOMException` of a refused camera has only `message` - code that reads `error.body.message` throws or shows an empty toast. Use one helper for all of them, like the collection's `errorUtils`.
 
 ## Navigation and dialogs
 

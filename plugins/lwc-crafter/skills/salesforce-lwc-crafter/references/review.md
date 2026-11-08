@@ -19,6 +19,7 @@ Reviewing components and finding out why one is broken. The tools find patterns;
 | `bind-in-listener`      | warning  | `addEventListener` with `.bind(...)` - impossible to remove                                                     |
 | `resource-cleanup`      | warning  | `setInterval`, `requestAnimationFrame`, observers, `getUserMedia`, `subscribe` without the call that stops them |
 | `event-name`            | warning  | Event names with capitals, hyphens or spaces, or starting with `on`                                             |
+| `event-native-name`     | warning  | Custom events named like a native event that crosses shadow boundaries, such as `drop` or `click`               |
 | `event-composed`        | warning  | `composed: true`                                                                                                |
 | `event-base`            | warning  | `new Event(...)` instead of `CustomEvent`                                                                       |
 | `no-pubsub`             | warning  | The deprecated `c/pubsub` module                                                                                |
@@ -43,6 +44,7 @@ Reviewing components and finding out why one is broken. The tools find patterns;
 | `meta-api-version`      | warning  | `js-meta.xml` without `apiVersion`                                                                              |
 | `meta-targets`          | warning  | Exposed without a target                                                                                        |
 | `meta-label`            | warning  | Exposed without `masterLabel` and `description`                                                                 |
+| `meta-page-property`    | warning  | A builder property for record pages named `recordId` or `objectApiName`, which the page overwrites              |
 | `test-focused`          | warning  | `fit`, `fdescribe`, `xit`, `xdescribe`, `.only`, `.skip`                                                        |
 | `test-cleanup`          | warning  | Components appended to `document.body` without an `afterEach`                                                   |
 | `test-accessibility`    | info     | A test file without `toBeAccessible()`                                                                          |

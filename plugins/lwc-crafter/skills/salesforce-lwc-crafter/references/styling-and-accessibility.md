@@ -53,6 +53,7 @@ Base components handle most of this; custom markup has to do it on its own. The 
 - **Every icon or image that carries meaning has a text alternative** - `alternative-text` on `lightning-icon` and `lightning-button-icon`, `alt` on `img` (`alt=""` for decoration).
 - **Color is never the only signal** - an error is red and says "Error".
 - **Changes are announced** - an error message near the field, `aria-live` for content that updates without a page change, focus moved into a modal and back.
+- **Moving content** - no autoplay or animated transitions under `prefers-reduced-motion`, a pause button for anything that moves by itself, arrow keys and swipe for carousels. The collection's `customCarousel` does all of it.
 - **Contrast** - text at least 4.5:1 against its background; the styling hooks have it built in, custom colors need checking.
 
 Check it twice:

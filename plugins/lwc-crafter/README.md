@@ -31,7 +31,7 @@ Drawn from the collection, the Salesforce LWC Developer Guide and Salesforce's o
 
 ## Checking components
 
-The skill ships a checker for the anti-patterns that have one right answer - 40 rules over JavaScript, templates, CSS, `js-meta.xml` and Jest tests, with errors, warnings and infos:
+The skill ships a checker for the anti-patterns that have one right answer - 41 rules over JavaScript, templates, CSS, `js-meta.xml` and Jest tests, with errors, warnings and infos:
 
 ```bash
 node scripts/lwc-check.mjs force-app/main/default/lwc/orderSummary

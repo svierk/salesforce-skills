@@ -30,4 +30,8 @@ export default class RiskyWidget extends LightningElement {
     eval('3 + 3');
     console.log(confirm('Sure?'));
   }
+
+  handleDrop() {
+    this.dispatchEvent(new CustomEvent('drop'));
+  }
 }
