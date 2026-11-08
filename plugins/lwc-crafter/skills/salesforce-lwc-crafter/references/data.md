@@ -41,6 +41,7 @@ The map views share their attributes, so a placement switches by the tag alone; 
 - **Import fields and objects** from `@salesforce/schema` (`import NAME from '@salesforce/schema/Account.Name'`). A string is not checked at deploy time; a renamed field then breaks the component silently.
 - **Field paths start at the record's own object:** `Case.Account.Name` on a Case, never `Account.Name`.
 - **Read values with `getFieldValue`** and `getFieldDisplayValue`, which handle relationship paths and formatting.
+- **Files without Apex:** `createRecord` on `ContentVersion` with `Title`, `PathOnClient`, the base64 content in `VersionData` and `FirstPublishLocationId` to attach it to a record - as the collection's `signaturePad` does.
 - **`optionalFields`** for fields the user may not see - a missing permission then leaves the field out instead of failing the whole record.
 
 ## GraphQL

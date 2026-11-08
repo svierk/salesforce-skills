@@ -48,7 +48,8 @@ describe('c-order-summary', () => {
 });
 ```
 
-- **`describe` named after the tag**, one behaviour per `it`, named as the behaviour, `given`/`when`/`then` comments as in the collection.
+- **One test file per component**, `__tests__/<component>.test.js`, with one `describe` named after the tag and no nested ones.
+- **One behaviour per `it`**, named as the behaviour, with `given`/`when`/`then` comments as in the collection.
 - **Empty the DOM and reset mocks in `afterEach`.** The DOM is shared by all tests of a file.
 - **Mock data in `__tests__/data/*.json`** - real shapes, copied from a wire result or an Apex response, not invented ones.
 - **Wait for rendering** after changing a property or emitting data: `await flushPromises()` or `await Promise.resolve()`, then assert.
@@ -74,6 +75,7 @@ describe('c-order-summary', () => {
 - **LDS and other wire adapters** (`getRecord`, `getObjectInfo`, `graphql`, `CurrentPageReference`): the project's mocks in `force-app/test/jest-mocks/lightning/`, mapped in `jest.config.js`, built with `createLdsTestWireAdapter` or `createTestWireAdapter`. Read the mock to see which helpers it offers (`emit`, `error`, `emitErrors`, ...); add one from the collection when a component imports a module the project has no mock for.
 - **Static resources and libraries:** mock `lightning/platformResourceLoader` (`loadScript: jest.fn()` resolving or rejecting) and put a fake of the library's global in place - the collection's `orgChartViewer` and `qrCodeGenerator` tests show both.
 - **Browser APIs Jest lacks:** canvas through `jest-canvas-mock`, `ResizeObserver` or `getUserMedia` as small fakes in the test.
+- **Custom Labels** are their own name in Jest (`c.Order_Summary_Title`) unless the project maps them, so a test on the text proves little. The collection's `jest-setup.js` gives every label its value from the labels file.
 - **Fakes for frames and timers record, they do not run.** A `requestAnimationFrame` fake that calls its callback right away turns an animation loop into endless recursion - and a `catch` in the component can hide the stack overflow, so the test passes. Return an id and assert the call; run a callback by hand when the test needs one frame (`requestAnimationFrame.mock.calls[0][0]()`), or use Jest's fake timers.
 
 ## Base components are stubs
@@ -96,4 +98,5 @@ Use the project's script names. A test that passes once and fails once is not do
 - **No `it.only`, `fit`, `xit` or `.skip`** left behind - they silently change what CI runs.
 - **No assertions on generated class names**, internal fields of the component or the private markup of base components.
 - **No snapshot tests as the only check** - they pass whatever renders, as long as it did before.
+- **At the file size limit, make room.** ESLint's limit on lines per file counts tests too. Shared helpers and `it.each` for cases of the same shape free the lines; splitting the file or dropping checks does not solve the problem.
 - **Coverage is a by-product.** Test behaviours; uncovered lines are a hint where one is missing.
