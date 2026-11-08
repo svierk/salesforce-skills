@@ -62,7 +62,7 @@ To turn the hook off for yourself, set it in your own user settings (`~/.claude/
 - [🧭 DevOps Operator](../devops-operator) takes over for commits, pull requests and failed checks; [🏗️ DevOps Builder](../devops-builder) runs the same checks in the pipeline.
 - [🧙 Multi-Framework Wizard](../multi-framework-wizard) owns what a host component frames with `lightning-ui-embedding` - React and Angular UI bundles, apps hosted elsewhere - and how they fit with your components; the host's own code and tests follow the LWC Crafter's practices.
 - [🦸 HXL Hero](../hxl-hero) owns HXL widgets - JSON compositions that AI clients render, not components; when an agent action needs a component as renderer, it is built here.
-- Salesforce publishes a broad set of LWC skills of its own in [`forcedotcom/afv-library`](https://github.com/forcedotcom/afv-library). The LWC Crafter is the opinionated one - one reference setup, a reuse-first catalog and a guard on every write. Enable one of the two for component work in a project, so they do not compete for the same requests.
+- Salesforce publishes a broad set of LWC skills of its own in [`forcedotcom/sf-skills`](https://github.com/forcedotcom/sf-skills), and both can stay installed. The LWC Crafter adds a reuse-first catalog, one reference setup and a guard that checks every component file, whichever skill wrote it. Salesforce's skills go deeper on design-to-code, base component APIs, security and accessibility reports, SLDS scoring and migrations. For a single change, follow one generator, and say in the project's `CLAUDE.md` which goes first.
 
 ## Requirements
 

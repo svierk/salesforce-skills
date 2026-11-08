@@ -25,6 +25,7 @@ The skill reads versions, workflow inputs and blueprint callers from the kit at 
 - [🧙 Multi-Framework Wizard](../multi-framework-wizard) owns the React and Angular UI bundles themselves; their build before every deploy is set up here.
 - [🦸 HXL Hero](../hxl-hero) builds HXL widgets, their Lightning types, Apex tools and MCP server; turning HXL on in every target org before the first validation, and the Apex tests of the tools, are set up here.
 - Agentforce agents are authored elsewhere, for example with Salesforce's `agentforce-adlc` plugin; publishing them and running their tests in the pipeline is set up here.
+- Salesforce's `dx-devops` skills operate DevOps Center pipelines and work items. The builder designs pipelines on GitHub Actions, with DevOps Center only as part of blueprint B5 - there the two work together.
 
 ## Requirements
 

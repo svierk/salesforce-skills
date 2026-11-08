@@ -78,10 +78,13 @@ sf org list metadata --metadata-type Settings -o <alias> --json
 | `platform-widget-generate`                  | A widget bundle; its references cover formulas, `meta` directives, actions, labels and styling |
 | `platform-custom-lightning-type-generate`   | A custom Lightning type, including the widget rendition                                        |
 | `platform-lightning-type-widget-coordinate` | An Apex-backed type and widget for an Agentforce agent action (the Lightning channel)          |
+| `experience-app-mcp-generate`               | A custom MCP server for an Aura Experience Site: External Client App, tools, activation        |
+| `experience-app-mcp-delivery-generate`      | An MCP configuration or a Claude plugin for such a server                                      |
+| `experience-lwc-widget-assess`, `-migrate`  | Whether an existing component can become a widget, and the conversion                          |
 
 Agent Script with a custom Lightning type has a recipe in [`trailheadapps/agent-script-recipes`](https://github.com/trailheadapps/agent-script-recipes) (`customLightningTypes`); the HXL guide's page `agentforce-action-output` shows the same link through Setup.
 
-They do not cover turning HXL on, sign-in, activating the server, permission sets, connecting a client or testing the chain - that is this skill.
+Outside an Aura Experience Site they do not cover sign-in, activating the server, permission sets, connecting a client or testing the chain, and none of them turns HXL on - that is this skill.
 
 ## Salesforce CLI
 

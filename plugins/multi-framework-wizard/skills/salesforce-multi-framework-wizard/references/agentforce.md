@@ -33,11 +33,11 @@ export function AgentPanel({ agentId }: { agentId: string }) {
 ```
 
 - **Check the API first.** The guide's text also names `createAccWidget`; read the installed package's exports and the Conversation Client Developer Guide before writing the call.
-- **Angular:** the client mounts into a container element, so an Angular component with an element reference that mounts in `ngAfterViewInit` and clears the container in `ngOnDestroy` follows the same shape - Salesforce documented React only at Winter '27, so verify it in a scratch org and record it in an ADR.
+- **Angular:** Salesforce's feature package `@salesforce/ui-bundle-template-feature-angular-agentforce-conversation-client` brings the client as the `<app-agentforce-conversation-client>` component; read the current version from npm. By hand, an Angular component with an element reference that mounts in `ngAfterViewInit` and clears the container in `ngOnDestroy` follows the same shape. Salesforce's guide documented React only at Winter '27, so either way verify it in a scratch org and record it in an ADR.
 - **One place.** Put the conversation where users start - the entry point - not into every bundle. Inline mode needs a container with a real height.
 - **Org requirements at Winter '27**, all org-wide (ground rule 10): Agentforce turned on, at least one Agentforce Employee Agent with topics and actions, the first-party Salesforce cookie requirement turned off in My Domain, and the app's origin under Trusted Domains for Inline Frames with the Lightning Out type in Session Settings. A `frontdoorUrl` is only for apps without an org session - never for a guest you do not control.
 - **Customer-facing agents** on a site use Enhanced Chat instead; the guide links the alternatives.
-- Salesforce's `experience-ui-bundle-agentforce-client-generate` skill generates the React integration; this skill decides where it goes and what it may touch.
+- Salesforce's `experience-ui-bundle-agentforce-client-generate` skill generates the integration for React and Angular; this skill decides where it goes and what it may touch.
 
 ## An agent on the same data
 

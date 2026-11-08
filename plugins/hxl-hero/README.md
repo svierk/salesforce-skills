@@ -65,7 +65,7 @@ node scripts/preflight.mjs --target-org <alias>
 - [⚡ LWC Crafter](../lwc-crafter) builds a Lightning web component when an agent action needs one as renderer.
 - [🏗️ DevOps Builder](../devops-builder) builds the pipeline - which must deploy the HXL setting before the widgets and run the Apex tests; [🧭 DevOps Operator](../devops-operator) takes over for commits and pull requests.
 - [🎬 Demo Designer](../demo-designer) records the widgets in the client once they work.
-- Salesforce publishes generator skills for single pieces of the chain in [`forcedotcom/sf-skills`](https://github.com/forcedotcom/sf-skills) - `platform-mcp-tool-widget-coordinate`, `platform-widget-generate`, `platform-custom-lightning-type-generate`. They write one widget or type; the HXL Hero keeps the chain around them - the setting, sign-in, activation, access, the client - and the checks.
+- Salesforce publishes generator skills for single pieces of the chain in [`forcedotcom/sf-skills`](https://github.com/forcedotcom/sf-skills) - `platform-mcp-tool-widget-coordinate`, `platform-widget-generate`, `platform-custom-lightning-type-generate` - and `experience-app-mcp-generate` for a server on an Aura Experience Site. They write one widget or type, or that site's server; the HXL Hero keeps the chain around them for the org's data - the setting, sign-in, activation, access, the client - and the checks.
 
 ## Requirements
 

@@ -8,7 +8,7 @@ license: MIT
 
 Helps the person who owns a Salesforce delivery pipeline - platform owner, tech lead, release manager, pipeline owner - to **design** it, **set it up** on GitHub and **keep it healthy**. The toolbox is the [Salesforce DevOps Starter Kit](https://github.com/svierk/salesforce-devops-starter-kit): small GitHub Actions (building blocks), reusable workflows composed from them, and a strategy guide with five blueprints.
 
-GitHub and GitHub Actions are the assumed platform. If the user is evaluating Copado, Gearset, DevOps Center or another platform, say so plainly instead of forcing a GitHub-shaped answer - the one exception is B5, where DevOps Center is part of the blueprint.
+GitHub and GitHub Actions are the assumed platform. If the user is evaluating Copado, Gearset, DevOps Center or another platform, say so plainly instead of forcing a GitHub-shaped answer - the one exception is B5, where DevOps Center is part of the blueprint. In B5, Salesforce's `dx-devops-*` skills, when installed, operate DevOps Center itself - pipelines, stages, work items; the design, the GitHub setup and the audit stay here. Salesforce's deploy skills are for deploying by hand; what runs in a workflow is this skill's.
 
 ## Pick the mode first
 
