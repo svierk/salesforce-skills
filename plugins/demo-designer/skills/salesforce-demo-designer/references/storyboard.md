@@ -91,6 +91,8 @@ The finish that makes a demo look produced, not recorded. Decide it with the bri
 
 **README GIF.** No cards, no captions or one short one, a single interaction that loops cleanly: end where it started, or hold the result.
 
+A teaser of one component: crop to the component's box when encoding, and let the cursor start and end outside that crop. Prepare the state before the scene when the action cannot be undone - a column that cannot go back to unsorted starts sorted. Components with the same features get the same click path and the same data. A loop that opens with a jump is usually a difference between the first and last frame: compare them.
+
 ## Bids and RFPs
 
 - **Score-friendly.** Evaluators look for their requirement. Name chapters after requirement IDs, keep the order of the requirement list, and put the chapter marks into the submission text.

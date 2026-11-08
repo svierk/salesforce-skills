@@ -15,6 +15,8 @@ Safe to record without further questions: `IsSandbox` true (sandbox), `TrialExpi
 
 `salesforceLogin(director, { org, path })` takes the frontdoor URL from `sf org open --url-only --path <path> --json` and opens it in the stage - the browser is logged in as the CLI's user, without a password. The URL is a live session: it never appears in output, files or the conversation. If the org is not authorised, the user runs `sf org login web --alias <alias>` themselves.
 
+**An expired password stops the login.** Once the user's password has expired, often after 90 days, the frontdoor URL ends on "Change Your Password" and `ready` times out. Take a screenshot when `ready` fails, so the cause is visible. The user sets the new password - never the script - and never change the org's password policy to get past it.
+
 Paths that open a page directly:
 
 | Page                     | Path                                                   |
@@ -40,6 +42,7 @@ await ready(app, app.page.getByText('Quote Builder').first());
 - **Load outside the scene.** Log in and navigate before `captureScene`, so the take starts on a finished page. Between scenes, navigate in the gap - the cross-fade hides the cut.
 - **Warm the cache.** The first load of an app is the slowest. Open the pages of the click path once before the scenes, so the take shows Lightning at its fastest.
 - **Inside a scene,** wait for the result element of a click before the hold, not for time: `await d.page.getByText('Quote created').waitFor()`.
+- **Wait for the data, not the first paint.** A component can reload right after its content first appears. Before a screenshot or a take, wait until its spinner is gone: `await component.locator('lightning-spinner').first().waitFor({ state: 'detached' })`. A fixed sleep is how a spinner ends up in the picture.
 - **Debug mode** makes Lightning much slower. If pages crawl, check whether it is on for the user (Setup, Debug Mode).
 
 ## Locators in Lightning
@@ -54,10 +57,11 @@ Playwright's `getByRole`, `getByLabel` and `getByText` pierce shadow DOM, and th
 
 Look at a probe screenshot of every page and decide what stays. What was in the way in a Developer Edition org in October 2026 - verify on your org, these change with releases:
 
-| What                                                | Selector                       | Treatment |
-| --------------------------------------------------- | ------------------------------ | --------- |
-| Org type bar above the header ("Developer Edition") | `devops_center-base-component` | `hide`    |
-| Profile photo of the logged-in user                 | `img.branding-user-profile`    | `blur`    |
+| What                                                            | Selector                              | Treatment                                                                          |
+| --------------------------------------------------------------- | ------------------------------------- | ---------------------------------------------------------------------------------- |
+| Org type bar above the header ("Developer Edition")             | `devops_center-base-component`        | `hide`                                                                             |
+| Profile photo of the logged-in user                             | `img.branding-user-profile`           | `blur`                                                                             |
+| Background band that fades over content crossing its lower edge | `.slds-brand-band::before`, `::after` | `display: none` through `page.addStyleTag` - `hide` does not reach pseudo elements |
 
 Also look for: the "Logged in as" banner of a Login As session, the sandbox name banner, setup assistants and welcome dialogs (close them during the warm-up), toasts from earlier actions, "Recently Viewed" list views that are empty in a fresh org (open a named list view instead), and a page opened outside the app's navigation, which shows as a temporary tab with an asterisk (add it to the app's navigation - an org change, ask first - or start the path from a tab that is there).
 
@@ -126,4 +130,9 @@ Public pages of an Experience Cloud site need no login - open the site's URL in 
 
 ## Showing a new component
 
-A component the demo shows must be deployed to the demo org and placed on a page first - an app page tab is the quickest stage. Building or fixing the component is not this skill's job; a bug found while recording goes back to whoever builds it, not into a workaround in the click path.
+A component the demo shows must be deployed to the demo org and placed on a page first - an app page tab is the quickest stage. Several components can share one showcase page.
+
+- **It stays in the org.** A page made for a capture does not belong in the project's repository, or it lands in every org that deploys the project. The repository gets the finished files only.
+- **Take it out afterwards - with a yes.** While the page places a component, no deployment can remove one of that component's builder properties, and a pipeline validating against this org fails on it. Delete in order: tabs, then FlexiPages, then what they use. A destructive deployment also deletes the local copies of the metadata, so keep a copy if the page will be needed again.
+
+Building or fixing the component is not this skill's job; a bug found while recording goes back to whoever builds it, not into a workaround in the click path.
