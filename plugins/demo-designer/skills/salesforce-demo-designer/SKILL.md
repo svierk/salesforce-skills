@@ -86,6 +86,8 @@ This skill does its whole job on its own. When other skills from the same market
 - **E2E Automator** - owns automated UI tests. A demo script is not a test: it may wait for effect, skip assertions and hide parts of the page. Do not turn one into the other.
 - **DevOps Operator** - deploys to the demo org and commits the storyboard script, if the team keeps it in Git.
 
+When a hook of Salesforce's `salesforce-development` plugin refuses a raw `sf` command and names the skill that owns it, run that skill, then continue here.
+
 ## Reference map
 
 - [references/storyboard.md](references/storyboard.md) - the brief, formats and aspect ratios, timing, caption copy, visual language, structures for teaser, pitch, sprint review and training, bids and RFPs, narration

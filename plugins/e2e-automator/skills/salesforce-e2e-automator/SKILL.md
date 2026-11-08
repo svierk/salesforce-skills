@@ -108,6 +108,8 @@ This skill does its whole job on its own - set up, CI job, tests, fixes. When ot
 - **Demo Designer** - records demo videos along a scripted click path. A demo script is not a test: it may wait for effect, skip assertions and hide parts of the page. Do not turn one into the other.
 - **`.github/salesforce-devops.yml`** - read it if it exists: `blueprint` and `environments` place the CI job after the right deployment, `branches` names the work branch. Without it, ask.
 
+Salesforce's [`forcedotcom/sf-skills`](https://github.com/forcedotcom/sf-skills) has no UTAM skill. Some of its LWC skills name page objects as an optional step of building or migrating a component; writing them is this skill's job. When a hook of its `salesforce-development` plugin refuses a raw `sf` command and names the skill that owns it, run that skill, then continue here.
+
 ## Reference map
 
 - [references/sources.md](references/sources.md) - where every fact lives: template, npm packages, UTAM documentation, examples

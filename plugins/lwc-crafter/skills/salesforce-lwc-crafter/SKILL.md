@@ -121,6 +121,20 @@ This skill does its whole job on its own. When other skills from the same market
 - **HXL Hero** - owns HXL widgets, which are JSON compositions, not components, and the chain that renders them in AI clients. When an agent action needs a Lightning web component as its renderer instead, the component is built here.
 - **`.github/salesforce-devops.yml`** - read it if it exists: `branches` names the work branch. Without it, ask.
 
+Salesforce publishes LWC skills of its own in [`forcedotcom/sf-skills`](https://github.com/forcedotcom/sf-skills), and both can stay installed. When they are, start here for reuse and the project's conventions, and use theirs where they go deeper:
+
+- A component from a Figma design or a PRD - `experience-lwc-design-generate`
+- The full API of a base component - `experience-lwc-base-components-integrate`
+- A Lightning Web Security report - `experience-lwc-security-validate`
+- Running Sa11y accessibility tests - `experience-lwc-accessibility-jest-run`
+- An SLDS scorecard or the move to SLDS 2 - `design-systems-slds-validate`, `design-systems-slds2-migrate`
+- Aura to LWC, TypeScript, right-to-left - `experience-aura-lwc-migrate`, `experience-lwc-typescript-migrate`, `experience-lwc-rtl-validate`
+- What a component really renders in Local Dev - `experience-lwc-runtime-observe`
+
+`experience-lwc-generate` covers the same ground as Build: follow one of the two for a change, not both. The guard checks what either of them writes, and a review here reads their code like any other.
+
+When a hook of Salesforce's `salesforce-development` plugin refuses a raw `sf` command and names the skill that owns it, run that skill, then continue here.
+
 ## Reference map
 
 - [references/sources.md](references/sources.md) - where every fact lives: the collection and its catalog, Salesforce recipes, documentation, npm packages, CLI

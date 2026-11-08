@@ -56,6 +56,7 @@ await render(scenes, 'out/quote-demo.mp4'); // plus quote-demo.srt and chapter m
 - [🦸 HXL Hero](../hxl-hero) builds and fixes the widgets that Claude, ChatGPT or Slackbot render; the demo records them in the client.
 - [🧪 E2E Automator](../e2e-automator) owns automated UI tests - a demo script is not a test, and does not become one.
 - [🧭 DevOps Operator](../devops-operator) deploys to the demo org and commits the storyboard script, if the team keeps it in Git.
+- Salesforce's `salesforce-test-drive` plugin builds a capability end to end as a guided walkthrough; what it builds can be recorded here like any other org.
 
 ## Requirements
 

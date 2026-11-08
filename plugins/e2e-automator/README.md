@@ -43,6 +43,7 @@ It complements the [UTAM Chrome extension](https://developer.salesforce.com/docs
 - [🧙 Multi-Framework Wizard](../multi-framework-wizard) owns React and Angular UI bundles and embedded apps. UTAM covers the Lightning page and the host component around a frame; what happens inside the frame is tested by the app's own suite.
 - [🦸 HXL Hero](../hxl-hero) owns HXL widgets, which render in AI clients, not in Lightning Experience.
 - [🎬 Demo Designer](../demo-designer) records demo videos - a demo script is not a test, and does not become one.
+- Salesforce's [`forcedotcom/sf-skills`](https://github.com/forcedotcom/sf-skills) has no UTAM skill. Some of its LWC skills name page objects as an optional step of building or migrating a component; writing them is this plugin's job.
 
 ## Requirements
 

@@ -42,6 +42,7 @@ Files that skills write into user repositories, such as `.github/salesforce-devo
 - **Prefer scripts for checks that have one right answer.** A script is faster, cheaper and more reliable than prose that asks for the same check.
 - **Use hooks for guardrails.** An instruction can be overlooked; a hook that blocks a force push cannot. Hooks run on every user's machine - write them in portable bash (3.2, BSD tools, no `jq`), keep them silent outside their scope, and test them under `tests/` against real repositories. Run the tests with macOS's bash too: `BASH_BIN=/bin/bash npm test`.
 - **Write for the audience of the skill,** and in English - the agent answers in the user's language either way.
+- **Complement Salesforce's own skills.** Check [`forcedotcom/sf-skills`](https://github.com/forcedotcom/sf-skills) first. Where it covers a step, name its skill and add what only experience brings, instead of a second generator. Name those skills in the body, not in the description: a skill must work on its own, and long descriptions get cut off in the agent's skill list.
 
 ## Proposing changes
 

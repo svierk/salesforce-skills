@@ -65,7 +65,7 @@ node scripts/preflight.mjs --target-org <alias> [--min-api <version>]
 - [🧪 E2E Automator](../e2e-automator) tests the Lightning pages; each bundle keeps its own Playwright suite.
 - [🎬 Demo Designer](../demo-designer) records the surfaces once they work.
 - [🦸 HXL Hero](../hxl-hero) builds, ships, tries and fixes a headless surface - HXL widgets that Claude, ChatGPT and Slackbot render from the same data; the wizard decides where it fits.
-- Salesforce publishes generator skills for React UI bundles and for agents in [`forcedotcom/afv-library`](https://github.com/forcedotcom/afv-library). They generate one app, feature or agent; the wizard decides how surfaces and frameworks fit together, covers Angular, embedding and external guests, and reviews the whole.
+- Salesforce publishes generator skills for UI bundles and for agents in [`forcedotcom/sf-skills`](https://github.com/forcedotcom/sf-skills). They scaffold, host and deploy React and Angular bundles, write React pages and data access, and generate agents; the wizard decides how surfaces and frameworks fit together, covers embedding and external guests, and reviews the whole.
 
 ## Requirements
 

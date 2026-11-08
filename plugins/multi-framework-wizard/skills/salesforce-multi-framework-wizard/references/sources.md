@@ -85,7 +85,7 @@ The Micro-Frontend Recipes are one host LWC per topic in `force-app/main/microfr
 
 ## Salesforce's own skills
 
-`forcedotcom/afv-library` (also installable with `npx skills add forcedotcom/sf-skills`, and in Claude Code through `salesforce-development@claude-plugins-official`) publishes `experience-react` - generators for React UI bundles: project, features, data access, deployment, packaging, the Conversation Client, localization, MFA - plus `agentforce-adlc` for agents and `platform-lightning-widgets` for Lightning types and widgets. Read their `SKILL.md` for the generator steps of the day instead of copying them.
+`forcedotcom/sf-skills` (formerly `afv-library`; installable with `npx skills add forcedotcom/sf-skills`, or as Claude Code plugins from its `salesforce` marketplace) publishes `experience-react` - generators for UI bundles: project, features, data access, deployment, packaging, the Conversation Client, localization, MFA, for React and in good part for Angular - plus `agentforce-adlc` for agents and `platform-lightning-widgets` for Lightning types and widgets. Read their `SKILL.md` for the generator steps of the day instead of copying them.
 
 ## npm packages
 

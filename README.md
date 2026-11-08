@@ -114,6 +114,34 @@ promotion:
 
 The [JSON Schema](schemas/salesforce-devops.schema.json) gives editors validation and autocompletion through the first line; [schemas/examples](schemas/examples) has a file for every blueprint.
 
+## 🤝 Alongside Salesforce's official skills
+
+Salesforce publishes its own skills and plugins in [`forcedotcom/sf-skills`](https://github.com/forcedotcom/sf-skills). They are the foundation: broad and close to the platform. The skills here do not replace them. They add what comes from real projects - one reference repository per skill, the seams between tools, guardrails and reviews - and both sets can stay installed together.
+
+| Area                                    | Salesforce's skills                                              | The skills here add                                                                                       |
+| --------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Apex, Flow, metadata, SOQL, deployments | `salesforce-development`                                         | Nothing - use theirs                                                                                      |
+| Code quality                            | `salesforce-code-quality`                                        | The Code Analyzer as a gate in the pipeline (DevOps Builder)                                              |
+| Agents                                  | `agentforce-adlc`                                                | Deploying agents and running their tests in the pipeline (DevOps Builder)                                 |
+| Pipelines and promotions                | `dx-devops` for DevOps Center                                    | Pipelines on GitHub Actions and the daily Git work in them (DevOps Builder, DevOps Operator)              |
+| Lightning web components                | `experience-lwc`                                                 | Reuse from a catalog, one reference setup, a guard on every write, reviews (LWC Crafter)                  |
+| UI bundles                              | `experience-react`, generators for React and Angular bundles     | Choosing surfaces, embedding, external guests, reviews of the whole (Multi-Framework Wizard)              |
+| Widgets and MCP                         | `platform-lightning-widgets`, single widgets and Lightning types | The chain around a widget in every client: turning HXL on, sign-in, activation, access, checks (HXL Hero) |
+| End-to-end UI tests                     | -                                                                | UTAM tests from story to release (E2E Automator)                                                          |
+| Demo videos                             | -                                                                | Scripted recordings (Demo Designer)                                                                       |
+
+Good to know when you use both:
+
+- **Installing theirs:** `/plugin install salesforce-development@claude-plugins-official`; the other plugins come with `/plugin marketplace add forcedotcom/sf-skills`. Some skills, such as `dx-devops-promote` or the App MCP skills, come only with `npx skills add forcedotcom/sf-skills`.
+- **A refused `sf` command is not an error.** `salesforce-development` lets some raw commands, such as `sf data query` or `sf project retrieve`, through only once the skill that owns them has run in the session. The skills here run the skill the refusal names and carry on.
+- **Plugin recommendations** are a question for you: `salesforce-development` proposes Salesforce plugins that match a request and can stop the first write until you answer. If you chose the skills here for an area, `/salesforce-development:plugin-recommendations off` ends that; add `--project` for one project only.
+- **Guardrails add up.** Salesforce's deploy gate protects production, the DevOps Operator protects branches, and the LWC Crafter checks every component file - also those Salesforce's skills wrote. Leave their opt-in `SFDX_AUTO_DEPLOY` off, so a file reaches the org only after those checks.
+- **Where two skills fit one request,** say in the project's `CLAUDE.md` which goes first, for example:
+
+  ```markdown
+  For Lightning web components, use the LWC Crafter first for reuse, conventions and review, and Salesforce's `experience-lwc` skills for design-to-code, migrations and validators.
+  ```
+
 ## 🧱 Principles
 
 - **Facts come from the source.** Skills read versions, inputs and configuration from the tools and repositories they work with at run time, instead of carrying copies that go stale.

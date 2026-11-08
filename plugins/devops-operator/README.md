@@ -47,6 +47,7 @@ A red check is not always the user's change. The operator names the job, the fil
 - [⚡ LWC Crafter](../lwc-crafter) fixes Lightning web components that ESLint or Jest rejects.
 - [🧙 Multi-Framework Wizard](../multi-framework-wizard) fixes lint, tests and build of a React or Angular UI bundle.
 - [🦸 HXL Hero](../hxl-hero) fixes HXL widgets, their Lightning types and Apex tools.
+- Salesforce's `dx-devops` skills operate DevOps Center itself; on a project that promotes with it, the operator hands work items, promotions and their conflicts to them when they are installed.
 
 ## Requirements
 

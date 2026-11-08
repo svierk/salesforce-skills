@@ -36,7 +36,7 @@ Merge environment-to-environment pull requests with a **merge commit**, never sq
 
 ### `devops-center`
 
-Promotion happens in DevOps Center's pipeline view, not in Git. Guide the user through it there. Changes merged outside DevOps Center confuse it - do not promote by hand alongside it.
+Promotion happens in DevOps Center's pipeline view, not in Git. Guide the user through it there - or, when Salesforce's `dx-devops-promote` skill is installed, let it drive the promotion. Changes merged outside DevOps Center confuse it - do not promote by hand alongside it.
 
 ### `none`
 

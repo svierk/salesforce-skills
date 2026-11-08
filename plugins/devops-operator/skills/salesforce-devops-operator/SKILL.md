@@ -63,6 +63,13 @@ Some problems are not the user's change but the pipeline: a validation waiting f
 
 A red check can be an end-to-end UI test - a job that logs in to an org with a browser and clicks through a business process, usually built with UTAM. Its failure is rarely fixed by retrieving or committing metadata: the cause can be the change, the test data in the org, the test itself or a Salesforce release, and telling them apart takes test know-how. Do the first step - name the job, the failing test and the step it stopped at, from the log - then hand over. If the E2E Automator is installed, offer to switch to it - it classifies the failure and fixes the test, or reports a defect in the change; otherwise name whoever maintains the UI tests. See [references/checks.md](references/checks.md#end-to-end-ui-tests).
 
+## Alongside Salesforce's own skills
+
+Salesforce's [`forcedotcom/sf-skills`](https://github.com/forcedotcom/sf-skills) can be installed next to this skill.
+
+- **A project on DevOps Center** (`promotion.tool: devops-center`): when the `dx-devops-*` skills are installed, work items (`dx-devops-work-item-manage`), promotions (`dx-devops-promote`) and promotion conflicts (`dx-devops-conflict-resolve`) are theirs. Checks and pull requests stay here.
+- **Retrieves:** when a hook of Salesforce's `salesforce-development` plugin refuses a raw `sf` command and names the skill that owns it, run that skill, then continue here. The scope of a story stays this skill's job: go through the components with the user first, and retrieve only those.
+
 ## What happens next, per blueprint
 
 Users often ask "and now?". The answer depends on the blueprint in the config file:
