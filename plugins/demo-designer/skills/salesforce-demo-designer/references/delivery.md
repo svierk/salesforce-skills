@@ -47,18 +47,20 @@ Long demos go through several rounds. For each one:
 - **Root cause before fix.** "It flickers" can be dropped frames, a timing bug in the encode, zoom shimmer or a real UI effect; measure first, fix the cause, measure again and report the numbers.
 - **Fix without repeating side effects.** Prefer re-editing, re-rendering graphics or cutting a take over re-recording a scene that changes data (see [salesforce.md](salesforce.md#retakes-and-side-effects)).
 - **Answer the question asked.** When the user asks for an opinion ("what do you think?"), give one with the trade-off, then build it.
+- **Several clips at once?** Put one local HTML page with all of them looping next to the files and open the folder for the user, instead of asking them to play each file.
 - **Log the round** - request, changes, learnings - next to the scripts, and keep chapter marks current when lengths change.
 
 ## Files
 
-| File                    | What for                                                                                                |
-| ----------------------- | ------------------------------------------------------------------------------------------------------- |
-| `<name>.mp4`            | H.264, yuv420p, 30 fps, fast start - plays in browsers, PowerPoint, Keynote, Teams and the common feeds |
-| `<name>.srt`            | Subtitles from the captions - for feeds that accept a subtitle file, for accessibility, for bid portals |
-| Chapter marks           | Printed by `render` (`0:00 Intro`) - for video descriptions, the bid's cover text, an agenda slide      |
-| `<name>.gif`            | `gif(video, out, { width: 960, fps: 12 })` - for READMEs and docs, where video does not autoplay        |
-| Narrated version        | `addAudio(video, 'voice.m4a', '<name>-narrated.mp4')`                                                   |
-| `storyboard.mjs` + data | The demo itself - re-run for the next prospect, release or language                                     |
+| File                    | What for                                                                                                                                                                                       |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<name>.mp4`            | H.264, yuv420p, 30 fps, fast start - plays in browsers, PowerPoint, Keynote, Teams and the common feeds                                                                                        |
+| `<name>.srt`            | Subtitles from the captions - for feeds that accept a subtitle file, for accessibility, for bid portals                                                                                        |
+| Chapter marks           | Printed by `render` (`0:00 Intro`) - for video descriptions, the bid's cover text, an agenda slide                                                                                             |
+| `<name>.gif`            | `gif(video, out, { width: 960, fps: 12 })` - for READMEs and docs, where video does not autoplay                                                                                               |
+| `<name>.webp`           | Animated WebP in full colour for a README: `ffmpeg -i in.mp4 -vf fps=24 -c:v libwebp_anim -quality 82 -loop 0 out.webp`. A docs site plays the MP4 or a WebM instead, with one frame as poster |
+| Narrated version        | `addAudio(video, 'voice.m4a', '<name>-narrated.mp4')`                                                                                                                                          |
+| `storyboard.mjs` + data | The demo itself - re-run for the next prospect, release or language                                                                                                                            |
 
 Copy the deliverables to the place agreed in the brief, named so they sort and say what they are: `<product>-<format>-<audience or version>.mp4`, for a bid `<prospect>-<requirement or chapter>.mp4`.
 

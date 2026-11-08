@@ -301,9 +301,9 @@ function writeSequence(files, dir) {
  * crops the bottom of every screencast frame and ignores the device scale
  * factor, so captions disappear and text turns soft.
  */
-export async function launch() {
+export async function launch({ args = [] } = {}) {
   const { chromium } = await import('playwright-core');
-  return chromium.launch({ channel: 'chrome', headless: false });
+  return chromium.launch({ channel: 'chrome', headless: false, args });
 }
 
 const DEFAULT_THEME = {
@@ -785,7 +785,8 @@ export async function salesforceLogin(director, { org, path = '/lightning/page/h
     );
   }
   const { url } = sf(['org', 'open', ...target, '--url-only', '--path', path]);
-  await director.page.goto(url);
+  // Not until the load event: a Lightning page with many components can miss it, and ready() is what counts.
+  await director.page.goto(url, { waitUntil: 'domcontentloaded', timeout: 90000 });
 }
 
 /** Waits until `target` is visible, then lets the page settle - Lightning has no reliable "done" signal. */

@@ -89,7 +89,7 @@ Run it with `node storyboard.mjs`. A 15-30 s demo records in about a minute.
 
 | Function                                                       | Does                                                                                                                                                                                                         |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `launch()`                                                     | Starts the installed Chrome, headed                                                                                                                                                                          |
+| `launch({ args })`                                             | Starts the installed Chrome, headed, with optional Chrome arguments                                                                                                                                          |
 | `stage(browser, options)`                                      | A browser context with the overlay; returns a director. Options: `width`, `height`, `scale` (default 1280x720 x 1.5), `colorScheme`, `theme`, `hide` and `blur` (CSS selectors), `cursor`                    |
 | `salesforceLogin(director, { org, path })`                     | Checks the org, logs in through the frontdoor URL and opens `path`. Stops on production unless `allowProduction: true` - only after the user confirmed demo data only                                        |
 | `ready(director, target, { settle })`                          | Waits until `target` is visible, then `settle` ms more                                                                                                                                                       |
@@ -190,6 +190,21 @@ await browser.close();
 
 Probe what a take depends on: that every locator matches exactly one element, the order of search results you will click, where long pages end, how long the slow parts take. Look at the screenshots - they also decide light or dark scheme, and what to hide.
 
+## Docs screenshots
+
+Stills need no scene, only a stage at scale 2 without the cursor and a screenshot of the element:
+
+```js
+const app = await stage(browser, { width: 1280, height: 900, scale: 2, cursor: false });
+await salesforceLogin(app, { org: 'demo', path: '/lightning/n/Component_Showcase' });
+const component = app.page.locator('c-order-summary').first();
+await ready(app, component);
+await component.locator('lightning-spinner').first().waitFor({ state: 'detached' });
+await component.screenshot({ path: 'images/orderSummary/screenshot.png' });
+```
+
+Use the same stage, demo data and margin for every component of a set. Look at each image before handing it over: a spinner, an empty state or a cut-off edge is easy to miss in a list.
+
 ## What goes wrong, and why
 
 | Symptom                                                    | Cause and fix                                                                                                                                                                                                                                                                                                                                                                         |
@@ -213,4 +228,7 @@ Probe what a take depends on: that every locator matches exactly one element, th
 | `xfade` error or wrong length                              | A scene shorter than the fade, or scenes of different sizes. Every stage of one video needs the same output size (viewport x scale)                                                                                                                                                                                                                                                   |
 | Stale caption over the next page                           | `caption(null)` before navigating away                                                                                                                                                                                                                                                                                                                                                |
 | The page jumps while typing, the text happens out of frame | A key went to the page: Chrome scrolls on `End`, `Home`, `PageDown` or `Space` when nothing editable has focus, and on `End`/`Home` in a text field whose caret already sits at that end. Use `press('End')` from the library (it moves the caret directly; `email` and `number` inputs fall back to the key) or click where the caret should go, and prefer `type(text, { target })` |
+| The cursor freezes during a drag                           | A native HTML drag stops `mousemove`, which the overlay's cursor follows. Dispatch `dragstart`, `dragover` and `drop` yourself with one shared `DataTransfer` while `moveTo` glides, and move a clone of the element under the cursor as the drag image. The drop still runs the component's real logic                                                                               |
+| A component that uses the camera shows a prompt or nothing | Chrome has no camera to offer. `launch({ args: ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream', '--use-file-for-fake-video-capture=<clip>.y4m'] })` feeds it a prepared clip                                                                                                                                                                                  |
+| A focus ring remains at the end of a loop                  | The last click left focus on the element, so the loop jumps. Blur the active element, through its shadow roots, before the last hold                                                                                                                                                                                                                                                  |
 | Video starts on a loading page                             | Navigate and `ready()` before `captureScene`, not inside it                                                                                                                                                                                                                                                                                                                           |

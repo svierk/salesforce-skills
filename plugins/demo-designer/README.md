@@ -13,6 +13,7 @@ For consultants, presales, developers and product owners who need to show what t
 | **Sprint review / story** | "Turn ABC-123 into a 60-second demo for the sprint review" · "Show the new approval flow along its acceptance criteria"          |
 | **Training clip**         | "Make a training clip: how to create a quote, step by step, with subtitles"                                                      |
 | **README GIF**            | "Add a GIF of the QR code component to the README"                                                                               |
+| **Docs screenshots**      | "Take new screenshots of all our components for the catalog"                                                                     |
 
 - **Storyboard first** - scenes, captions and seconds as a table you agree on before anything is recorded, with timing rules that keep every beat readable.
 - **Real click paths** - Playwright drives your installed Chrome through the org or site; Lightning base components are found by their labels, through shadow DOM.
