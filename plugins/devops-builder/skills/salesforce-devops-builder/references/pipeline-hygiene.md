@@ -46,6 +46,16 @@ Demo, training and template repositories often have no org and no secrets. A val
 - **Auto-merge** only where required status checks exist (see the checklist below).
 - Say in the workflow's header comment that it is static on purpose, so the next person does not add an org login back.
 
+## Public repositories with an org login
+
+An open project can have both: static checks for everyone and org checks for its own changes. A pull request from a fork has no access to the secrets, so a job that logs in would only fail there.
+
+- **Static jobs run for every pull request.** The org job carries a condition such as `github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository`.
+- **Against a long-lived org,** validate check-only on a pull request. **Without one,** `scratch-org-ci.yml` gives each run a fresh org. Then each run takes one from the Dev Hub's daily limit: consider leaving out Dependabot and pushes to `main`, and set `cancel-in-progress: false`, because a cancelled run has already used its org.
+- **Make it a required check** through a job with one stable name - [github-setup.md](github-setup.md) explains why the job itself cannot be required.
+- **The running user needs its permission set before the tests** where they write as that user. A fresh org has none, so pass it to the workflow.
+- **Install without package scripts** in a job that holds the login, since the bundles' `npm ci` runs after it: `npm ci --ignore-scripts`. Try each bundle's build first. React and Angular bundles built without them in Polyglot Arcade.
+
 ## Audit checklist
 
 Run from the root of the user's repository:
@@ -96,6 +106,7 @@ Then, per finding class:
 | Medium   | No `permissions:` block, or broader permissions than the workflow needs                                                                 |
 | High     | `sf agent test run` judged by its exit code - it exits with `0` when expectations fail, so failed tests stay green                      |
 | Medium   | Validation not a required status check; force pushes or deletions allowed on long-lived branches                                        |
+| Medium   | A required check on a job that calls a reusable workflow and can be skipped - it waits forever in one of the two cases                  |
 | Medium   | One repository-wide secret set used for several orgs                                                                                    |
 | Medium   | Pins more than one minor version behind the latest release, or no Dependabot for `github-actions`                                       |
 | Medium   | A condition on a repository name or owner that is not this repository - the job never runs                                              |
