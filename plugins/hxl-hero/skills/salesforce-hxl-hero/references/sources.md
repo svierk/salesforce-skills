@@ -8,7 +8,7 @@ Where every fact about HXL lives, and how to read it at run time. HXL is a beta:
 
 ## Polyglot Arcade
 
-`svierk/polyglot-arcade` is the reference. From v1.1.0 its **headless surface** shows a Hall of Fame and a player card in Claude (from v1.2.0 also in the Agentforce panel), served by the custom MCP server `polyglotArcade` on the same `Arcade_Score__c` records as its Angular hub, its React cabinet and its Lightning pages - verified end to end in scratch orgs and in Claude. Read the latest release and note its tag:
+`svierk/polyglot-arcade` is the reference. From v1.1.0 its **headless surface** shows a Hall of Fame and a player card in Claude (from v1.2.0 also in the Agentforce panel, from v1.3.0 with a game launcher and Four in a Row played on the board), served by the custom MCP server `polyglotArcade` on the same `Arcade_Score__c` records as its Angular hub, its React cabinet and its Lightning pages - verified end to end in scratch orgs and in Claude. Read the latest release and note its tag:
 
 ```bash
 gh release view --repo svierk/polyglot-arcade --json tagName,publishedAt

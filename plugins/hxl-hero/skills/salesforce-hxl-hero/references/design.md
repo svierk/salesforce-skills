@@ -7,11 +7,20 @@ How to decide what an HXL experience shows, where, and for whom - before the fir
 | Fits                                                                         | Does not fit                                                                  |
 | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | Answers worth seeing: a ranking, a card, a short list, a status with numbers | Data entry - widgets have no input fields                                     |
-| Questions people ask in a client they already use - Claude, ChatGPT, Slack   | Real-time or spatial interaction - a game loop, a board, drag and drop        |
+| Questions people ask in a client they already use - Claude, ChatGPT, Slack   | Real-time interaction - a game loop, key input, drag and drop                 |
 | The same records the apps use, under the asking user's permissions           | Writes without a human in the loop, or anything the user may not do in the UI |
 | A next step as a button: open the app, ask the follow-up question            | Long workflows with many steps - that is an app or an agent with topics       |
 
 A widget is a view of one tool result. It shows data and offers buttons; buttons open a link or post a message as the user, which the client answers with another tool. That is enough for "show me and take me there" - not for an app.
+
+### Turn-based play
+
+A turn-based game or a choice made step by step does fit: every click is one model turn and one tool call, and the click is the human in the loop. Polyglot Arcade v1.3.0 plays Four in a Row this way in Claude and in the panel ([ADR 0005](https://github.com/svierk/polyglot-arcade/blob/v1.3.0/docs/decisions/0005-games-in-the-chat.md)). The tool took about one second per move, including the CPU's search, on top of the model's turn, and each move adds a widget to the conversation.
+
+- **The state lives on the server,** in a private record owned by the player and locked `FOR UPDATE` while a move runs. The model only names the choice; Apex checks it and works out the result.
+- **A step number in the button's message makes a repeat harmless.** Every old widget keeps its buttons and clients can call twice. A number that is not the next one changes nothing and shows the current state. Set the tool's `readOnly` and `idempotent` hints to false.
+- **Test every end state.** A formula that fails at the end of a game turns the saved result into an error for the user ([verified.md](verified.md#lightning-types-and-widgets)).
+- **In the Agentforce panel** the board has to be forced onto the screen: [when the card has to appear](agentforce-channel.md#when-the-card-has-to-appear).
 
 ## Channels
 

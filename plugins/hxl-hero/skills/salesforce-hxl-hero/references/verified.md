@@ -1,6 +1,6 @@
 # Verified in an org
 
-What Polyglot Arcade v1.1.0 to v1.2.1, and where it says so Salesforce's Pronto sample, verified in scratch orgs on Winter '27 (API 68.0, with metadata at 67.0 and 68.0), October and November 2026, and what the official documentation of that release did not say. Every line is a fixed point, not the current truth - check it again when a step fails on a later release, and update the project's docs with what you find.
+What Polyglot Arcade v1.1.0 to v1.3.0, and where it says so Salesforce's Pronto sample, verified in scratch orgs on Winter '27 (API 68.0, with metadata at 67.0 and 68.0), October and November 2026, and what the official documentation of that release did not say. Every line is a fixed point, not the current truth - check it again when a step fails on a later release, and update the project's docs with what you find.
 
 ## Turning HXL on
 
@@ -14,6 +14,10 @@ What Polyglot Arcade v1.1.0 to v1.2.1, and where it says so Salesforce's Pronto 
 - Lists in an Apex response are bindable as a top-level output (`List<Inner>` on a `@InvocableVariable`); the response type types them `@apexClassType/c__<Class>$<Inner>` and the renderer binds them with two segments, `{!$attrs.outputValues.<list>}`. Global inner classes with `@AuraEnabled` fields work.
 - `FORMATNUMBER(<number>)` printed `3310`, without a thousands separator, in the MCP renderer.
 - A widget renders in the client's theme (light or dark) from the host context.
+- A formula that cannot be evaluated fails the whole tool call, after Apex has committed: a tool that writes has saved its change while the client shows an error. `FORMATNUMBER(x) & ' points'` did this; `TEXT(x) & ' points'` works.
+- `TEXT()` of an empty value fails the same way, even in an `IF` branch that is not taken. A player card failed for everyone whose only round in a game was lost.
+- A formula behind `meta.if` only runs when the condition is true, so a failing formula stays hidden until that state occurs.
+- A `meta.forEach` inside a `meta.forEach` works in the MCP renderer and in the panel (a list of cells in a list of columns).
 
 ## The MCP server
 
@@ -38,6 +42,11 @@ What Polyglot Arcade v1.1.0 to v1.2.1, and where it says so Salesforce's Pronto 
 - Without the permission set with `agentAccesses`, a user sees no Agentforce icon and no error.
 - With it, a user needs neither the licence `EinsteinGPTCopilotPsl` nor `CopilotSalesforceUser`. Both widgets rendered for a Standard Platform User in Polyglot Arcade, and Pronto's widget for a Standard User and an admin.
 - A scratch org without the Agentforce settings has no `EinsteinGPTCopilotPsl`, no sObject `BotDefinition` and no metadata type `AiAuthoringBundle`. With them it has all three.
+- A link to the org's `my.salesforce.com` domain in an action's output became the text `URL_Redacted`, also inside a widget's `action/openLink`, so the button opened `/lightning/n/URL_Redacted`. A path works. A `.salesforce.app` URL in the same channel stayed intact, for a reason not found. Community reports tie the replacement to the org's Trusted URLs.
+- The model can claim an action without calling it: "The disc was dropped in column 4", with no call in the trace and the game unchanged.
+- A card appears only when the model calls the platform tool `__show_tool_results__` after the action. Its inputs are `caption` and `tool_ids`, and the caption becomes the text above the card. A deterministic `run @actions` executes the action and shows no card.
+- An instruction to call an action "for every message" looped until the agent answered "I have reached my processing limit". `available when` on a variable that `before_reasoning` resets each turn stopped it.
+- `with message = @system_variables.user_input` compiles and binds the user's sentence to an action input.
 - An action can have more outputs next to the one with the Lightning type (Pronto: `isSuccess`, `message`, `reviews`).
 - A Standard User and a Standard Platform User each get the panel and their own results. The agent runs as the signed-in user.
 - `h1` and `h2` render far larger in the panel than in Claude, and `FORMATNUMBER` prints thousands separators in the user's locale there (`4.200`, `5,100`), unlike the MCP renderer.

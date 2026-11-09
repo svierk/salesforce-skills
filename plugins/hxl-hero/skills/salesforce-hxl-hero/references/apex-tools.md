@@ -44,7 +44,7 @@ global with sharing class ArcadeHallOfFame {
 
 - **`with sharing`** on every class and **`WITH USER_MODE`** in static SOQL, `AccessLevel.USER_MODE` in `Database.queryWithBinds` - the tool sees what the asking user sees in the apps, field-level security included.
 - **Bind variables**, never string concatenation of inputs into SOQL; a `LIKE` pattern escapes `%` and `_`, not quotes.
-- **Read-only by default.** A tool that writes needs the same validation as any input from outside - known fields, checked types, the user's permission - and a tool description that says it writes (`readOnly` and `destructive` hints in the server definition).
+- **Read-only by default.** A tool that writes needs the same validation as any input from outside - known fields, checked types, the user's permission - and a tool description that says it writes (`readOnly` and `destructive` hints in the server definition). Buttons of old widgets stay clickable and clients can call twice, so make a repeated write harmless: see [turn-based play](design.md#turn-based-play).
 - **The permission set** of the users grants the class (`classAccesses`). Without it the MCP server lists no tools for them.
 
 ## Descriptions
@@ -54,7 +54,7 @@ The method's label and description become the tool's name and documentation unle
 ## Tests
 
 - **More than one user.** Create users in `@TestSetup` inside `System.runAs(new User(Id = UserInfo.getUserId()))` to avoid mixed DML, assign the permission set that grants the fields, and insert their records inside `System.runAs(<user>)` so `CreatedById` differs. Use unusual names - real users of the org are visible in tests.
-- **The running user may lack the permission set** in a fresh org; assign it in the test setup when it is missing.
+- **The running user needs the permission set before the run** in a fresh org. Assigning it in `@TestSetup` right before an `insert` failed every test with `Operation failed due to fields being inaccessible`. Assign it with the setup or the CI job; other test users can get it in the test.
 - **Cover** ties, empty results, unknown inputs, the default for an empty input, and a user who has never played.
 - **One `Test.startTest()` per method** - a helper that calls it breaks a test that calls the helper twice.
 - Run them in the org with code coverage, and in CI with the DevOps Starter Kit's `sfdx-run-tests` where the project uses it.

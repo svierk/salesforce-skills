@@ -49,6 +49,7 @@ The description is what the model reads to choose and call the tool. Write:
 2. Every input with its valid values and what empty means.
 3. Two example questions.
 4. **"Send exactly one object in inputs: the result renders as a widget only for a single request. To compare ..., call the tool once for each."** The input schema is a list (`inputs: [ ... ]`), and clients use it to bundle requests - a bundled call renders as text only ([verified.md](verified.md#the-mcp-server)).
+5. For a tool that has to run on every step of a game or a flow, say so: **"Every move needs a new call: the board only changes through this tool, so never describe a move without calling it."** In an MCP client the description is the only way to ask for this. Polyglot Arcade added it after a model in the Agentforce panel claimed moves it had not made; whether Claude needed it was not measured.
 
 A changed description reaches clients after about two minutes; start a new conversation to load it.
 

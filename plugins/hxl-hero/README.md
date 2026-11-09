@@ -24,7 +24,7 @@ For developers and architects who want an org's data in the AI clients people al
 
 ## Practices it applies
 
-Drawn from Polyglot Arcade v1.2.0, Salesforce's HXL and Hosted MCP guides, and what was verified in a real org:
+Drawn from Polyglot Arcade v1.3.0, Salesforce's HXL and Hosted MCP guides, and what was verified in a real org:
 
 - **Same data, same rules** - a tool reads the records the apps use, as the user who asks: `with sharing`, user mode, OAuth per user, read-only by default.
 - **The describe is the source of truth** - the response type has exactly the action's outputs, generated from the org, not from memory.
