@@ -112,6 +112,8 @@ JSON
 
   Then add a `required_status_checks` rule with `"strict_required_status_checks_policy": true` (branches must be up to date) and those names as `context`. A check name that never runs blocks every merge, so never guess one.
 
+  A job that calls a reusable workflow and can be skipped, for example on forks, reports as `<caller job> / <called job>` when it runs and as `<caller job>` when it is skipped. Requiring either name leaves the other case waiting forever. Add a small job with `needs:` on it and `if: always()` that fails unless the result is `success` or `skipped`, and require that job.
+
 - **Restrict who can merge** (B2 release manager, B5 pipeline owner): an `update` rule plus the team as bypass actor with `"bypass_mode": "pull_request"`. Verify the result in Settings → Rules - this is the part of rulesets that is easiest to get subtly wrong.
 - **CODEOWNERS review** (B3, B4): set `"require_code_owner_review": true` and commit a `.github/CODEOWNERS`, e.g. `packages/core/ @org/core-team` and `orgs/eu/ @org/eu-team`.
 - **B2 release train:** environment-to-environment pull requests are merged with a merge commit, never squashed - add `"allowed_merge_methods": ["merge"]` to the `pull_request` parameters for those branches.
