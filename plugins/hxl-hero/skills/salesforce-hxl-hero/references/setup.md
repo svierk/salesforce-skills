@@ -64,6 +64,7 @@ Fold the steps into the project's setup script, so the team gets the chain with 
 
 - **Idempotent:** creating `McpServerAccess` only when none exists; a redeploy of the External Client App keeps its consumer key.
 - **Retrieves outside the project:** read the consumer key with `--target-metadata-dir` into a temporary folder and run the command from there, so source tracking stays untouched.
+- **No tight limit on the deploy:** a first deploy with UI bundles and widgets took 2m22, plus the org's queue and source tracking. A three-minute limit in Polyglot Arcade's setup stopped it after the org had finished. Allow several times that, and report a timeout as a timeout.
 - **Printed at the end:** the URL, the client ID, where to paste them, one example question - and that a new External Client App can take up to 30 minutes.
 - `mcp-connect.mjs` of this skill does the connect part and can be called from the setup or copied into it.
 

@@ -39,6 +39,7 @@ The schemas name every property, its enum and its default. Leave out an attribut
 - **Bindings:** `{!$attrs.<attribute>}` for the widget's attributes, `{!$<item>.<field>}` inside a `forEach`. Every `$attrs` name must exist in `schema.json`.
 - **`meta.forEach` / `forItem`** repeat a component per list item; **`meta.if`** includes it when a boolean is true. `if` needs a real boolean - an attribute like `hasEntries` or a comparison - never a string or a number.
 - **Formulas** inside `{! }`: `IF`, `AND`, `NOT`, `ISBLANK`, `TEXT`, `&` for text, `FORMATNUMBER`, `CASE` and more - only the functions the documentation or Salesforce's `widget-formulas` reference lists. Both branches of an `IF` have the same type; numbers become text with `TEXT()`.
+- **A formula that cannot be evaluated fails the whole tool call,** not only the widget, and after Apex has committed. `FORMATNUMBER(x) & ' points'` and `TEXT()` of an empty value both did, the second even in an `IF` branch that was not taken. Build a line that joins a value that may be empty in Apex, and try every state: a formula behind `meta.if` only runs when the condition is true.
 - **Lists in `schema.json`:** `"lightning:type": "lightning__listType"` with `"items": { "lightning:type": "@apexClassType/c__<Class>$<Inner>" }` - the item's fields are not repeated.
 
 ## Actions

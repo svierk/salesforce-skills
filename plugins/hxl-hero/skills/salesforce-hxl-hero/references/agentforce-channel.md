@@ -103,6 +103,40 @@ The model can repeat the card in words, so Polyglot Arcade asks in the subagent'
 
 An instruction such as "if `hasRounds` is false, show the message" can replace the card: for a player without rounds, Polyglot Arcade's agent answered once with text only and once with the card.
 
+## When the card has to appear
+
+The model decides each turn whether to run the action and whether to show its card. For a card the user cannot go on without, such as the board of a game, that is too loose. Polyglot Arcade v1.3.0 found these in the traces of the preview:
+
+- **The model can claim an action it did not make.** A move was answered with "The disc was dropped in column 4", with no call and no change.
+- **A card needs a second step.** It appears only when the model calls `__show_tool_results__` after the action. A deterministic `run @actions` runs the action and shows nothing, and "reply with the message" produces text without a card.
+- **The caption is the text above the card.** Asking for a field the card also shows prints it twice. Name a fixed sentence.
+- **"Call it for every message" loops** until the agent gives up with "I have reached my processing limit".
+
+What worked for 32 of 32 moves in the preview and a full game in the panel: a subagent of its own with one action, a bound input so the model has nothing to fill in, the action available once per turn, and one instruction for each half of the turn. The wrapper's Apex reads the move from the sentence.
+
+```text
+before_reasoning:
+    set @variables.move_played = False
+
+reasoning:
+    instructions: ->
+        if @variables.move_played == False:
+            | Call play_four_in_a_row now, before you write anything.
+        else:
+            | The move is played. Show its result with __show_tool_results__, with exactly "Here is the board." as the caption.
+    actions:
+        play_four_in_a_row: @actions.playFourInARow
+            available when @variables.move_played == False
+            with message = @system_variables.user_input
+            set @variables.move_played = True
+```
+
+Keep this for actions that need it. It takes the choice away from the model, which an ordinary question does not want.
+
+## Links in a widget
+
+A link to the org's `my.salesforce.com` domain in an action's output arrives as the text `URL_Redacted` ([verified.md](verified.md#agentforce-in-lightning)), so a button leads to a page that does not exist. Let the wrapper return a path such as `/lightning/app/c__<app>/n/<tab>`, and keep the full URL for the MCP channel. The replaced link is visible in the output of `sf agent preview`, so check it there before opening the panel.
+
 ## Access
 
 A user needs a permission set of the project with `agentAccesses` for the agent and `classAccesses` for the wrappers. The tool classes come with the permission set the MCP channel already needs. Without the project's permission set there is no Agentforce icon and no error, so this is the first thing to check when the panel does not show up.
@@ -122,5 +156,6 @@ The licence `EinsteinGPTCopilotPsl` (_Agentforce (Default)_) and the permission 
 ## Trying it
 
 - **Preview the published agent:** `sf agent preview start --api-name <Agent>`, then `send`. `--authoring-bundle` crashes for an employee agent. The result holds the structured output, which an acceptance can assert: `.result.messages[].result[].value.<output>`.
+- **Read the traces when a card or a call is missing.** They are in `.sfdx/agents/<id>/sessions/<session>/traces/<plan>.json`: `FunctionStep` for an action, `PlatformActionStep` for `__show_tool_results__`, `PlannerResponseStep` for the text and the shown result.
 - **Check that a publish worked before trusting the panel.** After a failed publish the panel keeps answering with the previous version, which looks like a failing widget.
 - **In the panel:** the first time, two dialogs ask for confirmation. Try several users, the empty state and both button actions. A new user who has only an API session lands on "Change Your Password"; after a password is set through the API, **Cancel** leads on.
