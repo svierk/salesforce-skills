@@ -10,16 +10,29 @@ import {
   cameraAt,
   cameraFilter,
   chapters,
+  checkKeep,
+  clipRect,
+  copyRegion,
   cropOf,
   crossfadeGraph,
+  cutCues,
+  cutDuration,
+  cutGraph,
+  denyPattern,
+  fillFromLeft,
+  findAreas,
   findBlips,
   findStalls,
   fitZoom,
   frameSequence,
+  freezeCues,
+  freezeGraph,
   isEditable,
   joinCues,
   outputSize,
   plain,
+  readableHolds,
+  replaceText,
   sceneOffsets,
   srt,
   totalDuration,
@@ -243,6 +256,189 @@ describe('typing', () => {
   test('refuses read-only and disabled fields', () => {
     assert.equal(isEditable({ tag: 'INPUT', readOnly: true }), false);
     assert.equal(isEditable({ tag: 'TEXTAREA', disabled: true }), false);
+  });
+});
+
+describe('cuts and holds', () => {
+  const cues = [
+    { start: 1, end: 4, text: 'Describe the audience' },
+    { start: 12, end: 14, text: 'Waiting' },
+    { start: 22, end: 26, text: 'The result' }
+  ];
+  const keep = [
+    [0, 10],
+    [20, 30]
+  ];
+
+  test('refuses parts out of order, outside the scene or shorter than the fade', () => {
+    assert.throws(() => checkKeep([], 30, 0.3), /at least one/);
+    assert.throws(() => checkKeep([[5, 2]], 30, 0.3), /ends before/);
+    assert.throws(() => checkKeep([[0, 40]], 30, 0.3), /outside/);
+    assert.throws(
+      () =>
+        checkKeep(
+          [
+            [0, 10],
+            [8, 20]
+          ],
+          30,
+          0.3
+        ),
+      /overlaps/
+    );
+    assert.throws(
+      () =>
+        checkKeep(
+          [
+            [0, 10],
+            [20, 20.2]
+          ],
+          30,
+          0.3
+        ),
+      /shorter than/
+    );
+    assert.doesNotThrow(() => checkKeep(keep, 30, 0.3));
+  });
+
+  test('a cut is the kept parts minus one fade per join', () => {
+    assert.equal(cutDuration(keep, 0.3), 19.7);
+    assert.equal(cutDuration([[2, 7]], 0.3), 5);
+  });
+
+  test('moves captions with their parts and drops those that were cut out', () => {
+    const moved = cutCues(cues, keep, 0.3, 30);
+    assert.equal(moved.length, 2);
+    assert.deepEqual(moved[0], cues[0]);
+    assert.equal(moved[1].text, 'The result');
+    assert.ok(Math.abs(moved[1].start - 11.7) < 1e-9);
+    assert.ok(Math.abs(moved[1].end - 15.7) < 1e-9);
+  });
+
+  test('a caption that starts in a removed stretch starts with the next kept part', () => {
+    const [cue] = cutCues([{ start: 8, end: 23, text: 'Across the cut' }], keep, 0.3, 30);
+    assert.ok(Math.abs(cue.start - 8) < 1e-9);
+    assert.ok(Math.abs(cue.end - 12.7) < 1e-9);
+  });
+
+  test('trims every part and cross-fades them in order', () => {
+    const graph = cutGraph(keep, 0.3);
+    assert.match(graph, /\[0:v\]trim=start=0:end=10,.*\[p0\]/);
+    assert.match(graph, /\[0:v\]trim=start=20:end=30,.*\[p1\]/);
+    assert.match(graph, /\[p0\]\[p1\]xfade=transition=fade:duration=0.3:offset=9.700\[v\]/);
+    assert.match(cutGraph([[2, 7]], 0.3), /^\[0:v\]trim=start=2:end=7,.*\[v\]$/);
+  });
+
+  test('a hold repeats one frame and shifts what comes after it', () => {
+    const holds = [{ at: 13, seconds: 2 }];
+    assert.match(freezeGraph(holds), /trim=start=0:end=13,/);
+    assert.match(freezeGraph(holds), /trim=start=13:duration=0.033333,.*tpad=stop_mode=clone:stop_duration=2\[f0\]/);
+    assert.match(freezeGraph(holds), /trim=start=13.033333,/);
+    assert.deepEqual(
+      freezeCues(cues, holds).map((c) => [c.start, c.end]),
+      [
+        [1, 4],
+        [12, 16],
+        [24, 28]
+      ]
+    );
+  });
+
+  test('holds short captions until they are readable, except the skipped ones', () => {
+    assert.deepEqual(readableHolds(cues, { min: 4 }), [
+      { at: 2, seconds: 1 },
+      { at: 13, seconds: 2 }
+    ]);
+    assert.deepEqual(readableHolds(cues, { min: 4, skip: [0, 1] }), []);
+    assert.deepEqual(readableHolds([{ start: 5, end: 5.5, text: 'Short' }], { min: 4 }), [{ at: 5.4, seconds: 3.5 }]);
+  });
+});
+
+describe('retouch', () => {
+  const frameOf = (width, height, rgb) => {
+    const data = Buffer.alloc(width * height * 3);
+    for (let i = 0; i < width * height; i++) data.set(rgb, i * 3);
+    return { data, width, height };
+  };
+  const paint = (frame, { x, y, width, height }, rgb) => {
+    for (let yy = y; yy < y + height; yy++)
+      for (let xx = x; xx < x + width; xx++) frame.data.set(rgb, (yy * frame.width + xx) * 3);
+  };
+  const pixel = (frame, x, y) => [...frame.data.subarray((y * frame.width + x) * 3, (y * frame.width + x) * 3 + 3)];
+  const red = (r, g, b) => r > 125 && g < 75 && b < 80;
+
+  test('finds filled areas and leaves rings out when they must be solid', () => {
+    const frame = frameOf(200, 100, [255, 255, 255]);
+    paint(frame, { x: 20, y: 20, width: 30, height: 24 }, [220, 30, 30]);
+    paint(frame, { x: 120, y: 20, width: 40, height: 40 }, [220, 30, 30]);
+    paint(frame, { x: 126, y: 26, width: 28, height: 28 }, [255, 255, 255]);
+    assert.equal(findAreas(frame, red).length, 2);
+    const solid = findAreas(frame, red, { solid: true });
+    assert.equal(solid.length, 1);
+    assert.deepEqual(solid[0], { x: 20, y: 20, width: 30, height: 24 });
+    assert.equal(findAreas(frame, red, { max: [35, 35] }).length, 1);
+    assert.equal(findAreas(frame, red, { region: { x: 100, y: 0, width: 100, height: 100 } }).length, 1);
+  });
+
+  test('paints an area out with the background to its left', () => {
+    const frame = frameOf(100, 40, [240, 240, 240]);
+    paint(frame, { x: 40, y: 10, width: 20, height: 20 }, [220, 30, 30]);
+    fillFromLeft(frame, { x: 38, y: 8, width: 24, height: 24 });
+    assert.equal(findAreas(frame, red).length, 0);
+    assert.deepEqual(pixel(frame, 50, 20), [240, 240, 240]);
+  });
+
+  test('copies a region from a clean frame', () => {
+    const clean = frameOf(50, 50, [10, 20, 30]);
+    const noisy = frameOf(50, 50, [200, 0, 0]);
+    copyRegion(clean, noisy, { x: 10, y: 10, width: 5, height: 5 });
+    assert.deepEqual(pixel(noisy, 12, 12), [10, 20, 30]);
+    assert.deepEqual(pixel(noisy, 20, 20), [200, 0, 0]);
+  });
+
+  test('replaces a label in its own ink over the row background, and leaves a dialog on top alone', () => {
+    const frame = frameOf(60, 10, [120, 120, 125]); // the page, dimmed behind a dialog
+    paint(frame, { x: 2, y: 2, width: 30, height: 6 }, [10, 60, 120]); // the old label, dimmed too
+    paint(frame, { x: 50, y: 0, width: 10, height: 10 }, [255, 255, 255]); // a dialog edge
+    const box = { x: 0, y: 0, width: 60, height: 10 };
+    const mask = new Float32Array(60 * 10);
+    for (let x = 0; x < 60; x++) mask[5 * 60 + x] = 1; // one row of new "glyphs"
+    assert.equal(replaceText(frame, box, mask, { minInk: 10 }), true);
+    assert.deepEqual(pixel(frame, 10, 3), [120, 120, 125]); // old label gone
+    assert.deepEqual(pixel(frame, 10, 5), [10, 60, 120]); // new glyphs in the label's ink
+    assert.deepEqual(pixel(frame, 55, 5), [255, 255, 255]); // brighter dialog untouched
+  });
+
+  test('leaves the frame alone when the label is not there', () => {
+    const frame = frameOf(20, 10, [250, 250, 250]);
+    const before = Buffer.from(frame.data);
+    assert.equal(replaceText(frame, { x: 0, y: 0, width: 20, height: 10 }, new Float32Array(200).fill(1)), false);
+    assert.deepEqual(frame.data, before);
+  });
+});
+
+describe('frames and shared orgs', () => {
+  test('clips a box by its frames and the window', () => {
+    const viewport = { x: 0, y: 0, width: 1280, height: 720 };
+    assert.deepEqual(clipRect({ x: 100, y: 600, width: 200, height: 200 }, [viewport]), {
+      x: 100,
+      y: 600,
+      width: 200,
+      height: 120
+    });
+    assert.equal(
+      clipRect({ x: 10, y: 10, width: 50, height: 50 }, [viewport, { x: 300, y: 0, width: 100, height: 100 }]),
+      null
+    );
+  });
+
+  test('turns words and expressions into one case-insensitive pattern', () => {
+    const deny = denyPattern(['Acme Corp.', /globex\s+inc/]);
+    const re = new RegExp(deny.source, deny.flags);
+    assert.ok(re.test('Opportunity for ACME CORP.'));
+    assert.ok(re.test('Globex  Inc'));
+    assert.ok(!new RegExp(denyPattern(['a.c']).source).test('abc'));
+    assert.equal(denyPattern([]), null);
   });
 });
 

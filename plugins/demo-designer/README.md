@@ -19,8 +19,10 @@ For consultants, presales, developers and product owners who need to show what t
 - **Real click paths** - Playwright drives your installed Chrome through the org or site; Lightning base components are found by their labels, through shadow DOM.
 - **Studio finish** - sharp 1080p frames from Chrome's screencast at an even 30 fps, an eased cursor, caption pills with badges, focus frames that follow their element, sub-pixel camera zooms, cards in your or your customer's brand, cross-fades, square and portrait cuts, GIFs, a narration track.
 - **Motion graphics** - intros, chapter idents, concept diagrams and 3D scenes (three.js) as web pages, rendered frame by frame for exact timing.
+- **Fixed in the edit** - waits cut out with the captions kept in step, short captions held until they are readable, and UI noise such as an error badge or a rehearsal label retouched frame by frame - instead of a retake that repeats side effects.
 - **Measured, not guessed** - a smoothness check finds single-frame flicker and judder that stills do not show.
-- **Bid-ready** - one chapter per requirement, a personalised intro per prospect, subtitles and chapter marks for the submission.
+- **Bid-ready** - one chapter per requirement, a personalised intro per prospect, subtitles and chapter marks for the submission, and a talk track for whoever presents it.
+- **Shared orgs** - another brand in the recording browser or as the org's theme, other clients' records hidden as they render and checked before every take.
 
 ## The recorder
 
