@@ -8,8 +8,9 @@
 // Both packages are loaded on first use, so the pure helpers below work
 // without them.
 
-import { execFileSync, spawnSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
+import { copyFileSync, mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -121,6 +122,321 @@ export function chapters(scenes, fade) {
   );
   const mmss = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
   return scenes.flatMap((scene, i) => (scene.chapter ? [`${mmss(offsets[i])} ${scene.chapter}`] : []));
+}
+
+/* ---------- Edit: pure helpers ------------------------------------------- */
+
+/**
+ * Checks the parts of a take to keep - [[from, to], ...] in seconds, in order, not
+ * overlapping, each longer than the cross-fade between them.
+ */
+export function checkKeep(keep, duration, fade) {
+  if (!Array.isArray(keep) || !keep.length) throw new Error('cut(): keep at least one part, [[from, to], ...].');
+  keep.forEach(([from, to], i) => {
+    if (!(to > from)) throw new Error(`cut(): part ${i + 1} ends before it starts (${from}-${to}).`);
+    if (from < 0 || to > duration + 0.05)
+      throw new Error(`cut(): part ${i + 1} (${from}-${to}) lies outside the scene (0-${duration.toFixed(2)}).`);
+    if (i && from < keep[i - 1][1]) throw new Error(`cut(): part ${i + 1} overlaps the part before it.`);
+    if (keep.length > 1 && to - from <= fade)
+      throw new Error(`cut(): part ${i + 1} is ${(to - from).toFixed(2)}s - shorter than the ${fade}s fade.`);
+  });
+}
+
+/** Where each kept part starts in the cut scene, when neighbours overlap by `fade` seconds. */
+export function cutOffsets(keep, fade) {
+  return sceneOffsets(
+    keep.map(([from, to]) => to - from),
+    fade
+  );
+}
+
+/** ffmpeg filter graph that trims the parts out of input 0 and cross-fades them into [v]. */
+export function cutGraph(keep, fade) {
+  const parts = keep.map(
+    ([from, to], i) => `[0:v]trim=start=${from}:end=${to},setpts=PTS-STARTPTS,fps=30,format=yuv420p[p${i}]`
+  );
+  if (keep.length === 1) return `${parts[0].replace(/\[p0\]$/, '[v]')}`;
+  const offsets = cutOffsets(keep, fade);
+  const steps = [];
+  let previous = '[p0]';
+  for (let i = 1; i < keep.length; i++) {
+    const out = i === keep.length - 1 ? '[v]' : `[x${i}]`;
+    steps.push(`${previous}[p${i}]xfade=transition=fade:duration=${fade}:offset=${offsets[i].toFixed(3)}${out}`);
+    previous = out;
+  }
+  return [...parts, ...steps].join(';');
+}
+
+/**
+ * Scene cues moved onto the cut timeline. A cue keeps the parts of it that survive the cut;
+ * a cue that lies entirely in a removed stretch is dropped.
+ */
+export function cutCues(cues, keep, fade, duration) {
+  const offsets = cutOffsets(keep, fade);
+  const at = (t) => {
+    for (let i = keep.length - 1; i >= 0; i--)
+      if (t >= keep[i][0]) return offsets[i] + Math.min(t, keep[i][1]) - keep[i][0];
+    return 0;
+  };
+  return cues.flatMap((cue) => {
+    const end = cue.end ?? duration;
+    const first = keep.find(([from, to]) => cue.start < to && end > from);
+    if (!first) return [];
+    return [{ ...cue, start: at(Math.max(cue.start, first[0])), end: at(end) }];
+  });
+}
+
+/** Length of the cut scene. */
+export function cutDuration(keep, fade) {
+  return totalDuration(
+    keep.map(([from, to]) => to - from),
+    fade
+  );
+}
+
+/**
+ * ffmpeg filter graph that holds the frame at each `at` for `seconds` - [{ at, seconds }],
+ * sorted - and plays the rest unchanged, into [v].
+ */
+export function freezeGraph(holds) {
+  const frame = (1 / 30).toFixed(6);
+  const steps = [];
+  const labels = [];
+  let previous = 0;
+  holds.forEach(({ at, seconds }, i) => {
+    steps.push(`[0:v]trim=start=${previous}:end=${at},setpts=PTS-STARTPTS[s${i}]`);
+    steps.push(
+      `[0:v]trim=start=${at}:duration=${frame},setpts=PTS-STARTPTS,tpad=stop_mode=clone:stop_duration=${seconds}[f${i}]`
+    );
+    labels.push(`[s${i}]`, `[f${i}]`);
+    previous = +(at + 1 / 30).toFixed(6);
+  });
+  steps.push(`[0:v]trim=start=${previous},setpts=PTS-STARTPTS[s${holds.length}]`);
+  labels.push(`[s${holds.length}]`);
+  steps.push(`${labels.join('')}concat=n=${labels.length}:v=1:a=0,fps=30,format=yuv420p[v]`);
+  return steps.join(';');
+}
+
+/** Scene cues moved by the holds before them; a cue that spans a hold grows by it. */
+export function freezeCues(cues, holds) {
+  const shift = (t) => t + holds.filter((h) => h.at < t).reduce((sum, h) => sum + h.seconds, 0);
+  return cues.map((cue) => ({
+    ...cue,
+    start: shift(cue.start),
+    end: cue.end === undefined ? undefined : shift(cue.end)
+  }));
+}
+
+/**
+ * Holds that keep every caption on screen for at least `min` seconds: the frame one second
+ * into a short caption is held for what it lacks. `skip` lists cue indexes to leave alone -
+ * a caption over a moving result reads better short than frozen.
+ */
+export function readableHolds(cues, { min = 4, skip = [] } = {}) {
+  return cues
+    .map((cue, i) => ({ cue, i }))
+    .filter(({ cue, i }) => !skip.includes(i) && cue.end !== undefined && cue.end - cue.start < min - 0.2)
+    .map(({ cue }) => ({
+      at: +Math.min(cue.start + 1, cue.end - 0.1).toFixed(3),
+      seconds: +(min - (cue.end - cue.start)).toFixed(2)
+    }));
+}
+
+/* ---------- Retouch: pure helpers ---------------------------------------- */
+
+// A frame is { data, width, height }: raw RGB, three bytes a pixel, rows top to bottom.
+
+/**
+ * Connected areas of pixels that match `match(r, g, b)` - a red error badge, a counter -
+ * as boxes { x, y, width, height }. Searched on a grid of `step` pixels inside `region`.
+ * `min` and `max` ([width, height]) drop what is too small or too large; `solid` keeps only
+ * areas whose four inset corners match too, so a filled badge counts and a ring does not.
+ */
+export function findAreas(
+  frame,
+  match,
+  { region, step = 2, min = [0, 0], max = [Infinity, Infinity], solid = false } = {}
+) {
+  const { data, width, height } = frame;
+  const r = region ?? { x: 0, y: 0, width, height };
+  const px = (x, y) => {
+    const i = (y * width + x) * 3;
+    return match(data[i], data[i + 1], data[i + 2]);
+  };
+  const gw = Math.floor(r.width / step);
+  const gh = Math.floor(r.height / step);
+  const seen = new Uint8Array(gw * gh);
+  const at = (gx, gy) => px(r.x + gx * step, r.y + gy * step);
+  const areas = [];
+  for (let gy = 0; gy < gh; gy++) {
+    for (let gx = 0; gx < gw; gx++) {
+      const start = gy * gw + gx;
+      if (seen[start] || !at(gx, gy)) continue;
+      seen[start] = 1;
+      let [x0, x1, y0, y1] = [gx, gx, gy, gy];
+      const stack = [start];
+      while (stack.length) {
+        const c = stack.pop();
+        const cx = c % gw;
+        const cy = (c - cx) / gw;
+        x0 = Math.min(x0, cx);
+        x1 = Math.max(x1, cx);
+        y0 = Math.min(y0, cy);
+        y1 = Math.max(y1, cy);
+        for (const [nx, ny] of [
+          [cx + 1, cy],
+          [cx - 1, cy],
+          [cx, cy + 1],
+          [cx, cy - 1]
+        ]) {
+          if (nx < 0 || ny < 0 || nx >= gw || ny >= gh) continue;
+          const n = ny * gw + nx;
+          if (seen[n] || !at(nx, ny)) continue;
+          seen[n] = 1;
+          stack.push(n);
+        }
+      }
+      const box = {
+        x: r.x + x0 * step,
+        y: r.y + y0 * step,
+        width: (x1 - x0 + 1) * step,
+        height: (y1 - y0 + 1) * step
+      };
+      if (box.width < min[0] || box.height < min[1] || box.width > max[0] || box.height > max[1]) continue;
+      if (solid) {
+        const inset = Math.max(step, Math.round(Math.min(box.width, box.height) / 5));
+        const xs = [box.x + inset, box.x + box.width - 1 - inset];
+        const ys = [box.y + inset, box.y + box.height - 1 - inset];
+        if (!xs.every((x) => ys.every((y) => px(x, y)))) continue;
+      }
+      areas.push(box);
+    }
+  }
+  return areas;
+}
+
+const clampBox = (frame, { x, y, width, height }) => {
+  const x0 = Math.max(0, Math.floor(x));
+  const y0 = Math.max(0, Math.floor(y));
+  return {
+    x0,
+    y0,
+    x1: Math.min(frame.width, Math.ceil(x + width)),
+    y1: Math.min(frame.height, Math.ceil(y + height))
+  };
+};
+
+/** Copies `box` from one frame into another of the same size - a clean toolbar over a noisy one. */
+export function copyRegion(from, to, box) {
+  const { x0, y0, x1, y1 } = clampBox(to, box);
+  for (let y = y0; y < y1; y++)
+    from.data.copy(to.data, (y * to.width + x0) * 3, (y * from.width + x0) * 3, (y * from.width + x1) * 3);
+}
+
+/**
+ * Paints `box` out with the background beside it: each row takes the colour of the pixel
+ * `gap` pixels to its left, so a badge on a plain or striped surface disappears without a patch.
+ */
+export function fillFromLeft(frame, box, { gap = 8 } = {}) {
+  const { data, width } = frame;
+  const { x0, y0, x1, y1 } = clampBox(frame, box);
+  const sx = Math.max(0, x0 - gap);
+  for (let y = y0; y < y1; y++) {
+    const s = (y * width + sx) * 3;
+    for (let x = x0; x < x1; x++) {
+      const i = (y * width + x) * 3;
+      data[i] = data[s];
+      data[i + 1] = data[s + 1];
+      data[i + 2] = data[s + 2];
+    }
+  }
+}
+
+/**
+ * Replaces a text in `box` with the glyphs of `mask` (one coverage value 0-1 a pixel, the
+ * box's size - from textMask()), in the ink colour found in this frame, over each row's own
+ * background. Matching every frame keeps the label right under hover states, fades and the
+ * dimmed backdrop of a dialog; pixels brighter than the row's background by more than
+ * `brighter` belong to something on top - a dialog - and stay. The ink is the most saturated
+ * pixel that `isInk` accepts (a link's blue); pass `ink: [r, g, b]` for grey or black text.
+ * Returns false, leaving the frame alone, when fewer than `minInk` pixels look like ink: the
+ * label is not there. `box` is in whole pixels.
+ */
+export function replaceText(
+  frame,
+  box,
+  mask,
+  { isInk = (r, g, b) => b - r > 50, ink: fixed = null, minInk = 40, brighter = 25 } = {}
+) {
+  const { data, width } = frame;
+  const { x0, y0, x1, y1 } = clampBox(frame, box);
+  let ink = null;
+  let best = -Infinity;
+  let count = 0;
+  for (let y = y0; y < y1; y++) {
+    for (let x = x0; x < x1; x++) {
+      const i = (y * width + x) * 3;
+      if (!isInk(data[i], data[i + 1], data[i + 2])) continue;
+      count++;
+      const strength = Math.max(data[i], data[i + 1], data[i + 2]) - Math.min(data[i], data[i + 1], data[i + 2]);
+      if (strength > best) {
+        best = strength;
+        ink = [data[i], data[i + 1], data[i + 2]];
+      }
+    }
+  }
+  if (count < minInk || !ink) return false;
+  if (fixed) ink = fixed;
+  for (let y = y0; y < y1; y++) {
+    const counts = new Map();
+    let bg = null;
+    let most = 0;
+    for (let x = x0; x < x1; x++) {
+      const i = (y * width + x) * 3;
+      if (isInk(data[i], data[i + 1], data[i + 2])) continue;
+      const key = ((data[i] >> 2) << 12) | ((data[i + 1] >> 2) << 6) | (data[i + 2] >> 2);
+      const n = (counts.get(key) ?? 0) + 1;
+      counts.set(key, n);
+      if (n > most) {
+        most = n;
+        bg = [data[i], data[i + 1], data[i + 2]];
+      }
+    }
+    if (!bg) continue;
+    const lum = (bg[0] + bg[1] + bg[2]) / 3;
+    for (let x = x0; x < x1; x++) {
+      const i = (y * width + x) * 3;
+      if ((data[i] + data[i + 1] + data[i + 2]) / 3 > lum + brighter) continue;
+      const a = mask[(y - box.y) * box.width + (x - box.x)] ?? 0;
+      for (let c = 0; c < 3; c++) data[i + c] = Math.round(bg[c] * (1 - a) + ink[c] * a);
+    }
+  }
+  return true;
+}
+
+/** The part of `rect` ({ x, y, width, height }) that lies inside every one of `clips`, or null. */
+export function clipRect(rect, clips) {
+  let left = rect.x;
+  let top = rect.y;
+  let right = rect.x + rect.width;
+  let bottom = rect.y + rect.height;
+  for (const c of clips) {
+    left = Math.max(left, c.x);
+    top = Math.max(top, c.y);
+    right = Math.min(right, c.x + c.width);
+    bottom = Math.min(bottom, c.y + c.height);
+  }
+  return right - left < 2 || bottom - top < 2 ? null : { x: left, y: top, width: right - left, height: bottom - top };
+}
+
+/** A pattern from words and regular expressions, as source and flags that survive JSON. */
+export function denyPattern(words) {
+  const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const parts = [words]
+    .flat()
+    .filter(Boolean)
+    .map((w) => (w instanceof RegExp ? w.source : escape(String(w))));
+  return parts.length ? { source: parts.join('|'), flags: 'i' } : null;
 }
 
 /* ---------- Camera: pure helpers ----------------------------------------- */
@@ -280,6 +596,14 @@ async function ffmpeg(args) {
   });
 }
 
+/** Width and height of a video, read from ffmpeg's stream info (ffmpeg-static has no ffprobe). */
+async function videoSize(video) {
+  const r = spawnSync(await ffmpegBin(), ['-hide_banner', '-i', video], { encoding: 'utf8' });
+  const m = /Video:.*?, (\d{2,5})x(\d{2,5})[\s,[]/.exec(r.stderr ?? '');
+  if (!m) throw new Error(`Cannot read the size of ${video}.`);
+  return { width: Number(m[1]), height: Number(m[2]) };
+}
+
 /** Links (or, where links are not allowed, copies) the frames into a numbered sequence for ffmpeg's image2 input. */
 function writeSequence(files, dir) {
   mkdirSync(dir, { recursive: true });
@@ -320,7 +644,7 @@ const DEFAULT_THEME = {
 // Runs inside every document of a stage: cursor, caption pill, focus frame,
 // hidden and blurred elements. Serialised by Playwright - no references to
 // module scope.
-function overlay({ theme, hide, blur, cursor }) {
+function overlay({ theme, hide, blur, cursor, css: extra, conceal }) {
   const store = {
     get: (key) => {
       try {
@@ -341,6 +665,7 @@ function overlay({ theme, hide, blur, cursor }) {
     html, * { scrollbar-width: none !important; scroll-behavior: auto !important; }
     ${hide.length ? `${hide.join(', ')} { display: none !important; }` : ''}
     ${blur.length ? `${blur.join(', ')} { filter: blur(10px) !important; }` : ''}
+    ${extra || ''}
     #__demo-cursor { position: fixed; left: 0; top: 0; z-index: 2147483647; pointer-events: none; width: 30px; height: 30px;
       transform: translate(-100px, -100px); filter: drop-shadow(0 2px 4px rgba(0,0,0,.5)); display: ${cursor ? 'block' : 'none'}; }
     #__demo-cursor::after { content: ''; position: absolute; left: -16px; top: -16px; width: 32px; height: 32px;
@@ -431,15 +756,22 @@ function overlay({ theme, hide, blur, cursor }) {
     const visibleRect = () => {
       let box = null;
       for (const el of targets) {
-        if (!el.isConnected) continue;
-        const b = el.getBoundingClientRect();
-        const c = clipOf(el);
-        const r = {
-          left: Math.max(b.left, c.left),
-          top: Math.max(b.top, c.top),
-          right: Math.min(b.right, c.right),
-          bottom: Math.min(b.bottom, c.bottom)
-        };
+        let r;
+        if (el && 'box' in el) {
+          // an element inside a frame, measured and clipped by the director
+          if (!el.box) continue;
+          r = { left: el.box.x, top: el.box.y, right: el.box.x + el.box.width, bottom: el.box.y + el.box.height };
+        } else {
+          if (!el?.isConnected) continue;
+          const b = el.getBoundingClientRect();
+          const c = clipOf(el);
+          r = {
+            left: Math.max(b.left, c.left),
+            top: Math.max(b.top, c.top),
+            right: Math.min(b.right, c.right),
+            bottom: Math.min(b.bottom, c.bottom)
+          };
+        }
         if (r.right - r.left < 2 || r.bottom - r.top < 2) continue;
         box = box
           ? {
@@ -491,6 +823,27 @@ function overlay({ theme, hide, blur, cursor }) {
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
   else mount();
+
+  // Rows and options that name what must not appear - another client's records in a shared
+  // org - are hidden as they render, in every frame and through shadow roots.
+  if (conceal) {
+    const deny = new RegExp(conceal.source, conceal.flags);
+    const rows = '[role=option], [role=menuitem], [role=row], tr, lightning-base-combobox-item';
+    const sweep = (root) => {
+      root.querySelectorAll(rows).forEach((el) => {
+        if (el.style.display !== 'none' && deny.test(el.innerText || el.textContent || ''))
+          el.style.setProperty('display', 'none', 'important');
+      });
+      root.querySelectorAll('*').forEach((el) => el.shadowRoot && sweep(el.shadowRoot));
+    };
+    setInterval(() => {
+      try {
+        sweep(document);
+      } catch {
+        /* a document in the middle of unloading */
+      }
+    }, 300);
+  }
 }
 
 /**
@@ -508,11 +861,20 @@ export async function stage(
     theme = {},
     hide = [],
     blur = [],
+    css = '',
+    conceal = [],
     cursor = true
   } = {}
 ) {
   const context = await browser.newContext({ viewport: { width, height }, deviceScaleFactor: scale, colorScheme });
-  await context.addInitScript(overlay, { theme: { ...DEFAULT_THEME, ...theme }, hide, blur, cursor });
+  await context.addInitScript(overlay, {
+    theme: { ...DEFAULT_THEME, ...theme },
+    hide,
+    blur,
+    css,
+    conceal: denyPattern(conceal),
+    cursor
+  });
   return new Director(await context.newPage(), { width, height, scale });
 }
 
@@ -526,6 +888,7 @@ class Director {
     this.cues = [];
     this.camera = [];
     this.cam = { scale: 1, x: viewport.width / 2, y: viewport.height / 2 };
+    this.focusing = null;
   }
 
   locate(target) {
@@ -712,11 +1075,38 @@ class Director {
   /**
    * Frames one or more elements with the theme's focus colour - one clear focus per moment.
    * The frame follows them while the page moves and hides wherever they are clipped from view,
-   * so it never frames something the viewer cannot see. Throws if nothing of them is visible.
+   * so it never frames something the viewer cannot see. Elements inside frames - dashboards,
+   * editors - are measured from here ten times a second and clipped by their frames and the
+   * window. Throws if a target matches nothing within `timeout` - a scene keeps recording while
+   * a locator waits - or if nothing of them is visible.
    */
-  async focus(target, { pad = 6 } = {}) {
-    const elements = await Promise.all([target].flat().map((t) => this.locate(t).elementHandle()));
-    await this.page.evaluate(([els, p]) => window.__demo?.focus(els, p), [elements, pad]);
+  async focus(target, { pad = 6, timeout = 3000 } = {}) {
+    const main = this.page.mainFrame();
+    const items = await Promise.all(
+      [target].flat().map(async (t) => {
+        const locator = this.locate(t);
+        const handle = await locator.elementHandle({ timeout }).catch(() => null);
+        if (!handle) throw new Error(`focus(): nothing matches ${locator} within ${timeout} ms - check it in a probe.`);
+        const frame = await handle.ownerFrame();
+        return frame === main ? { handle } : { locator, frame };
+      })
+    );
+    const token = {};
+    this.focusing = token;
+    const send = async () => {
+      const payload = await Promise.all(items.map(async (it) => it.handle ?? { box: await this.frameBox(it) }));
+      if (this.focusing !== token) return;
+      await this.page.evaluate(([els, p]) => window.__demo?.focus(els, p), [payload, pad]);
+    };
+    await send();
+    if (items.some((it) => !it.handle)) {
+      (async () => {
+        while (this.focusing === token) {
+          await sleep(100);
+          await send().catch(() => {});
+        }
+      })();
+    }
     await sleep(60);
     if (!(await this.page.evaluate(() => window.__demo?.visible()))) {
       await this.unfocus();
@@ -724,18 +1114,41 @@ class Director {
     }
   }
 
+  /** Where an element inside a frame is on screen, clipped by its frames and the window - or null. */
+  async frameBox({ locator, frame }) {
+    const box = await locator.boundingBox({ timeout: 500 }).catch(() => null);
+    if (!box) return null;
+    const clips = [{ x: 0, y: 0, width: this.viewport.width, height: this.viewport.height }];
+    for (let f = frame; f?.parentFrame(); f = f.parentFrame()) {
+      const element = await f.frameElement().catch(() => null);
+      const b = element && (await element.boundingBox().catch(() => null));
+      if (b) clips.push(b);
+    }
+    return clipRect(box, clips);
+  }
+
   async unfocus() {
+    this.focusing = null;
     await this.page.evaluate(() => window.__demo?.focus(null));
   }
 
   /**
    * Zooms the camera onto one or more elements, applied when the scene is encoded. The factor
    * is capped so the whole target stays in frame. Captions belong to the page and zoom with
-   * it: zoom in caption-free beats or caption after zoomOut().
+   * it: zoom in caption-free beats or caption after zoomOut(). Throws when the target matches
+   * nothing within `timeout`, instead of filling the take with a wait.
    */
-  async zoom(target, { scale = 1.6, ms = 900, margin = 0.86 } = {}) {
+  async zoom(target, { scale = 1.6, ms = 900, margin = 0.86, timeout = 3000 } = {}) {
     if (this.sceneStart === null) throw new Error('zoom() works inside captureScene only.');
-    const boxes = await Promise.all([target].flat().map((t) => this.locate(t).boundingBox()));
+    const boxes = await Promise.all(
+      [target].flat().map((t) =>
+        this.locate(t)
+          .boundingBox({ timeout })
+          .catch(() => null)
+      )
+    );
+    if (!boxes.some(Boolean))
+      throw new Error(`zoom(): nothing of the target is on the page within ${timeout} ms - check it in a probe.`);
     const cam = fitZoom(unionRect(boxes.filter(Boolean)), this.viewport, { scale, margin });
     this.camera.push({ t: this.now(), ms, ...cam });
     this.cam = cam;
@@ -836,6 +1249,7 @@ export async function captureScene(director, name, run, { dir = 'out', chapter, 
     end = Date.now() / 1000;
     director.closeCue(end);
     director.sceneStart = null;
+    director.focusing = null;
     await page.evaluate(() => window.__demo?.focus(null)).catch(() => {});
     await cdp.send('Page.stopScreencast').catch(() => {});
     await cdp.detach().catch(() => {});
@@ -1023,7 +1437,198 @@ export async function render(scenes, out, { fade = 0.45 } = {}) {
   return { file: resolve(out), duration, subtitles, chapters: chapters(scenes, fade) };
 }
 
+/* ---------- Edit --------------------------------------------------------- */
+
+const encode = ['-c:v', 'libx264', '-preset', 'slow', '-crf', '14', '-pix_fmt', 'yuv420p', '-r', '30'];
+
+/**
+ * Keeps only the parts `keep` ([[from, to], ...] in seconds) of a recorded scene, joined by
+ * short cross-fades, and moves its captions with them. For waits that belong off camera -
+ * a generation, a notice to dismiss, a page that loads. Returns a scene for render().
+ */
+export async function cut(scene, keep, { fade = 0.3, name = `${scene.name}-cut`, dir = 'out' } = {}) {
+  checkKeep(keep, scene.duration, fade);
+  mkdirSync(resolve(dir), { recursive: true });
+  const file = resolve(dir, `${name}.mp4`);
+  await ffmpeg(['-i', scene.file, '-filter_complex', cutGraph(keep, fade), '-map', '[v]', ...encode, file]);
+  return {
+    ...scene,
+    name,
+    file,
+    duration: cutDuration(keep, fade),
+    cues: cutCues(scene.cues ?? [], keep, fade, scene.duration)
+  };
+}
+
+/**
+ * Holds single frames of a scene - [{ at, seconds }] - so a caption or a result stays on
+ * screen longer without slowing the motion around it. Returns a scene for render().
+ */
+export async function freeze(scene, holds, { name = `${scene.name}-hold`, dir = 'out' } = {}) {
+  if (!holds.length) return scene;
+  const sorted = [...holds].sort((a, b) => a.at - b.at);
+  mkdirSync(resolve(dir), { recursive: true });
+  const file = resolve(dir, `${name}.mp4`);
+  await ffmpeg(['-i', scene.file, '-filter_complex', freezeGraph(sorted), '-map', '[v]', ...encode, file]);
+  return {
+    ...scene,
+    name,
+    file,
+    duration: scene.duration + sorted.reduce((sum, h) => sum + h.seconds, 0),
+    cues: freezeCues(scene.cues ?? [], sorted)
+  };
+}
+
+/** Holds frames so every caption of the scene stays on screen for at least `min` seconds. */
+export async function readable(scene, { min = 4, skip = [], name = `${scene.name}-readable`, dir = 'out' } = {}) {
+  const holds = readableHolds(scene.cues ?? [], { min, skip });
+  return holds.length ? freeze(scene, holds, { name, dir }) : scene;
+}
+
+/* ---------- Retouch ------------------------------------------------------ */
+
+/**
+ * Runs `edit(frame, index, t)` on every frame of a video and encodes the result to `out` -
+ * for UI noise that cannot be fixed before the take: an error badge, a counter, a label.
+ * `frame` is { data, width, height } with raw RGB that `edit` changes in place, synchronously;
+ * it returns true when it changed something. `report: true` only counts, without encoding.
+ * Returns { frames, changed }.
+ */
+export async function retouch(video, out, edit, { report = false } = {}) {
+  const bin = await ffmpegBin();
+  const { width, height } = await videoSize(video);
+  const size = width * height * 3;
+  const quiet = ['-hide_banner', '-loglevel', 'error'];
+  if (!report) mkdirSync(dirname(resolve(out)), { recursive: true });
+  const dec = spawn(bin, [...quiet, '-i', video, '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-']);
+  const enc = report
+    ? null
+    : spawn(bin, [
+        '-y',
+        ...quiet,
+        ...['-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', `${width}x${height}`, '-r', '30', '-i', '-'],
+        ...encode,
+        resolve(out)
+      ]);
+  const exit = (p) =>
+    new Promise((done, fail) =>
+      p.on('close', (code) => (code ? fail(new Error(`ffmpeg exited with ${code}`)) : done()))
+    );
+  const finished = Promise.all([exit(dec), enc ? exit(enc) : null]);
+  let frame = Buffer.alloc(size);
+  let filled = 0;
+  let index = 0;
+  let changed = 0;
+  dec.stdout.on('data', (chunk) => {
+    for (let offset = 0; offset < chunk.length;) {
+      const n = Math.min(size - filled, chunk.length - offset);
+      chunk.copy(frame, filled, offset, offset + n);
+      filled += n;
+      offset += n;
+      if (filled < size) continue;
+      if (edit({ data: frame, width, height }, index, index / 30)) changed++;
+      index++;
+      if (enc && !enc.stdin.write(frame)) {
+        dec.stdout.pause();
+        enc.stdin.once('drain', () => dec.stdout.resume());
+      }
+      frame = Buffer.alloc(size);
+      filled = 0;
+    }
+  });
+  dec.stdout.on('end', () => enc?.stdin.end());
+  await finished;
+  console.log(`${report ? video : out}: ${changed} of ${index} frames ${report ? 'to retouch' : 'retouched'}`);
+  return { frames: index, changed };
+}
+
+/** One frame of a video as { data, width, height } - a clean reference to patch others from. */
+export async function frameAt(video, at) {
+  const { width, height } = await videoSize(video);
+  const r = spawnSync(
+    await ffmpegBin(),
+    [
+      '-hide_banner',
+      '-loglevel',
+      'error',
+      '-ss',
+      String(at),
+      '-i',
+      video,
+      '-frames:v',
+      '1',
+      '-f',
+      'rawvideo',
+      '-pix_fmt',
+      'rgb24',
+      '-'
+    ],
+    { maxBuffer: width * height * 4 }
+  );
+  if (r.stdout.length < width * height * 3) throw new Error(`No frame at ${at}s in ${video}.`);
+  return { data: r.stdout.subarray(0, width * height * 3), width, height };
+}
+
+/**
+ * The glyphs of `text` as coverage values (0-1 a pixel) in a box of `width` x `height`, for
+ * replaceText(). `x` and `y` place the text inside the box; pick a `fontfile` and `size` that
+ * match the interface (Salesforce Sans is close to Helvetica Neue).
+ */
+export async function textMask(
+  text,
+  { width, height, x = 0, y = 0, size = 20, fontfile = '/System/Library/Fonts/HelveticaNeue.ttc' }
+) {
+  // The text goes through a file: quotes, colons and percent signs in a filter argument need
+  // escaping that differs between ffmpeg versions.
+  const dir = mkdtempSync(join(tmpdir(), 'demo-kit-'));
+  const textfile = join(dir, 'text.txt');
+  writeFileSync(textfile, String(text));
+  const draw = `drawtext=fontfile='${fontfile}':textfile='${textfile}':expansion=none:fontsize=${size}:fontcolor=black:x=${x}:y=${y}`;
+  const r = spawnSync(
+    await ffmpegBin(),
+    [
+      ...['-hide_banner', '-loglevel', 'error', '-f', 'lavfi', '-i', `color=white:s=${width}x${height}`],
+      ...['-vf', draw, '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'gray', '-']
+    ],
+    { maxBuffer: width * height * 2 }
+  );
+  rmSync(dir, { recursive: true, force: true });
+  if (r.stdout.length < width * height) throw new Error(`textMask(): ffmpeg could not draw the text - ${r.stderr}`);
+  return Float32Array.from(r.stdout.subarray(0, width * height), (v) => 1 - v / 255);
+}
+
 /* ---------- Review and delivery ------------------------------------------ */
+
+/**
+ * The words of `words` (strings or regular expressions) that are visible on the stage's page
+ * right now - in every frame, through shadow roots and in input values. Run it before and
+ * after every take in a shared org; text drawn on canvas is not covered, look at the stills.
+ */
+export async function leaks(director, words) {
+  const deny = denyPattern(words);
+  if (!deny) return [];
+  const pattern = new RegExp(deny.source, 'gi');
+  const found = new Set();
+  for (const frame of director.page.frames()) {
+    const text = await frame
+      .evaluate(() => {
+        const out = [document.body?.innerText ?? ''];
+        const walk = (root) =>
+          root.querySelectorAll('*').forEach((el) => {
+            if ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && el.type !== 'hidden') out.push(el.value);
+            if (el.shadowRoot) {
+              for (const child of el.shadowRoot.children) out.push(child.innerText ?? '');
+              walk(el.shadowRoot);
+            }
+          });
+        walk(document);
+        return out.join('\n');
+      })
+      .catch(() => '');
+    for (const m of text.matchAll(pattern)) found.add(m[0].toLowerCase());
+  }
+  return [...found];
+}
 
 /** One frame every `every` seconds, tiled into a single image to review a take at a glance. */
 export async function contactSheet(video, out, { duration, every = 1, cols = 4, width = 640 }) {

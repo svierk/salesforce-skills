@@ -13,9 +13,10 @@ await still(video.file, 6.2, 'out/still-result.png'); // full size, at a key mom
 
 Read the images, then check:
 
-- [ ] Every caption readable, on screen long enough, not covering the subject of its beat
-- [ ] Every claim true - numbers, versions, "new" (ground rule 3)
-- [ ] Nothing private in frame: real names, emails, phone numbers, the user's photo, internal URLs, org banners
+- [ ] Every card and caption readable to the end without pausing, by someone who sees it for the first time ([timing](storyboard.md#timing)), and not covering the subject of its beat
+- [ ] Every claim true - numbers, versions, "new" (ground rule 3); illustrative numbers only when the user asked, and named as such
+- [ ] Nothing private in frame: real names, emails, phone numbers, the user's photo, internal URLs, org banners - and in a shared org nothing of other clients: run `leaks()` and read the stills, including dropdowns and pickers
+- [ ] No retouching left to see: run the retouch rule on the result, it finds nothing ([recording.md](recording.md#retouching))
 - [ ] The cursor visible where something happens, and clicks land on what the caption names
 - [ ] Every typed value visible while it is typed - a contact sheet samples too rarely; take `still()`s a few tenths of a second apart around each `type` step
 - [ ] Every focus frame on a visible element - a contact sheet of the moment after each `focus` call shows it
@@ -60,9 +61,22 @@ Long demos go through several rounds. For each one:
 | `<name>.gif`            | `gif(video, out, { width: 960, fps: 12 })` - for READMEs and docs, where video does not autoplay                                                                                               |
 | `<name>.webp`           | Animated WebP in full colour for a README: `ffmpeg -i in.mp4 -vf fps=24 -c:v libwebp_anim -quality 82 -loop 0 out.webp`. A docs site plays the MP4 or a WebM instead, with one frame as poster |
 | Narrated version        | `addAudio(video, 'voice.m4a', '<name>-narrated.mp4')`                                                                                                                                          |
+| `talk-track-<lang>.md`  | What the presenter says while the video plays - see [Talk track](#talk-track)                                                                                                                  |
 | `storyboard.mjs` + data | The demo itself - re-run for the next prospect, release or language                                                                                                                            |
 
 Copy the deliverables to the place agreed in the brief, named so they sort and say what they are: `<product>-<format>-<audience or version>.mp4`, for a bid `<prospect>-<requirement or chapter>.mp4`.
+
+## Talk track
+
+When someone presents the video live - a pitch, a steering committee, a sprint review - give them the words that go with it, in the language they present in:
+
+- **One section per chapter,** headed with its time from the chapter marks (`0:59 – 1:08 · Journey shell`), a stage direction in italics (what is on screen, when the next card comes) and the text to say.
+- **About 2 words a second** - a live speaker is slower than a narrator (2.5) and looks at the audience. Fit each section's text to its length; a section that runs over pushes the speaker behind the video.
+- **Up front:** the key message in one sentence, and what the speaker must know - the data is fictitious, which numbers are illustrative, that AI results vary from run to run.
+- **Likely questions** at the end, as a table with honest answers - "Are the numbers real?", "Where does the data come from?", "Can the AI be wrong?".
+- **Kept in step.** Update it in every feedback round that changes the video: longer cards and cut beats move every time after them, and a talk track that runs behind the video is worse than none.
+
+Write it as Markdown next to the video, or publish it as a page when the speaker should read it on a tablet.
 
 ## Variants
 

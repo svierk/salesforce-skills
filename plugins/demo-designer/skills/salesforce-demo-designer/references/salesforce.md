@@ -1,6 +1,6 @@
 # Salesforce
 
-What is different about recording in a Salesforce org: logging in without a password, knowing when Lightning is ready, clicking through shadow DOM, and keeping the frame free of what does not belong in a demo.
+What is different about recording in a Salesforce org: logging in without a password, knowing when Lightning is ready, clicking through shadow DOM, keeping the frame free of what does not belong in a demo - also in an org that other teams and clients share - and products with habits of their own, such as Marketing Cloud Next.
 
 ## Org and login
 
@@ -63,7 +63,28 @@ Look at a probe screenshot of every page and decide what stays. What was in the 
 | Profile photo of the logged-in user                             | `img.branding-user-profile`           | `blur`                                                                             |
 | Background band that fades over content crossing its lower edge | `.slds-brand-band::before`, `::after` | `display: none` through `page.addStyleTag` - `hide` does not reach pseudo elements |
 
-Also look for: the "Logged in as" banner of a Login As session, the sandbox name banner, setup assistants and welcome dialogs (close them during the warm-up), toasts from earlier actions, "Recently Viewed" list views that are empty in a fresh org (open a named list view instead), and a page opened outside the app's navigation, which shows as a temporary tab with an asterisk (add it to the app's navigation - an org change, ask first - or start the path from a tab that is there).
+Also look for: leftovers of rehearsals - a folder "Rehearsal drafts", a campaign "test 2" - that later show up in pickers, lists and search results (name rehearsal records like the real ones, and delete them with a yes before the final takes), the "Logged in as" banner of a Login As session, the sandbox name banner, setup assistants and welcome dialogs (close them during the warm-up), toasts from earlier actions, "Recently Viewed" list views that are empty in a fresh org (open a named list view instead), and a page opened outside the app's navigation, which shows as a temporary tab with an asterisk (add it to the app's navigation - an org change, ask first - or start the path from a tab that is there).
+
+## Shared orgs
+
+Presales orgs are often shared: other teams demo other products in them, and other clients' records, apps and themes are a click away. Nothing of theirs may appear in the video, and nothing of yours may change their demo.
+
+**Look and feel - three levels, picked per demo:**
+
+| Level                 | How                                                                                                                                                                 | Reaches                                 | When                                                                                         |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | -------------------------------------------------------------------------------------------- |
+| The recording browser | `stage({ css })`, for example a logo as data URL on `.slds-global-header__logo` (`background-image`, `background-size: contain`), plus `hide` for system banners    | This stage only; the org stays as it is | The default in a shared org, and for a one-off video in another brand. No org change         |
+| The app's branding    | The Lightning app's own logo and primary colour (App Manager, App Branding), with the option to use them instead of the org's theme                                 | Everyone in that app                    | A demo app that is yours alone and keeps its look in live demos too - an org change          |
+| The org theme         | Setup, Themes and Branding: a theme with logo, brand colour and background, activated for the org (`BrandingSet` and `LightningExperienceTheme` deploy as metadata) | Every user of the org, in every app     | A demo org of your own, or a live demo that needs the look outside the video - an org change |
+
+Each org change needs the user's yes (ground rule 7). In a shared org, switching the org theme also needs a time window agreed with the other teams: note the active theme, switch, record, switch back. Either way the product recording stays the product - the theme sets its colours and logo, the brand lives around it ([storyboard.md](storyboard.md#visual-language)).
+
+**Other clients out of frame:**
+
+- **Hide what renders.** `stage({ conceal: ['Acme', /globex/i] })` hides rows, options and menu items that name them as they appear - in pickers, recent items, list views and frames. Counts on the page ("Items (12)") do not change; keep such headers out of frame or filter the view.
+- **Check before and after every take.** `await leaks(app, words)` lists what of the deny list is visible right now; stop when it is not empty. Text drawn on canvas (charts, dashboards) is not covered - look at the stills.
+- **Demo records of your own,** created for the video, rather than another team's records - even when theirs would fit.
+- **Your reserved domain may be taken.** Another team may already use `.example` to mark its records (a formula field, list view filters, KPIs). Check before loading data, and use another reserved domain such as `.test` when it is.
 
 ## Personas and demo data
 
@@ -92,6 +113,21 @@ Prompt Builder, Agentforce and other generative features answer differently on e
 - **Wait outside the beat.** Generation takes seconds to minutes. Start it, then trim the wait in the edit (or record the wait off camera) and show the result.
 - **Check every claim it makes on screen.** Generated text may state things the data does not support, or details from a different record. Read it before hand-over like any caption.
 - **Prepared results are an option.** When the live answer is too unpredictable for a recording, load a prepared result the team agrees on, and say so in the hand-over.
+- **First-use notices.** Many AI buttons show a notice the first time in a browser session ("You're about to use Agentforce", Got It). A stage is a fresh session on every run: dismiss it in a warm-up before the scene and reload, or cut it out of the take with `cut()`.
+- **Wait for the result or the error.** A generation fails ("Something went wrong") as easily as it succeeds. Wait in the script for either and stop the take on the error, instead of holding on an error message.
+- **One-click actions over typed prompts.** A button that drafts on its own ("Draft with Agentforce" next to a subject line) records more reliably than a prompt typed into a panel, where the typed request may never be sent. Probe both.
+- **Buttons inside editors.** AI buttons inside an editor's frame (a paragraph in an email builder) can ignore synthetic clicks; the same feature in the property panel of the main page usually works.
+- **Unsaved beats are free.** Showing a draft and closing without saving - a segment drafted from a sentence, a subject line that is not applied - creates nothing, and retakes need no reset.
+
+## Illustrative numbers
+
+Ground rule 3 says every claim is true. A demo org often has no history for the step that closes the story - a performance dashboard right after a journey started shows zeros. Only when the user asks for it, a recording may show illustrative numbers:
+
+- **In the recording browser only.** Never write invented results into the org - other teams and later demos would read them as real.
+- **Consistent with the story.** Derive them from what the video showed: 9 invitations and 3 reminders give 12 sends, and 8 opens give an open rate of 66.7 %.
+- **Canvas KPIs.** Lightning dashboards draw their values on canvas. An init script that runs in the dashboard's frame can wrap `CanvasRenderingContext2D.prototype.fillText` and draw another value for a tile, found by walking up from the canvas to the tile's title. "As of" times and filter labels change through their text nodes.
+- **What gives it away.** Hover tooltips show the real values - keep the cursor on titles, not on values. Charts without data stay empty - keep them out of frame.
+- **Say it.** Name the numbers as illustrative in the hand-over and in the talk track ([delivery.md](delivery.md#talk-track)), so the presenter answers "are those real?" honestly.
 
 ## Retakes and side effects
 
@@ -123,6 +159,20 @@ Verify on your org - these change with releases.
 | Element boxes inside canvases (flow builders, charts) do not match the drawing | Zoom onto the container without a frame                                                                                                        |
 | Mobile web may be disabled in an org - a phone emulation lands in Classic      | Record mobile scenes on a real device, or show them on desktop                                                                                 |
 | A narrow field truncates its value ("..")                                      | Fix the page if it is yours; otherwise widen it with `page.addStyleTag` for the take only, and tell the user that the page itself is unchanged |
+
+## Marketing Cloud Next
+
+Campaigns, segments, content and journeys live in Lightning, with habits of their own. Observed in November 2026 - verify on your org:
+
+| What                                                                            | What works                                                                                                                                                                                                              |
+| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The campaign workspace renders blank, dashboards say "report type inaccessible" | The recording user lacks permission sets - in that org `MarketingCloudAdmin` and `CampaignCreation_and_ContentBuilder_Agent_Access`, and `CDPAdmin` for the engagement dashboards. Assigning them is an org change: ask |
+| A run-once journey completes without sending                                    | Its segment was not published yet. Publish it (Publish Now) and wait for the population before activating                                                                                                               |
+| A list of values for an "Is In" rule in the Segment Builder                     | Bulk Import, then Add Values - the whole list in one step instead of one value at a time                                                                                                                                |
+| Adding an element in Flow Builder                                               | Type into the search of the add menu instead of scrolling its list                                                                                                                                                      |
+| The email canvas of the content editor                                          | It sits in a frame (`surfaceFrame`): locate through `frameLocator`, and `focus` measures it from outside                                                                                                                |
+| Red error badges on the journey while it is built                               | They stay until the schedule is set. Set it before the take, so the badge never shows; otherwise retouch it ([recording.md](recording.md#retouching))                                                                   |
+| AI beats that record well                                                       | Einstein segment creation (Segments, New, create with Einstein, describe the audience in one sentence) and Draft with Agentforce for a subject line - neither saves unless you do                                       |
 
 ## Experience Cloud and other sites
 

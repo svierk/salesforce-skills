@@ -36,24 +36,30 @@ Lightning Experience is built for wide screens; below about 1024 CSS pixels it g
 
 ## Timing
 
-| Beat              | Time                                                  |
-| ----------------- | ----------------------------------------------------- |
-| Intro card        | 2.5-3 s - long enough for the last chip to land       |
-| Outro card        | 3 s; 4-5 s when it carries a link or contact to read  |
-| Caption on screen | At least 2 s, or words / 3 + 1 s, whichever is longer |
-| Cursor move       | 0.5-0.8 s; 1-1.5 s for a slow opening glide           |
-| Typing            | 35-70 ms a character; shorten long values             |
-| Hold on a result  | 1.5 s or more - the result is the point of the beat   |
-| Scroll            | 1-2.5 s for a page, eased                             |
-| Cross-fade        | 0.4-0.5 s                                             |
-| Focus frame       | 1.2 s or more on its element                          |
-| Zoom in or out    | 0.7-1 s, eased                                        |
-| Chapter ident     | 2.5-3 s readable, plus the wipe in and out            |
-| Recap montage     | About 2.5 s a step when the narrator names each one   |
-| Concept slide     | 15-20 s when someone talks over it                    |
-| Narration         | About 2.5 words a second                              |
+| Beat              | Time                                                 |
+| ----------------- | ---------------------------------------------------- |
+| Card to read      | Words / 3 + 2 s - see below                          |
+| Intro card        | 3-4 s in a teaser; 8-9 s with title, subtitle, chips |
+| Chapter card      | 5-6 s with a subtitle; 3 s for a title alone         |
+| Outro card        | 3 s in a teaser; 7-8 s with stats, a link or contact |
+| Caption on screen | About 4 s in a walkthrough, 2-3 s in a teaser        |
+| Cursor move       | 0.5-0.8 s; 1-1.5 s for a slow opening glide          |
+| Typing            | 35-70 ms a character; shorten long values            |
+| Hold on a result  | 1.5 s or more - the result is the point of the beat  |
+| Scroll            | 1-2.5 s for a page, eased                            |
+| Cross-fade        | 0.4-0.5 s                                            |
+| Focus frame       | 1.2 s or more on its element                         |
+| Zoom in or out    | 0.7-1 s, eased                                       |
+| Chapter ident     | As a chapter card, plus the wipe in and out          |
+| Recap montage     | About 2.5 s a step when the narrator names each one  |
+| Concept slide     | 15-20 s when someone talks over it                   |
+| Narration         | About 2.5 words a second                             |
+
+**Read without pausing.** A card or caption is long enough when someone who sees the topic for the first time reads it to the end without pausing the video - the viewer does not know the text, you do. Count the words on it (title, subtitle, chips, stats), divide by 3 and add 2 seconds for the eye to find its way in. Short durations suit a muted teaser of a few words; a pitch whose cards say what the chapter is about needs the longer ones. When a recorded caption is too short, `readable()` holds a frame until it reaches its time, without re-recording ([recording.md](recording.md#long-demos)).
 
 The video is the sum of the scenes minus one fade per join. Add up the storyboard table before recording; if it runs long, cut beats, not holds - a rushed result is a lost result. Pages that load slowly are loaded before a scene starts, not during it.
+
+**Budget the additions.** Longer cards, an AI beat or a dashboard at the end each add 20-40 seconds to a pitch. When a feedback round adds them, take time out elsewhere in the same round - typically configuration that the story shows twice, such as the same settings dialog for a second email.
 
 ## Caption copy
 
