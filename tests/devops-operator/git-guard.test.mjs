@@ -239,3 +239,45 @@ describe('commands that throw work away', () => {
     test(`allows ${command}`, () => assert.equal(decide(command, dir), 'allow'));
   }
 });
+
+describe('merges on other platforms', () => {
+  const dir = repo();
+  for (const command of [
+    'glab mr merge 12 --squash',
+    'glab mr accept 12',
+    'az repos pr update --id 12 --status completed',
+    'az repos pr update --id 12 --status=completed',
+    'az repos pr update --id 12 --auto-complete true',
+    'az repos pr create --source-branch feature/x --target-branch main --auto-complete',
+    'curl -s -X POST -u "$BB_USER:$BB_TOKEN" https://api.bitbucket.org/2.0/repositories/acme/crm/pullrequests/12/merge',
+    "curl -X POST -H 'Authorization: Bearer x' https://bitbucket.acme.com/rest/api/latest/projects/CRM/repos/crm/pull-requests/12/merge?version=3",
+    'BB_TOKEN=x http POST https://api.bitbucket.org/2.0/repositories/acme/crm/pullrequests/12/merge'
+  ]) {
+    test(`asks before ${command}`, () => assert.equal(decide(command, dir), 'ask'));
+  }
+
+  for (const command of [
+    'glab mr create --target-branch main --title "feat: discount" --yes',
+    'glab mr view 12',
+    'glab ci status',
+    'az repos pr create --source-branch feature/x --target-branch main --title "feat: discount"',
+    'az repos pr create --source-branch feature/x --target-branch main --auto-complete false',
+    'az repos pr update --id 12 --title "feat: discount"',
+    'az repos pr list --status active',
+    'az pipelines runs list --branch feature/x',
+    'curl -s -u "$BB_USER:$BB_TOKEN" https://api.bitbucket.org/2.0/repositories/acme/crm/pullrequests/12',
+    'curl -s -u "$BB_USER:$BB_TOKEN" https://api.bitbucket.org/2.0/repositories/acme/crm/pullrequests/12/statuses'
+  ]) {
+    test(`allows ${command}`, () => assert.equal(decide(command, dir), 'allow'));
+  }
+
+  test('ignores merges outside Salesforce projects', () => {
+    const other = repo({ salesforce: false });
+    assert.equal(decide('glab mr merge 12', other), 'allow');
+    assert.equal(decide('az repos pr update --id 12 --status completed', other), 'allow');
+    assert.equal(
+      decide('curl -X POST https://api.bitbucket.org/2.0/repositories/a/b/pullrequests/1/merge', other),
+      'allow'
+    );
+  });
+});

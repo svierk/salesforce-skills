@@ -24,11 +24,11 @@ Several commands below discard changes. The hook asks for confirmation before ea
 | Last commit should not exist, keep the changes | `git reset HEAD~1` - the changes return to the working copy |
 | Committed on an environment branch             | See below                                                   |
 
-**Committed on an environment branch** (usually only possible without the hooks): move the commit to a work branch and reset the environment branch to GitHub's state, keeping the work:
+**Committed on an environment branch** (usually only possible without the hooks): move the commit to a work branch and reset the environment branch to the server's state, keeping the work:
 
 ```bash
 git branch feature/ABC-123-discount-approval     # the commit now lives here too
-git reset --keep origin/main                     # main back to GitHub's state
+git reset --keep origin/main                     # main back to the server's state
 git switch feature/ABC-123-discount-approval
 ```
 
@@ -38,12 +38,12 @@ git switch feature/ABC-123-discount-approval
 
 Never rewrite pushed history - others may have it, and the force push it needs is blocked.
 
-| Mistake                               | Fix                                                                                                                                                                                                |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A pushed commit was wrong             | `git revert <commit>` - a new commit that undoes it; push normally                                                                                                                                 |
-| Wrong message on a pushed commit      | Leave it - or, if the pull request is squash-merged, fix the pull request title instead                                                                                                            |
-| Pushed to the wrong branch name       | Push to the right name, open the pull request from there; deleting the wrong branch on GitHub needs a confirmation                                                                                 |
-| A merged pull request broke something | A revert pull request: `gh pr view <number>` for the merge commit, `git revert` on a new branch, pull request into the same target - and tell the team, because the change may already be deployed |
+| Mistake                               | Fix                                                                                                                                                                                                                                            |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A pushed commit was wrong             | `git revert <commit>` - a new commit that undoes it; push normally                                                                                                                                                                             |
+| Wrong message on a pushed commit      | Leave it - or, if the pull request is squash-merged, fix the pull request title instead                                                                                                                                                        |
+| Pushed to the wrong branch name       | Push to the right name, open the pull request from there; deleting the wrong branch on the server needs a confirmation                                                                                                                         |
+| A merged pull request broke something | A revert pull request: the merge commit from the pull request (`gh pr view <number>`, or the platform's page), `git revert` on a new branch, pull request into the same target - and tell the team, because the change may already be deployed |
 
 Reverting code does not undo a **deployment**: Salesforce has no rollback. A revert deploys the previous state again through the pipeline - for data changes or deleted fields that may not be enough. Say so when a merged change already reached an org.
 

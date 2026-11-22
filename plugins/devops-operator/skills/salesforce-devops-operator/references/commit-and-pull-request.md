@@ -46,14 +46,16 @@ Goal: the work in front of a reviewer, with the checks running.
    git push -u origin feature/ABC-123-discount-approval
    ```
 
-4. **Write the description.** If the repository has `.github/PULL_REQUEST_TEMPLATE.md`, fill in its sections. Otherwise: what changed and why, in business terms; the story (link from `items.url`, or `Closes #123` for GitHub issues so the issue closes on merge); how it was tested; anything a reviewer must know (a manual step after deployment, a dependency on another story).
-5. **Open it** - confirm first. Use a draft when the user wants early feedback but is not done:
+4. **Write the description.** If the repository has a pull request template - `.github/PULL_REQUEST_TEMPLATE.md` on GitHub, the other platforms' places are in [platforms.md](platforms.md#what-else-differs) - fill in its sections. Otherwise: what changed and why, in business terms; the story (link from `items.url`; `Closes #123` for GitHub or GitLab issues, so the issue closes on merge; `--work-items` on Azure DevOps; the Jira key in the title next to Bitbucket); how it was tested; anything a reviewer must know (a manual step after deployment, a dependency on another story).
+5. **Open it** - confirm first. Use a draft when the user wants early feedback but is not done. On GitHub:
 
    ```bash
    gh pr create --base main --title "<the commit subject, or a summary of several>" --body-file <description file>
    gh pr create --draft ...       # not ready for review yet
    ```
 
-6. **Hand over the link** and say what happens now: the checks start (usually a few minutes), a reviewer is requested, and - per blueprint - what merging will mean. Offer to watch the checks: `gh pr checks --watch`.
+   On GitLab, Azure DevOps and Bitbucket, take the command or API call from [platforms.md](platforms.md#the-steps-per-platform) - each has a draft as well.
+
+6. **Hand over the link** and say what happens now: the checks start (usually a few minutes), a reviewer is requested, and - per blueprint - what merging will mean. Offer to watch the checks (`gh pr checks --watch`, or the platform's equivalent).
 
 **Updating an open pull request** is just another commit and push on the same branch - the pull request and its checks update by themselves.

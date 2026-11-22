@@ -4,35 +4,40 @@ Goal: turn a red check into a plain explanation and one concrete next step.
 
 ## Find the failure
 
+On GitHub:
+
 ```bash
 gh pr checks                       # all checks of the current branch's pull request
 gh run view <run-id>               # the jobs and steps of one run
 gh run view <run-id> --log-failed  # only the log of what failed
 ```
 
-The run id is in the link `gh pr checks` prints. Read the failed step's log yourself, then explain - do not paste long logs at the user.
+The run id is in the link `gh pr checks` prints. On GitLab, Azure DevOps and Bitbucket, the same three steps - state, jobs, failed log - are in [platforms.md](platforms.md#the-steps-per-platform). Read the failed step's log yourself, then explain - do not paste long logs at the user.
 
-## What the kit's checks mean
+## What the checks mean
 
-Pipelines built with the Salesforce DevOps Starter Kit have three kinds of failure, and some teams add a fourth: end-to-end UI tests. Name which one it is first - they need different people and different fixes.
+Whatever runs the pipeline - the Salesforce DevOps Starter Kit on GitHub Actions, sfdx-hardis, or the team's own jobs on GitLab, Azure Pipelines or Bitbucket Pipelines - a Salesforce check fails in one of a few ways. Name which one it is first - they need different people and different fixes. The step names below are the kit's; other pipelines name their jobs differently, but what failed reads the same in the log.
 
-| Failed step                        | What it means                                                              | Usually fixed by                                        |
-| ---------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------- |
-| Code review / Code Analyzer        | A rule about code or metadata quality is broken above the team's threshold | Changing the flagged line; a developer for Apex and LWC |
-| Validation / check-only deployment | The change would not deploy to the org behind the target branch            | Adding what is missing, or fixing the component         |
-| Tests / coverage                   | An Apex test fails, or coverage drops below the required level             | A developer                                             |
-| E2E UI tests (UTAM, WebdriverIO)   | A click path through an org did not behave as the test expects             | Whoever maintains the UI tests - see below              |
+| Failed step                        | What it means                                                                               | Usually fixed by                                        |
+| ---------------------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Code review / Code Analyzer        | A rule about code or metadata quality is broken above the team's threshold                  | Changing the flagged line; a developer for Apex and LWC |
+| Build                              | A UI bundle or another build the deploy needs did not build - see [UI bundles](#ui-bundles) | A developer                                             |
+| Validation / check-only deployment | The change would not deploy to the org behind the target branch                             | Adding what is missing, or fixing the component         |
+| Validate agents                    | An Agentforce agent's Agent Script does not compile - see [Agents](#agents)                 | Whoever builds the agent                                |
+| Tests / coverage                   | An Apex test fails, or coverage drops below the required level                              | A developer                                             |
+| E2E UI tests (UTAM, WebdriverIO)   | A click path through an org did not behave as the test expects                              | Whoever maintains the UI tests - see below              |
 
 ### Validation errors, translated
 
-| The log says                                                                              | In plain words                                                                     | Next step                                                       |
-| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `no CustomField named X found`, `Variable does not exist`, `In field: ... no such column` | The change uses something that is not in the target org and not in the branch      | Retrieve and commit the missing component too                   |
-| `Dependent class is invalid and needs recompilation`                                      | Code that depends on the change breaks                                             | Developer: fix the depending class                              |
-| `The flow version ... cannot be activated` / flow errors                                  | The flow is invalid in the target org - often a missing field or a wrong reference | Check the named element in Flow Builder, retrieve what it needs |
-| `Picklist value ... not found`, `bad value for restricted picklist`                       | A picklist value the change relies on is missing in the target org                 | Retrieve and commit the field with its values                   |
-| `UNABLE_TO_LOCK_ROW`, timeouts, `Polling time out`                                        | The org was busy - not your change                                                 | Run the failed job again: `gh run rerun <run-id> --failed`      |
-| `INVALID_SESSION_ID`, `expired access/refresh token`, JWT errors                          | The pipeline cannot log in to the org - not your change                            | Tell the pipeline owner                                         |
+| The log says                                                                              | In plain words                                                                     | Next step                                                                                  |
+| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `no CustomField named X found`, `Variable does not exist`, `In field: ... no such column` | The change uses something that is not in the target org and not in the branch      | Retrieve and commit the missing component too                                              |
+| `Dependent class is invalid and needs recompilation`                                      | Code that depends on the change breaks                                             | Developer: fix the depending class                                                         |
+| `The flow version ... cannot be activated` / flow errors                                  | The flow is invalid in the target org - often a missing field or a wrong reference | Check the named element in Flow Builder, retrieve what it needs                            |
+| `Picklist value ... not found`, `bad value for restricted picklist`                       | A picklist value the change relies on is missing in the target org                 | Retrieve and commit the field with its values                                              |
+| `UNABLE_TO_LOCK_ROW`, timeouts, `Polling time out`                                        | The org was busy - not your change                                                 | Run the failed job again, once (`gh run rerun <run-id> --failed`, or the platform's retry) |
+| `INVALID_SESSION_ID`, `expired access/refresh token`, JWT errors                          | The pipeline cannot log in to the org - not your change                            | Tell the pipeline owner                                                                    |
+| `UNABLE_TO_LOCK_ROW` again and again, or `Polling time out` on every run                  | Not a busy org any more - the run is too big or the org is stuck                   | Tell the pipeline owner                                                                    |
 
 Look for the component name and line in the error and point the user to it - "the Discount Approval flow, element Check_Threshold" is actionable, "deployment failed" is not.
 
@@ -59,6 +64,16 @@ A validation or deployment that fails with `Expected source files for type 'UIBu
 
 A project with HXL widgets (`uiWidgets/`, `lightningTypes/`, `mcpServerDefinitions/`) fails its validation with `Not available for deploy for this organization` on `UiWidgetBundle` when the Headless Experience Layer is off in the target org - that is org setup for the pipeline owner, not the change. A failing Apex test of an MCP tool class, or a widget whose bindings do not match its type, is app work: if the HXL Hero is installed, offer to switch to it.
 
+### Agents
+
+Since the kit's v1.8.0, pull request validation also compiles every Agentforce agent of the project (`Validate Agents`), and deployments publish and activate them.
+
+- **A compile error in the Agent Script** - the agent's definition has a mistake: name the agent, the file under `aiAuthoringBundles/` and the line from the log. That is agent work, not a missing component - hand it to whoever builds the agent; Salesforce's `agentforce-*` skills fix Agent Script if they are installed.
+- **`invalid or missing access token`** while the login and the metadata validation worked - the pipeline's app lacks the OAuth scope `web`. Pipeline setup, not the change: tell the pipeline owner.
+- **An agent user that does not exist** in the target org - the agent names a user per org through a variable of the pipeline. Pipeline setup as well.
+
+Failed agent tests after a deployment are judged test case by test case. They consume credits and can change org data, so do not re-run them hoping for green.
+
 ### End-to-end UI tests
 
 A job named like "E2E UI Tests" or running `wdio` opens an org in a browser and clicks through a business process. When it fails:
@@ -70,9 +85,9 @@ A job named like "E2E UI Tests" or running `wdio` opens an org in a browser and 
 
 ## Not a failure, but stuck
 
-- **"Waiting for approval" / "Waiting for review"** on a validation run - the validation's GitHub Environment has required reviewers, so every pull request waits. That is a setup problem: tell the pipeline owner.
-- **"Expected - waiting for status to be reported"** - a required check that never started. Often the pull request was opened by an automation that cannot trigger workflows. Tell the pipeline owner.
-- **Merge blocked although everything is green** - a review is missing, or the branch is behind its target and must be updated first.
+- **"Waiting for approval" / "Waiting for review"** on a validation run - the validation's environment has required reviewers, so every pull request waits. That is a setup problem: tell the pipeline owner.
+- **"Expected - waiting for status to be reported"** (GitHub), a pipeline that never appears on the merge request (GitLab), a build validation policy that stays "queued" or "expired" (Azure DevOps), a merge check without a build (Bitbucket) - a required check that never started. Often the pull request was opened by an automation that cannot trigger pipelines, or the pipeline's rules leave the branch out. Tell the pipeline owner; an expired build validation in Azure DevOps can be queued again ([platforms.md](platforms.md#the-steps-per-platform)).
+- **Merge blocked although everything is green** - a review is missing, a linked work item is required (Azure DevOps), or the branch is behind its target and must be updated first.
 
 ## Do not
 

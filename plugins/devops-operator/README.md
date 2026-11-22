@@ -1,6 +1,6 @@
 # 🧭 DevOps Operator
 
-Guided day-to-day work on a Salesforce project in Git and GitHub - from the org into a branch, through review, on to the next stage. Written for the people who ship changes but do not live in a terminal: admins, low-code builders, consultants. Developers get the same flows, with less explanation.
+Guided day-to-day work on a Salesforce project in Git - from the org into a branch, through review, on to the next stage - on GitHub, GitLab, Azure DevOps or Bitbucket. Written for the people who ship changes but do not live in a terminal: admins, low-code builders, consultants. Developers get the same flows, with less explanation.
 
 ## What it does
 
@@ -9,7 +9,7 @@ Guided day-to-day work on a Salesforce project in Git and GitHub - from the org 
 | **Start work**       | "I'm starting on ABC-123" · "Create a branch for the discount approval story"      |
 | **Bring changes in** | "Get my flow changes from the sandbox" · "What did I change in the org this week?" |
 | **Commit**           | "Save my work" · "Commit the new field and the flow, but not the profile"          |
-| **Pull request**     | "Send it for review" · "Open a draft pull request"                                 |
+| **Pull request**     | "Send it for review" · "Open a draft merge request"                                |
 | **Read the checks**  | "Why is my pull request red?" · "What does this validation error mean?"            |
 | **Update & resolve** | "Update my branch" · "It says there is a conflict in the permission set"           |
 | **Promote**          | "Move ABC-123 to UAT" · "The story is signed off - what now?"                      |
@@ -17,12 +17,25 @@ Guided day-to-day work on a Salesforce project in Git and GitHub - from the org 
 
 Every step is explained before it runs, in the user's language. Anything that leaves the machine or throws work away - pushing, opening or merging a pull request, starting a workflow, discarding changes - is confirmed first.
 
+## Any Git platform
+
+Git is the same everywhere, and so are most flows. Pull requests, checks, pipelines and work items differ - the skill finds the platform from the remote (or `platform` in the [project configuration](#project-configuration)) and uses its tool:
+
+| Platform     | Tool                                                                                     |
+| ------------ | ---------------------------------------------------------------------------------------- |
+| GitHub       | [GitHub CLI](https://cli.github.com/) (`gh`)                                             |
+| GitLab       | [GitLab CLI](https://gitlab.com/gitlab-org/cli) (`glab`), also self-hosted               |
+| Azure DevOps | [Azure CLI](https://learn.microsoft.com/cli/azure/) with the `azure-devops` extension    |
+| Bitbucket    | Its REST API through `curl`, with an API token the user keeps in an environment variable |
+
+Without the tool, the skill guides through the platform's web interface for those steps. The Salesforce DevOps Starter Kit and its `promote.yml` are GitHub Actions; on other platforms the skill reads whatever pipeline the team runs and promotes with pull requests.
+
 ## Guardrails
 
-The plugin ships a hook that checks every `git` and `gh` command the agent runs in a Salesforce project:
+The plugin ships a hook that checks every `git` command and every pull request merge the agent runs in a Salesforce project:
 
 - **Blocked:** force pushes, pushes to an environment branch, and commits, merges, rebases or cherry-picks on an environment branch. The agent gets the reason and the safe alternative.
-- **Confirmed first:** commands that throw work away (`reset --hard`, `clean`, `restore`, `checkout -- <files>`, `branch -D`, `stash drop`, deleting a remote branch) and merging a pull request.
+- **Confirmed first:** commands that throw work away (`reset --hard`, `clean`, `restore`, `checkout -- <files>`, `branch -D`, `stash drop`, deleting a remote branch), and merging a pull request - `gh pr merge`, `glab mr merge`, `az repos pr update --status completed` or `--auto-complete`, and a merge through Bitbucket's REST API.
 
 Environment branches come from the project configuration (below); without it, `main`, `master` and the default branch are protected. A branch switch earlier in the same command counts - `git switch -c feature/x && git commit` commits on `feature/x` and is allowed - and the body of a heredoc, such as a commit message or an issue text, is never read as a command. Outside Salesforce projects - no `sfdx-project.json` and no configuration file - the hook does nothing. It applies to every session in which the plugin is enabled, not only when the skill is in use.
 
@@ -52,7 +65,7 @@ A red check is not always the user's change. The operator names the job, the fil
 ## Requirements
 
 - `git` and `bash` (on Windows, Git Bash - which Claude Code uses anyway)
-- [GitHub CLI](https://cli.github.com/) (`gh`), signed in
+- The tool of the team's Git platform, signed in - see [Any Git platform](#any-git-platform)
 - [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) (`sf`), with the user's development org authorised
 
 ## Install

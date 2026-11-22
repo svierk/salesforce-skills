@@ -10,10 +10,10 @@ Skills are plain Markdown in the open [Agent Skills](https://agentskills.io) for
 
 Built around the [Salesforce DevOps Starter Kit](https://github.com/svierk/salesforce-devops-starter-kit) - GitHub-native CI/CD from small, composable GitHub Actions, with a strategy guide that maps teams to one of five blueprints.
 
-| Plugin                                        | For                         | Does                                                                                        | Status  |
-| --------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------- | ------- |
-| [🏗️ devops-builder](plugins/devops-builder)   | Pipeline owners, tech leads | Choose a blueprint, set up the pipeline and GitHub around it, audit and upgrade it          | Preview |
-| [🧭 devops-operator](plugins/devops-operator) | Everyone who ships changes  | Guided branches, retrieves, commits, pull requests, checks and promotions in plain language | Preview |
+| Plugin                                        | For                         | Does                                                                                                                                       | Status  |
+| --------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
+| [🏗️ devops-builder](plugins/devops-builder)   | Pipeline owners, tech leads | Choose a blueprint, set up the pipeline and GitHub around it, audit and upgrade it                                                         | Preview |
+| [🧭 devops-operator](plugins/devops-operator) | Everyone who ships changes  | Guided branches, retrieves, commits, pull requests, checks and promotions in plain language - on GitHub, GitLab, Azure DevOps or Bitbucket | Preview |
 
 ### Testing
 
@@ -123,7 +123,7 @@ Salesforce publishes its own skills and plugins in [`forcedotcom/sf-skills`](htt
 | Apex, Flow, metadata, SOQL, deployments | `salesforce-development`                                         | Nothing - use theirs                                                                                      |
 | Code quality                            | `salesforce-code-quality`                                        | The Code Analyzer as a gate in the pipeline (DevOps Builder)                                              |
 | Agents                                  | `agentforce-adlc`                                                | Deploying agents and running their tests in the pipeline (DevOps Builder)                                 |
-| Pipelines and promotions                | `dx-devops` for DevOps Center                                    | Pipelines on GitHub Actions and the daily Git work in them (DevOps Builder, DevOps Operator)              |
+| Pipelines and promotions                | `dx-devops` for DevOps Center                                    | Pipelines on GitHub Actions (DevOps Builder) and the daily Git work on any Git platform (DevOps Operator) |
 | Lightning web components                | `experience-lwc`                                                 | Reuse from a catalog, one reference setup, a guard on every write, reviews (LWC Crafter)                  |
 | UI bundles                              | `experience-react`, generators for React and Angular bundles     | Choosing surfaces, embedding, external guests, reviews of the whole (Multi-Framework Wizard)              |
 | Widgets and MCP                         | `platform-lightning-widgets`, single widgets and Lightning types | The chain around a widget in every client: turning HXL on, sign-in, activation, access, checks (HXL Hero) |

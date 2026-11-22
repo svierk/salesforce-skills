@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
-# PreToolUse hook of the DevOps Operator: guardrails for git and gh commands in
-# Salesforce projects, so a mistake is stopped before it happens instead of
-# being explained afterwards.
+# PreToolUse hook of the DevOps Operator: guardrails for git commands and pull
+# request merges in Salesforce projects, so a mistake is stopped before it
+# happens instead of being explained afterwards. Git is the same on every
+# platform; merges are checked for GitHub (gh), GitLab (glab), Azure DevOps (az)
+# and Bitbucket (its REST API through curl, wget or HTTPie).
 #
 #   deny - force pushes, pushes to an environment branch, and commits, merges,
 #          rebases or cherry-picks on an environment branch
 #   ask  - commands that throw away work (reset --hard, clean, restore, branch
-#          -D, stash drop, ...) and merging a pull request
+#          -D, stash drop, ...), merging a pull or merge request, and setting
+#          one to complete by itself (Azure DevOps auto-complete)
 #
 # Environment branches come from .github/salesforce-devops.yml (environments
 # and base); without that file, main, master and the remote's default branch.
@@ -30,9 +33,10 @@ fi
 
 input=$(cat)
 
-# Cheap exit for everything that is not a git or gh command.
+# Cheap exit for everything that is not a git command or a pull request merge.
+# *git* covers glab's gitlab hosts as well.
 case "$input" in
-  *git* | *'"gh '* | *'gh '*) ;;
+  *git* | *'gh '* | *'glab '* | *'az '* | *pullrequests* | *pull-requests*) ;;
   *) exit 0 ;;
 esac
 
@@ -133,13 +137,13 @@ check_git() {
         case $arg in
           --tags | --all) tags=1 ;;
           --force | --force-with-lease* | --force-if-includes | --mirror)
-            decide deny "Force pushes are blocked by the DevOps Operator: they overwrite history on GitHub that teammates and the pipeline rely on. Push normally; if GitHub rejects the push, bring the branch up to date with a merge instead. If a force push is really needed, the user has to run it in their own terminal." ;;
+            decide deny "Force pushes are blocked by the DevOps Operator: they overwrite history on the server that teammates and the pipeline rely on. Push normally; if the server rejects the push, bring the branch up to date with a merge instead. If a force push is really needed, the user has to run it in their own terminal." ;;
           --delete | -d)
-            decide ask "This deletes a branch on GitHub. Teammates and open pull requests may still use it. Delete it?" ;;
+            decide ask "This deletes a branch on the server. Teammates and open pull requests may still use it. Delete it?" ;;
           -o | --push-option | --repo) skip=1 ;;
           --*) ;;
           -*f*)
-            decide deny "Force pushes are blocked by the DevOps Operator: they overwrite history on GitHub that teammates and the pipeline rely on. Push normally; if GitHub rejects the push, bring the branch up to date with a merge instead. If a force push is really needed, the user has to run it in their own terminal." ;;
+            decide deny "Force pushes are blocked by the DevOps Operator: they overwrite history on the server that teammates and the pipeline rely on. Push normally; if the server rejects the push, bring the branch up to date with a merge instead. If a force push is really needed, the user has to run it in their own terminal." ;;
           -*) ;;
           *)
             if [ -z "$remote" ]; then remote=$arg; else refspecs="$refspecs $arg"; fi ;;
@@ -150,9 +154,9 @@ check_git() {
       for spec in $refspecs; do
         case $spec in
           +*)
-            decide deny "Force pushes are blocked by the DevOps Operator: a refspec starting with + overwrites history on GitHub. Push without the +." ;;
+            decide deny "Force pushes are blocked by the DevOps Operator: a refspec starting with + overwrites history on the server. Push without the +." ;;
           :*)
-            decide ask "This deletes the branch ${spec#:} on GitHub. Teammates and open pull requests may still use it. Delete it?" ;;
+            decide ask "This deletes the branch ${spec#:} on the server. Teammates and open pull requests may still use it. Delete it?" ;;
         esac
         target=${spec##*:}
         target=${target#refs/heads/}
@@ -266,13 +270,55 @@ check_git() {
   esac
 }
 
+merge_reason="Merging this pull request starts the deployment into the org behind its target branch - in some setups, production. Merge it?"
+
 check_gh() {
   case "${1:-} ${2:-}" in
     'pr merge')
       is_salesforce_project "$cwd" || return 0
-      decide ask "Merging this pull request starts the deployment into the org behind its target branch - in some setups, production. Merge it?"
+      decide ask "$merge_reason"
       ;;
   esac
+}
+
+check_glab() {
+  case "${1:-} ${2:-}" in
+    'mr merge' | 'mr accept')
+      is_salesforce_project "$cwd" || return 0
+      decide ask "Merging this merge request starts the deployment into the org behind its target branch - in some setups, production. Merge it?"
+      ;;
+  esac
+}
+
+check_az() {
+  # az repos pr update --status completed merges; --auto-complete on create or
+  # update lets the pull request merge by itself once its policies pass.
+  [ "${1:-} ${2:-}" = 'repos pr' ] || return 0
+  case ${3:-} in create | update) ;; *) return 0 ;; esac
+  is_salesforce_project "$cwd" || return 0
+  shift 3
+  while [ $# -gt 0 ]; do
+    case $1 in
+      --status=completed) decide ask "$merge_reason" ;;
+      --status) [ "${2:-}" = completed ] && decide ask "$merge_reason" ;;
+      --auto-complete=false | --auto-complete=False) ;;
+      --auto-complete=*) decide ask "$auto_reason" ;;
+      --auto-complete)
+        case ${2:-} in false | False) ;; *) decide ask "$auto_reason" ;; esac ;;
+    esac
+    shift
+  done
+}
+
+auto_reason="With auto-complete, the pull request merges by itself once its policies pass - and the merge starts the deployment into the org behind its target branch, in some setups production. Set it?"
+
+check_http() {
+  # $1: the whole segment. Bitbucket merges a pull request with a POST to
+  # .../pullrequests/<id>/merge (Cloud) or .../pull-requests/<id>/merge (Data Center).
+  merge_re='/pull-?requests/[0-9]+/merge'
+  [[ $1 =~ $merge_re ]] || return 0
+  is_salesforce_project "$cwd" || return 0
+  decide ask "$merge_reason"
 }
 
 # Drops the bodies of heredocs: they are data - a commit message, an issue text -
@@ -299,7 +345,8 @@ strip_heredocs() {
   done
 }
 
-# Split the command into its simple commands and check each git or gh call.
+# Split the command into its simple commands and check each git call and
+# each pull request merge.
 set -f
 segments=$(printf '%s\n' "$command" | strip_heredocs | sed -e 's/&&/\
 /g' -e 's/||/\
@@ -318,6 +365,9 @@ while IFS= read -r segment; do
   case $1 in
     git) shift; check_git "$@" ;;
     gh) shift; check_gh "$@" ;;
+    glab) shift; check_glab "$@" ;;
+    az) shift; check_az "$@" ;;
+    curl | wget | http | https) check_http "$segment" ;;
   esac
 done <<EOF
 $segments
