@@ -8,7 +8,7 @@ Go down the list and stop at the first step that covers the need:
 
 1. **Standard feature.** Dynamic Forms, related lists, list views, path, Flow screens with standard components, quick actions with a page layout. A requirement that a standard feature covers needs configuration, not code - say so, even when the user asked for a component.
 2. **Base component.** `lightning-record-form`, `lightning-datatable`, `lightning-combobox`, `lightning-dual-listbox`, `lightning-file-upload`, `lightning-map`, `lightning/modal` and the rest of the Component Reference - accessible, styled, maintained by Salesforce. Check its attributes in the reference before deciding it does not fit.
-3. **The collection.** Search its catalog ([sources.md](sources.md#the-catalog)) - configurable datatables and map views, each also built on GraphQL without Apex, a multi-select combobox, file tables, signature capture, QR codes, an org chart, PDF helpers and more.
+3. **The collection.** Search its catalog ([sources.md](sources.md#the-catalog)) - configurable datatables and map views, each also built on GraphQL without Apex, a CSV importer with column mapping, validation and Flow outputs, a carousel, a 3D model viewer, a multi-select combobox, file tables, signature and camera capture, QR codes, an org chart, PDF helpers, and building blocks such as drag and drop or a CSV parser.
 4. **Salesforce recipes.** `lwc-recipes` shows the pattern for most single concepts.
 5. **Build it** - small, with a contract designed below.
 
@@ -28,11 +28,14 @@ Decide this before the contract. The collection states it in the `**Type:**` lin
 
 **A complete `Component`** is exposed and has at least one builder property. It takes every business value through `@api` - as a builder property too - has no hard-wired data or URLs, and passes its result on through an event or a Flow output. A component that only works with the data of one project is a demo.
 
+**A card around it, as an option.** A `Component` that sits on a page next to standard ones offers to wrap itself in a `lightning-card`: `showCard` (default `false`), `cardTitle` and `cardIcon` as builder properties - the collection's datatables, map views, carousel, 3D viewer, iframe and PDF components all do. Without `showCard` it renders as before, so a placement inside an admin's own card does not get two.
+
 ## Boundaries
 
 - **One job per component.** A container gets the data, holds the state and handles saves; presentational children get properties and send events. That split is what makes children reusable and easy to test.
 - **Size is a signal.** The collection's ESLint limits - 500 lines per file, 50 per function - are where a component asks to be split, not a target to reach.
-- **Shared logic in a service module** - a bundle with only a JavaScript file and `isExposed` false, imported as `c/<name>` - like the collection's `datatableUtils`. Not copied into each component.
+- **Shared logic in a service module** - a bundle with only a JavaScript file and `isExposed` false, imported as `c/<name>` - like the collection's `datatableUtils`, `errorUtils` or `labelUtils`. Not copied into each component.
+- **Parsers are their own module, with their own tests.** A CSV split on commas breaks on the first quoted field, a line break inside a field or a byte order mark - the collection's `csvParser` follows RFC 4180. Reuse one instead of writing it inline.
 - **Extend a base component only where it is designed for it** - `lightning-datatable` takes custom types by extension (see the collection's `datatableExtension`). Do not wrap a base component just to restyle it.
 
 ## Names
@@ -86,6 +89,10 @@ Lightning Message Service: subscribe in `connectedCallback`, unsubscribe in `dis
 
 ## Text and languages
 
-- **User-facing text in Custom Labels** (`import LABEL from '@salesforce/label/c.Order_Summary_Title'`) when the org has more than one language, or might. One label per sentence - never glue translated fragments together.
+- **Every text users see is a Custom Label** (`import TITLE from '@salesforce/label/c.OrderSummary_Title'`), so a translation needs no code change - the collection does it in every component, buttons, empty states, toasts and error messages included. A project that decided otherwise for a single-language org keeps its convention; a component meant for others to copy always uses labels.
+- **One label per text**, named `<ComponentName>_<Text>` (`CsvImporter_Next`) with the component name as category, in `labels/CustomLabels.labels-meta.xml`.
+- **Values go into placeholders, not between fragments.** `Showing {0} of {1} rows` is one label, filled by a small helper - the collection's `formatLabel` from `c/labelUtils`. Gluing translated pieces together breaks every language with another word order.
+- **What an admin sets stays a property.** A card title or button label configured in the App Builder is an `@api` property with a label as its default, not a label alone.
+- **Many labels in one component** count against the file length limit. Import them in a helper module of the bundle and hand them over as one `labels` object - the collection's `customCarousel` keeps them in `carouselUtils.js`.
 - **Numbers, dates, currencies** with `lightning-formatted-number`, `lightning-formatted-date-time` and their siblings, or `@salesforce/i18n/*` for locale, currency and time zone.
 - **Labels of fields and objects** come from the schema (`getObjectInfo`), not from strings in the component.

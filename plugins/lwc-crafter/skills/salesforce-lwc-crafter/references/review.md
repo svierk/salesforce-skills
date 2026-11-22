@@ -47,7 +47,7 @@ Reviewing components and finding out why one is broken. The tools find patterns;
 | `meta-page-property`    | warning  | A builder property for record pages named `recordId` or `objectApiName`, which the page overwrites              |
 | `test-focused`          | warning  | `fit`, `fdescribe`, `xit`, `xdescribe`, `.only`, `.skip`                                                        |
 | `test-cleanup`          | warning  | Components appended to `document.body` without an `afterEach`                                                   |
-| `test-accessibility`    | info     | A test file without `toBeAccessible()`                                                                          |
+| `test-accessibility`    | info     | A test file without `toBeAccessible()`, for a component with a template - service modules render nothing        |
 | `bundle-test`           | info     | A component without `__tests__`                                                                                 |
 
 The rules are deliberately simple patterns. A finding the team decided to keep gets a suppression with the reason - `// lwc-check-ignore <rule> -- <reason>` on the line or the line above (`<!-- -->` in templates, `/* */` in CSS); without a reason the suppression does not count. Suggest a suppression only when the user agrees with the reason.
@@ -57,14 +57,14 @@ The rules are deliberately simple patterns. A finding the team decided to keep g
 Ranked by how much harm each item does when it is wrong. After the tools, read every bundle in scope for:
 
 1. **Security** - HTML or URLs built from data, Apex methods without `with sharing`, user mode, bind variables or allowlists, secrets in JavaScript, decisions the client makes that the server should ([security.md](security.md)).
-2. **Wrong or stale data** - Apex and LDS for the same record, no refresh after an imperative write, changed wired data, handlers that assume order or run once, missing error and empty states, unchecked `errors` of a GraphQL result; Apex that only reads or writes what LDS or GraphQL would - a second cache and an endpoint to maintain ([data.md](data.md#graphql-before-apex)).
+2. **Wrong or stale data** - Apex and LDS for the same record, a configured filter joined without parentheses, an all-or-nothing write of many rows that loses every row for one bad one, no refresh after an imperative write, changed wired data, handlers that assume order or run once, missing error and empty states, unchecked `errors` of a GraphQL result; Apex that only reads or writes what LDS or GraphQL would - a second cache and an endpoint to maintain ([data.md](data.md#graphql-before-apex)).
 3. **Leaks** - what `connectedCallback` starts and `disconnectedCallback` does not stop; work in `renderedCallback` without a guard ([runtime.md](runtime.md#lifecycle)).
 4. **Broken contracts** - `@api` properties changed inside, events with internal objects in `detail` or unnecessary `composed`, targets or properties in `js-meta.xml` that do not match the code, public API changes without a note about existing placements ([design.md](design.md#public-api)).
-5. **Accessibility** - clickable elements that are not buttons or links, inputs without labels, meaning carried by color alone, missing `toBeAccessible()` ([styling-and-accessibility.md](styling-and-accessibility.md#accessibility)).
+5. **Accessibility** - clickable elements that are not buttons or links, inputs without labels, meaning carried by color alone, composite widgets without their keyboard pattern, missing `toBeAccessible()` ([styling-and-accessibility.md](styling-and-accessibility.md#accessibility)).
 6. **Performance** - everything loaded at once, filtering or counting in the browser, expensive getters, libraries loaded on every render ([runtime.md](runtime.md#performance)).
 7. **Styling** - SLDS overrides, fixed colors and SLDS 1 tokens, hand-built UI where a base component exists ([styling-and-accessibility.md](styling-and-accessibility.md#styling)).
 8. **Tests** - behaviours without a test, failure paths that only assert a call, tests that depend on each other, skipped tests ([testing.md](testing.md)).
-9. **Documentation and text** - README, JSDoc and metadata out of date; user-facing text that should be a Custom Label ([documentation.md](documentation.md)).
+9. **Documentation and text** - README, JSDoc and metadata out of date; user-facing text that should be a Custom Label, or a message glued together from fragments instead of a label with placeholders ([documentation.md](documentation.md)).
 
 Report the findings ranked, each with file, line, why it matters and the fix - and whether a tool or the reading found it. End with what is already good.
 

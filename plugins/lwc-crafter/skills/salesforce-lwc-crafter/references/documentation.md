@@ -36,6 +36,7 @@ If the project uses the collection's `scripts/check-readmes.mjs` (`npm run lint:
 ## In the metadata
 
 - **`masterLabel` and `description`** in `js-meta.xml` - what admins see in the builder.
+- **An icon** - an SVG named like the component (`<component>.svg`) in the bundle folder is its icon in the Lightning App Builder; the collection's catalog shows the same file.
 - **Every `targetConfig` property** with `label`, `description` and a `default` that matches the JavaScript default.
 
 ## When the public API changes
