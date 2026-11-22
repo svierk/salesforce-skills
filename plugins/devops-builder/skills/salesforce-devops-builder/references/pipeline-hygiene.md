@@ -34,7 +34,7 @@ Rules for every workflow file in a Salesforce pipeline, whatever the blueprint. 
 Name these in every setup, because no workflow solves them:
 
 - **Backup and recovery** with a stated RPO/RTO - Salesforce has no rollback.
-- **Drift detection** - a scheduled comparison between each org and its branch, so changes made directly in an org show up before they break a deployment.
+- **Drift detection** - a scheduled comparison between each org and its branch, so changes made directly in an org show up before they break a deployment - or, since the kit's v1.8.0, before a deployment overwrites them: `deployment.yml` ignores source tracking conflicts, in tracked orgs as in all others.
 - **Integration user** per org, dedicated and least-privilege - see [authentication.md](authentication.md).
 
 ## Repositories without an org
