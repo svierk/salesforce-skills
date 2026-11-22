@@ -5,7 +5,7 @@
 Goal: a fresh work branch, started from the right place, named after the story.
 
 1. **Check for leftovers.** If `git status` shows changes, find out whose they are before anything else. Changes from an earlier story belong on that story's branch - commit them there, or park them with `git stash push -m "<what>"` and say how to get them back (`git stash pop`). Never carry unrelated changes into a new story.
-2. **Find the story.** Ask for the key if the user did not give one, and check it against `items.pattern`. For GitHub issues, read the title: `gh issue view <number> --json title,url`. For other trackers, ask for a short description.
+2. **Find the story.** Ask for the key if the user did not give one, and check it against `items.pattern`. For issues on the platform itself, read the title - `gh issue view <number> --json title,url` on GitHub, `glab issue view` on GitLab, `az boards work-item show` for Azure Boards ([platforms.md](platforms.md#the-steps-per-platform)). For Jira and other trackers, ask for a short description.
 3. **Name the branch** from `branches.feature`, e.g. `feature/ABC-123-discount-approval`. Show the name and let the user change it.
 4. **Create it from the base**, never from whatever happens to be checked out:
 
@@ -18,7 +18,7 @@ Goal: a fresh work branch, started from the right place, named after the story.
 
 Pushing the new branch can wait until the first commit.
 
-**Scratch orgs.** If the team works in scratch orgs and the repository has a caller of the kit's `create-scratch-org.yml`, a fresh org is one form in the Actions tab: `gh workflow list`, then `gh workflow run <file>` with its inputs. The run summary lists the login details.
+**Scratch orgs.** If the team works in scratch orgs and the repository has a caller of the kit's `create-scratch-org.yml`, a fresh org is one form in the Actions tab: `gh workflow list`, then `gh workflow run <file>` with its inputs. The run summary lists the login details. On other platforms, a team often has a manual pipeline for the same - start it the platform's way ([platforms.md](platforms.md#the-steps-per-platform)), or create the org from the Dev Hub as the team's guide says.
 
 **DevOps Center or sfdx-hardis** (`development.retrieve`): work items and branches are created by that tool. Guide the user through the tool rather than creating branches yourself, and stay available for questions about checks and pull requests.
 

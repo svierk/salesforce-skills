@@ -15,6 +15,10 @@
       "description": "Blueprint of the Salesforce DevOps Starter Kit the repository follows.",
       "enum": ["B1", "B2", "B3", "B4", "B5"]
     },
+    "platform": {
+      "description": "Git platform the repository lives on. Leave it out when the remote URL tells (github.com, gitlab, dev.azure.com, bitbucket.org); set it for self-hosted servers whose host name does not. The file keeps the path .github/salesforce-devops.yml on every platform.",
+      "enum": ["github", "gitlab", "azure-devops", "bitbucket", "other"]
+    },
     "variant": {
       "description": "B2: how changes travel between the environment branches. B4: the repository shape.",
       "enum": ["release-train", "story-promotion", "release-bundle", "shared-core", "per-org-chains"]
@@ -47,7 +51,7 @@
       "additionalProperties": false,
       "properties": {
         "tracker": {
-          "enum": ["github", "jira", "azure-boards", "devops-center", "other", "none"],
+          "enum": ["github", "gitlab", "jira", "azure-boards", "devops-center", "other", "none"],
           "default": "github"
         },
         "pattern": {

@@ -6,25 +6,26 @@ The canonical format is the JSON Schema at `https://raw.githubusercontent.com/sv
 
 ## What each field decides
 
-| Field                  | Use it for                                                                                                    |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `version`              | The format of the file - see above                                                                            |
-| `blueprint`, `variant` | What happens after a merge, and how promotion works - see the tables in SKILL.md and [promote.md](promote.md) |
-| `environments`         | Branches nobody commits to directly. The last one fronts production                                           |
-| `base`                 | Where new work starts: `git switch -c <branch> origin/<base>`                                                 |
-| `branches.feature`     | The name of a new work branch                                                                                 |
-| `branches.hotfix`      | The name of an urgent fix branch (B2 release train - it enters at `preprod`)                                  |
-| `branches.promotion`   | The name of a promotion branch (B2 story promotion, release bundle)                                           |
-| `branches.release`     | The name of a release branch - cut by the release manager, not by this skill                                  |
-| `items.tracker`        | Where to look up the story - `gh issue view` for `github`, otherwise ask the user                             |
-| `items.pattern`        | Check a key the user gives you; find the key in a branch name                                                 |
-| `items.url`            | Link the story in the pull request description                                                                |
-| `commits.style`        | `conventional` - `type: subject` · `plain` - a short imperative sentence                                      |
-| `commits.item`         | Where the story key goes - subject, `Refs:` footer, or nowhere                                                |
-| `development.org`      | Shared sandbox (claim it, retrieve only your own changes), own sandbox, or scratch org                        |
-| `development.retrieve` | `cli` - this skill retrieves · `devops-center` or `sfdx-hardis` - guide the user through that tool instead    |
-| `promotion.tool`       | How promotion works - see [promote.md](promote.md)                                                            |
-| `promotion.workflow`   | The promotion workflow to start with `gh workflow run`                                                        |
+| Field                  | Use it for                                                                                                                                                                                                               |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `version`              | The format of the file - see above                                                                                                                                                                                       |
+| `platform`             | GitHub, GitLab, Azure DevOps, Bitbucket or other - which commands to use, see [platforms.md](platforms.md). Without it, read it from the remote                                                                          |
+| `blueprint`, `variant` | What happens after a merge, and how promotion works - see the tables in SKILL.md and [promote.md](promote.md). On other platforms than GitHub the blueprint still names the branching model, without the kit's workflows |
+| `environments`         | Branches nobody commits to directly. The last one fronts production                                                                                                                                                      |
+| `base`                 | Where new work starts: `git switch -c <branch> origin/<base>`                                                                                                                                                            |
+| `branches.feature`     | The name of a new work branch                                                                                                                                                                                            |
+| `branches.hotfix`      | The name of an urgent fix branch (B2 release train - it enters at `preprod`)                                                                                                                                             |
+| `branches.promotion`   | The name of a promotion branch (B2 story promotion, release bundle)                                                                                                                                                      |
+| `branches.release`     | The name of a release branch - cut by the release manager, not by this skill                                                                                                                                             |
+| `items.tracker`        | Where to look up the story - the platform's issues for `github` and `gitlab`, Azure Boards for `azure-boards` ([platforms.md](platforms.md#the-steps-per-platform)), otherwise ask the user                              |
+| `items.pattern`        | Check a key the user gives you; find the key in a branch name                                                                                                                                                            |
+| `items.url`            | Link the story in the pull request description                                                                                                                                                                           |
+| `commits.style`        | `conventional` - `type: subject` · `plain` - a short imperative sentence                                                                                                                                                 |
+| `commits.item`         | Where the story key goes - subject, `Refs:` footer, or nowhere                                                                                                                                                           |
+| `development.org`      | Shared sandbox (claim it, retrieve only your own changes), own sandbox, or scratch org                                                                                                                                   |
+| `development.retrieve` | `cli` - this skill retrieves · `devops-center` or `sfdx-hardis` - guide the user through that tool instead                                                                                                               |
+| `promotion.tool`       | How promotion works - see [promote.md](promote.md)                                                                                                                                                                       |
+| `promotion.workflow`   | The promotion workflow to start with `gh workflow run` - GitHub only                                                                                                                                                     |
 
 Branch patterns use `{item}` (story key), `{slug}` (a short kebab-case description, at most about 40 characters, ASCII only), `{stage}` (target environment branch) and `{name}` (release name).
 
@@ -36,6 +37,7 @@ Work out the conventions from the repository, tell the user what you assumed, an
 - **Base:** the default branch.
 - **Branch names:** follow what recent branches look like (`git branch -r --sort=-committerdate | head -20`); otherwise `feature/<key>-<slug>`.
 - **Commit style:** follow the last commits (`git log --format=%s -30`); otherwise Conventional Commits with the key as `Refs:` footer.
-- **Promotion:** look for a workflow that calls the kit's `promote.yml` (`grep -l 'promote.yml' .github/workflows/*`). If there is none, promotion is a pull request someone with merge rights opens.
+- **Platform:** from the remote URL, see [platforms.md](platforms.md#find-the-platform).
+- **Promotion:** look for a workflow that calls the kit's `promote.yml` (`grep -l 'promote.yml' .github/workflows/*`). If there is none - and on every platform other than GitHub - promotion is a pull request someone with merge rights opens, or a promotion branch by hand ([promote.md](promote.md#story-promotion-by-hand)).
 
 The hooks use the same fallback for environment branches, so they protect `main` even without the file.

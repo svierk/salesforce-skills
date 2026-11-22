@@ -13,22 +13,24 @@ git push                                 # confirm first
 
 **Merge, don't rebase.** A merge adds one commit and never needs a force push; a rebase rewrites the branch, and pushing it afterwards would be blocked. That trade-off is right for everyone who is not a Git expert, and harmless for those who are - the pull request is squashed or merged anyway.
 
+Some repositories only allow fast-forward merges - common on GitLab - and then ask for a rebase before the merge. Use the platform's own rebase for that (the merge request's rebase button, `glab mr rebase`): it runs on the server, so nothing needs a force push. Bring the result down with `git fetch` and `git merge --ff-only origin/<branch>` before the next commit - see [platforms.md](platforms.md#what-else-differs).
+
 Before merging, commit or stash local changes - a merge into a dirty working copy is where people lose work.
 
 **B2 story promotion:** do not merge `uat`, `integration` or `preprod` into a feature branch - it would carry other stories along. Feature branches only ever take in `main`. Conflicts with a stage are solved on the promotion branch - see [promote.md](promote.md).
 
 ## Push rejected
 
-GitHub rejects a push when the branch on GitHub has commits the local branch does not - usually a teammate pushed to it, or the branch was updated through the web. Never force-push it away: those commits are someone's work, and the hook blocks it anyway. Look first, then merge:
+The server rejects a push when the branch there has commits the local branch does not - usually a teammate pushed to it, or the branch was updated through the web. Never force-push it away: those commits are someone's work, and the hook blocks it anyway. Look first, then merge:
 
 ```bash
 git fetch origin
-git log --oneline HEAD..origin/<branch>        # what is on GitHub but not here - and who wrote it
+git log --oneline HEAD..origin/<branch>        # what is on the server but not here - and who wrote it
 git merge origin/<branch>
 git push
 ```
 
-Merge here too, not `git pull --rebase` - the same reasoning as above. If the commits on GitHub look wrong or unexpected, ask whoever made them before going on.
+Merge here too, not `git pull --rebase` - the same reasoning as above. If the commits on the server look wrong or unexpected, ask whoever made them before going on.
 
 ## Conflicts
 

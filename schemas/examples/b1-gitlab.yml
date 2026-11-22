@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/svierk/salesforce-skills/main/schemas/salesforce-devops.schema.json
+# B1 on a self-hosted GitLab, whose host name does not say which platform it is.
+version: 1
+blueprint: B1
+platform: gitlab
+environments: [main]
+base: main
+branches:
+  feature: feature/{item}-{slug}
+items:
+  tracker: gitlab
+  pattern: '\d+'
+  url: https://git.acme.com/crm/salesforce/-/issues/{item}
+commits:
+  style: conventional
+  item: footer
+development:
+  org: own-sandbox
+  retrieve: cli
+promotion:
+  tool: none
