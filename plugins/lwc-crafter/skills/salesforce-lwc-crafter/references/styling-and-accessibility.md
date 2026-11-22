@@ -54,7 +54,10 @@ Base components handle most of this; custom markup has to do it on its own. The 
 - **Color is never the only signal** - an error is red and says "Error".
 - **Changes are announced** - an error message near the field, `aria-live` for content that updates without a page change, focus moved into a modal and back.
 - **Moving content** - no autoplay or animated transitions under `prefers-reduced-motion`, a pause button for anything that moves by itself, arrow keys and swipe for carousels. The collection's `customCarousel` does all of it.
+- **Composite widgets follow their WAI-ARIA pattern.** A custom combobox, listbox, carousel or tab set needs the roles, states and keys of its pattern in the WAI-ARIA Authoring Practices - arrow keys move, Home and End jump, Enter or Space choose, Escape closes, focus stays visible and is not cut off by an `overflow` of a container. The collection's `multiSelectCombobox` and `customCarousel` implement theirs; a base component that fits spares all of it.
 - **Contrast** - text at least 4.5:1 against its background; the styling hooks have it built in, custom colors need checking.
+
+**Static analysis of templates.** SonarQube and similar tools read a bound ARIA value (`aria-current={isCurrent}`) literally and report it as an invalid token, and flag handlers on non-interactive elements. Set dynamic ARIA states and roles through `lwc:spread`, with a static start value where the attribute must exist (`aria-expanded="false"`), and move key handlers to the interactive element or the host - as the collection did for its combobox and carousel.
 
 Check it twice:
 

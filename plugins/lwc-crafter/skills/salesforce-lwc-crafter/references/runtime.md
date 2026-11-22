@@ -42,7 +42,7 @@ disconnectedCallback() {
 }
 ```
 
-`addEventListener('x', this.handler.bind(this))` cannot be removed - every `bind` creates a new function. Listeners on elements of the component's own template need no cleanup; declare them in the template (`onclick={handleClick}`) where possible. LWC does not support capture-phase listeners - `{ capture: true }` silently does nothing.
+`addEventListener('x', this.handler.bind(this))` cannot be removed - every `bind` creates a new function. Listeners on elements of the component's own template need no cleanup; declare them in the template (`onclick={handleClick}`) where possible. The same holds for listeners on the host (`this.addEventListener`) and the template root (`this.template.addEventListener`), added once in the `constructor`: they live as long as the component. That is the way to handle keys, pointer or focus events for a whole widget without a handler on a non-interactive element - the collection's `customCarousel` does it. LWC does not support capture-phase listeners - `{ capture: true }` silently does nothing.
 
 ## DOM work
 
@@ -58,6 +58,7 @@ disconnectedCallback() {
 3. **Render into a `lwc:dom="manual"` container**, found with `lwc:ref` after the first render.
 4. **Dispose** of the library's instance, observers and animation loops in `disconnectedCallback` - `orgChartViewer` disconnects its `ResizeObserver` there.
 5. **Check compatibility.** Libraries that need Web Workers, `document.write` or `eval` do not work under Lightning Web Security, however they are loaded.
+6. **Draw at the display's resolution.** A canvas or WebGL scene sized in CSS pixels looks blurry on high-density screens: scale the drawing buffer by `window.devicePixelRatio` - with Three.js, `renderer.setPixelRatio(window.devicePixelRatio)`, as the collection's 3D viewer does.
 
 ## Async work
 
@@ -66,7 +67,7 @@ disconnectedCallback() {
 - **Debounce input** that triggers a server call, and clear the pending timer in `disconnectedCallback`.
 - **No `setTimeout` to wait for rendering.** Use `renderedCallback`, or `await Promise.resolve()` after a state change when the next step needs the new DOM.
 - **Tell the user.** A spinner while loading and a visible error when something fails - not a line in the console. Inline, in place of the content, if the error makes the component unusable; a toast (`ShowToastEvent`) if one action failed and the rest still works.
-- **Read the message from every shape of error.** Apex and LDS put it in `error.body`, GraphQL returns an array, and a browser error such as the `DOMException` of a refused camera has only `message` - code that reads `error.body.message` throws or shows an empty toast. Use one helper for all of them, like the collection's `errorUtils`.
+- **Read the message from every shape of error.** Apex and LDS put it in `error.body`, GraphQL returns an array, and a browser error such as the `DOMException` of a refused camera has only `message` - code that reads `error.body.message` throws or shows an empty toast. Use one helper for all of them. The collection's convention: `getErrorMessage(error)` from `c/errorUtils` for the text, `showErrorToast(this, title, error)` when one action failed, and the `c-error-alert` building block inline when the component cannot work at all.
 
 ## Navigation and dialogs
 

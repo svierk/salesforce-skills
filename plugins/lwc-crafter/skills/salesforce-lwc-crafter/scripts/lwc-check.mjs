@@ -535,7 +535,9 @@ const rules = [
     kind: 'test',
     severity: 'info',
     message: 'No accessibility assertion. Add await expect(element).toBeAccessible() with @sa11y/jest.',
-    check: ({ code }) => (/toBeAccessible\s*\(/.test(code) ? [] : [{ line: 1 }])
+    // A service module without a template renders nothing that could be inaccessible.
+    check: ({ code, component }) =>
+      component.html.length === 0 || /toBeAccessible\s*\(/.test(code) ? [] : [{ line: 1 }]
   },
   {
     id: 'bundle-test',
@@ -589,6 +591,12 @@ function bundleOf(folder) {
   };
 }
 
+function componentFolder(path) {
+  const parts = path.split(/[\\/]/);
+  const tests = parts.lastIndexOf('__tests__');
+  return tests > 0 ? parts.slice(0, tests).join('/') || '/' : dirname(path);
+}
+
 function checkFile(path, { errorsOnly = false } = {}) {
   const kind = fileKind(path);
   if (!kind) return [];
@@ -596,11 +604,13 @@ function checkFile(path, { errorsOnly = false } = {}) {
   const code = PREPARE[kind](source);
   const exempt = suppressions(source);
   const bundle = bundleOf(dirname(path));
+  // A test file lives in __tests__ (or a folder below it); the component is the folder above.
+  const component = kind === 'test' ? bundleOf(componentFolder(path)) : bundle;
   return rules
     .filter((rule) => rule.kind === kind && (!errorsOnly || rule.severity === 'error'))
     .flatMap((rule) =>
       rule
-        .check({ code, bundle })
+        .check({ code, bundle, component })
         .filter(({ line }) => !exempt.get(line)?.has(rule.id))
         .map(({ line }) => ({ file: path, line, rule: rule.id, severity: rule.severity, message: rule.message }))
     );

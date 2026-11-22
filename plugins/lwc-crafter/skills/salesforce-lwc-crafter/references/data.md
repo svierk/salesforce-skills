@@ -77,9 +77,11 @@ Every `@AuraEnabled` method is a public endpoint. Any user with access to the cl
 - **User mode** - `WITH USER_MODE` in static SOQL, `AccessLevel.USER_MODE` for dynamic SOQL and DML - so object and field permissions of the running user apply.
 - **Bind variables** for every value from the client. Dynamic SOQL with `Database.queryWithBinds`, never string concatenation of values.
 - **Allowlists for identifiers.** Object names, field names and sort directions cannot be bound: validate them - a sort field must be one of the queried fields, a direction is `ASC` or `DESC`, an object name goes through `Schema.describeSObjects`.
+- **Configured filters in parentheses.** A `WHERE` condition an admin configures, joined with conditions of your own, goes in parentheses - `(Status = 'Open' OR Priority = 'High') AND Name LIKE :term` - so an `OR` inside it cannot widen the query past your conditions. The collection's `CustomDatatableUtil` does that.
 - **Limits.** A `LIMIT` on every query a user can widen; server-side pagination for lists. SOQL `OFFSET` stops at 2,000 rows - beyond that, use a cursor (keyset pagination, or GraphQL).
 - **Errors for people.** Catch, log what the team needs, and throw an `AuraHandledException` with a message the user may read - no stack traces, no query text.
 - **Return only what the component shows.** Not whole records with every field, not data the user should not see.
+- **Many rows: partial success, one result per row.** `Database.insert(records, false, AccessLevel.USER_MODE)` - or `Database.upsert` by an external ID field - so one bad row does not stop the others, and every row's result goes back to the component. The component sends the rows in chunks (the collection's `csvImporter` sends 200 per call), shows the progress, and lists the failed rows with their message so the user can fix them. Check the rows against `getObjectInfo` and the picklist values before anything is sent - required fields, types, values.
 - **Tests** run as a user with the permissions of the real persona (`System.runAs`), including a case where access is missing.
 
 Imperative calls: `await` inside `try`/`catch`/`finally`, with a loading state set before and cleared in `finally`. The error's message is in `error.body.message` for Apex and LDS errors; lwc-recipes' `ldsUtils` has a `reduceErrors` helper that handles every shape.

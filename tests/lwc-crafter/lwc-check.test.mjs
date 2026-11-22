@@ -3,7 +3,9 @@
 // every line that matters.
 
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -33,6 +35,24 @@ describe('a component that follows the rules', () => {
 
   test('ignores code in comments and color fallbacks inside var()', () => {
     assert.deepEqual(findings([`${lwc}/cleanCard/cleanCard.js`, `${lwc}/cleanCard/cleanCard.css`]), []);
+  });
+});
+
+describe('accessibility assertions', () => {
+  test('are not asked of a service module without a template', () => {
+    assert.deepEqual(findings([`${lwc}/textUtils`]), []);
+  });
+
+  test('are asked of a component with a template', () => {
+    const folder = join(mkdtempSync(join(tmpdir(), 'lwc-check-')), 'lwc', 'plainList');
+    mkdirSync(join(folder, '__tests__'), { recursive: true });
+    writeFileSync(join(folder, 'plainList.html'), '<template><ul></ul></template>');
+    writeFileSync(
+      join(folder, 'plainList.js'),
+      "import { LightningElement } from 'lwc';\nexport default class PlainList extends LightningElement {}\n"
+    );
+    writeFileSync(join(folder, '__tests__', 'plainList.test.js'), "it('renders', () => {});\n");
+    assert.deepEqual(findings([folder]), ['plainList.test.js:1 test-accessibility']);
   });
 });
 
@@ -113,7 +133,7 @@ describe('a component with anti-patterns', () => {
 describe('paths', () => {
   test('searches the working directory without a path and summarises', () => {
     const { out } = run([]);
-    assert.match(out, /6 errors, \d+ warnings, 1 info in 5 of 9 files/);
+    assert.match(out, /6 errors, \d+ warnings, 1 info in 5 of 12 files/);
   });
 
   test('ignores files outside an lwc folder', () => {
