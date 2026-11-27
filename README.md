@@ -42,11 +42,12 @@ Built around [Polyglot Arcade](https://github.com/svierk/polyglot-arcade) - Sale
 
 ### Showcase
 
-Built on Playwright, Google Chrome and ffmpeg - demo videos of Salesforce orgs, apps and sites, recorded from a real browser along a scripted click path and finished like a hand-edited screencast.
+Showing what a solution looks like before and after it is built. Demo videos are built on Playwright, Google Chrome and ffmpeg - recorded from a real browser along a scripted click path and finished like a hand-edited screencast. Clickable prototypes are built around the [Salesforce Prototype Starter](https://github.com/svierk/salesforce-prototype-starter) - web and mobile apps on Salesforce-shaped data, in the customer's brand, with the records behind each screen in view.
 
-| Plugin                                    | For                                               | Does                                                                                                                                              | Status  |
-| ----------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| [🎬 demo-designer](plugins/demo-designer) | Consultants, presales, developers, product owners | Storyboard, record and render demo videos with cursor, captions, cards and subtitles - for bids and pitches, sprint reviews, teasers and training | Preview |
+| Plugin                                        | For                                               | Does                                                                                                                                                                          | Status  |
+| --------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| [🎬 demo-designer](plugins/demo-designer)     | Consultants, presales, developers, product owners | Storyboard, record and render demo videos with cursor, captions, cards and subtitles - for bids and pitches, sprint reviews, teasers and training                             | Preview |
+| [🛩️ prototype-pilot](plugins/prototype-pilot) | Consultants, presales, architects                 | Build clickable web and mobile app prototypes on Salesforce-shaped data in the customer's brand - with the records behind each screen, presenter features and scripted checks | Planned |
 
 ## 🚀 Install
 
