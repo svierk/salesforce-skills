@@ -1,0 +1,14 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "prototype-pilot",
+  "version": "0.0.0",
+  "description": "Build clickable web and mobile app prototypes on Salesforce-shaped data for pitches, bids and customer workshops - in the customer's brand with authentic assets, a panel that shows the records behind each screen, and scripted checks before hand-over.",
+  "author": {
+    "name": "Sebastiano Schwarz",
+    "url": "https://github.com/svierk"
+  },
+  "homepage": "https://github.com/svierk/salesforce-skills/tree/main/plugins/prototype-pilot",
+  "repository": "https://github.com/svierk/salesforce-skills",
+  "license": "MIT",
+  "keywords": ["salesforce", "prototype", "mobile-app", "presales", "react"]
+}
